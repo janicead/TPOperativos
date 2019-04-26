@@ -7,5 +7,6 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <sockets.h>
+#include "memoria_commons.h"
 
 #endif

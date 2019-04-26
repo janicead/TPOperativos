@@ -1,46 +1,12 @@
-#include "kernel.h"
+#include "Kernel.h"
 
 int main(void) {
-	escuchar();
-	multiplexacion(socketKernel);
+	//escuchar(socketKernel);
+	//multiplexacion(socketKernel);
+	verificarArchivoConfigKernel();
+	mostrarDatosArchivoConfigKernel();
+	exit_gracefully(EXIT_SUCCESS);
 	return EXIT_SUCCESS;
-}
-
-void escuchar()
-{
-	struct sockaddr_in dirServidor;
-
-	int skEnUso;
-
-	dirServidor.sin_family = AF_INET;
-	dirServidor.sin_port = htons(8080); //serverPort
-	dirServidor.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	//printf("IP server: %d\n",dirServidor.sin_addr.s_addr);
-
-	socketKernel = socket(AF_INET, SOCK_STREAM, 0);
-
-	skEnUso = 1;
-	setsockopt(socketKernel,SOL_SOCKET,SO_REUSEADDR,&skEnUso,sizeof(skEnUso));
-
-	if(bind(socketKernel,(void*) &dirServidor,sizeof(dirServidor)) != 0)
-	{
-		perror("Fallo del bind");
-		exit(0);
-	}
-
-	if(listen(socketKernel,10)==0)
-	{
-		puts("Esperando conexiones");
-	}
-	else
-	{
-		puts("fallo al establecer escucha");
-		exit(0);
-	}
-
-	printf("\n");
-
 }
 
 void multiplexacion(int socketServidor)
