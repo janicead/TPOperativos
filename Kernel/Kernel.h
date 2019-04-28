@@ -8,10 +8,10 @@
 #include <netinet/in.h>
 #include <string.h>
 #include "configKernel.h"
+#include <sockets.h>
 
-int socketKernel;
 
-void multiplexacion(int);
-int aceptarConexiones(int);
+
+
 
 #endif /* KERNEL_H_ */

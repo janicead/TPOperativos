@@ -9,4 +9,10 @@
 #include <sockets.h>
 #include "memoria_commons.h"
 
+int socketMemoria;  //Socket servidor
+
+void multiplexacion(int);
+int aceptarConexiones(int);
+void escuchar();
+
 #endif

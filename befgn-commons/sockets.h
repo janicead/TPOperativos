@@ -9,6 +9,6 @@
 #include <string.h>
 
 int conectarAlServidor(char * ip, char * port);
-void escuchar(int socketServer);
+
 
 #endif /* SOCKETS_H_ */
