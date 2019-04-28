@@ -1,6 +1,6 @@
 #include "memoria_commons.h"
 
-void configure_logger_lfs(){
+void configure_logger_memoria(){
 	loggerMemoria = log_create("memoria.log","memoria",1,LOG_LEVEL_INFO);
 }
 

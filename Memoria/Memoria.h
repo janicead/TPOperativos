@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sockets.h>
 #include "memoria_commons.h"
+#include "configMemoria.h"
 
 int socketMemoria;  //Socket servidor
 

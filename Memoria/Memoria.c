@@ -1,9 +1,12 @@
 #include "Memoria.h"
 
 int main(void) {
-	escuchar();
-	multiplexacion(socketMemoria);
-	//exit_gracefully(EXIT_SUCCESS);
+	//escuchar();
+	//multiplexacion(socketMemoria);
+	verificarArchivoConfigMemoria();
+	mostrarDatosArchivoConfigMemoria();
+	freeDatosConfigMemoria();
+	exit_gracefully(EXIT_SUCCESS);
 	return EXIT_SUCCESS;
 }
 
