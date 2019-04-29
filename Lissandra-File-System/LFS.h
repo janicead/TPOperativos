@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <commons/log.h>
 #include "configLFS.h"
+#include "consolaLFS.h"
 
 
 

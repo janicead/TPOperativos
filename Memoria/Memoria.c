@@ -1,10 +1,10 @@
 #include "Memoria.h"
 
 int main(void) {
-	//escuchar();
-	//multiplexacion(socketMemoria);
 	verificarArchivoConfigMemoria();
 	mostrarDatosArchivoConfigMemoria();
+	/*escuchar();
+	multiplexacion(socketMemoria);*/
 	freeDatosConfigMemoria();
 	exit_gracefully(EXIT_SUCCESS);
 	return EXIT_SUCCESS;
@@ -17,7 +17,7 @@ void escuchar()
 	int skEnUso;
 
 	dirServidor.sin_family = AF_INET;
-	dirServidor.sin_port = htons(8080); //serverPort
+	dirServidor.sin_port = htons(configMemoria.puerto); //serverPort
 	dirServidor.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	socketMemoria = socket(AF_INET, SOCK_STREAM, 0);
@@ -89,7 +89,6 @@ void multiplexacion(int socketServidor)
 				mensaje[bytes]='\0';
 				puts(mensaje);
 				send(fd,"hola kernel",strlen("hola kernel"),0);
-				//realizarProtocoloDelPackage(package, fd);
 			}
 			FD_CLR(fd,&tempReadSet);
 		}
