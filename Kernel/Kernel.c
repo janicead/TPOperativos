@@ -9,7 +9,8 @@ void pruebaParser(){
 int main(void) {
 	iniciar();
 	//conectarAMemoria();
-	pruebaParser();
+	//pruebaParser();
+	setConsole();
 	free(puertoMemoria);
 	exit_gracefully(EXIT_SUCCESS);
 }

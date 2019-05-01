@@ -10,5 +10,9 @@
 #include <pthread.h>
 #include "planificador.h"
 
+void setConsole();
+char** obtenerParametros(char* linea, int indice);
+void freeParametros(char** parametros);
+
 
 #endif /* CONSOLAKERNEL_H_ */

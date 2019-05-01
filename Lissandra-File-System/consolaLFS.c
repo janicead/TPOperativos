@@ -9,7 +9,7 @@ void setConsole(){
 			add_history(linea);
 		}
 		//INSTRUCCIÓN SELECT PARÁMETROS: [NOMBRE TABLA] [KEY]
-		if(!strncmp(linea,"select",6)){
+		if(!strncmp(linea,"select",6) || !strncmp(linea,"SELECT",6)){
 			cantidadParametros = 2;
 			int key;
 			char** parametros = obtenerParametros(linea,cantidadParametros + 1);
@@ -28,7 +28,7 @@ void setConsole(){
 			freeParametros(parametros);
 		}
 		//INSTRUCCIÓN INSERT PARÁMETROS: [NOMBRE TABLA] [KEY] "[VALUE]" [TIMESTAMP]
-		else if(!strncmp(linea,"insert",6)){
+		else if(!strncmp(linea,"insert",6) || !strncmp(linea,"INSERT",6)){
 			cantidadParametros = 4;
 			int key,timestamp;
 			char** parametros = obtenerParametros(linea,cantidadParametros + 1);
@@ -59,7 +59,7 @@ void setConsole(){
 			freeParametros(parametros);
 		}
 		//INSTRUCCIÓN CREATE PARÁMETROS: [NOMBRE TABLA] [TIPO DE CONSISTENCIA] [CANTIDAD PARTICIONES] [TIEMPO DE COMPACTACION]
-		else if(!strncmp(linea,"create",6)){
+		else if(!strncmp(linea,"create",6) || !strncmp(linea,"CREATE",6)){
 			cantidadParametros = 4;
 			int numeroParticiones,compactationTime;
 			char** parametros = obtenerParametros(linea,cantidadParametros + 1);
@@ -88,7 +88,7 @@ void setConsole(){
 		}
 		//INSTRUCCIÓN DESCRIE PARÁMETROS: [NOMBRE TABLA]
 		//SI NO HAY PARAMETROS SE DESCRIBEN TODAS LAS TABLAS
-		else if(!strncmp(linea,"describe",8)){
+		else if(!strncmp(linea,"describe",8) || !strncmp(linea,"DESCRIBE",8)){
 			cantidadParametros = 1;
 			char** parametros = obtenerParametros(linea,cantidadParametros + 1);
 			if(parametros[1] == NULL || string_is_empty(parametros[1])){
@@ -100,8 +100,8 @@ void setConsole(){
 			}
 			freeParametros(parametros);
 		}
-		//INSTRUCCIÓN DESCRIE PARÁMETROS: [NOMBRE TABLA]
-		else if(!strncmp(linea,"drop",4)){
+		//INSTRUCCIÓN DESCRIBE PARÁMETROS: [NOMBRE TABLA]
+		else if(!strncmp(linea,"drop",4) || !strncmp(linea,"DROP",4)){
 			cantidadParametros = 1;
 			char** parametros = obtenerParametros(linea,cantidadParametros + 1);
 			if(parametros[1] == NULL || string_is_empty(parametros[1])){
@@ -113,7 +113,7 @@ void setConsole(){
 			}
 			freeParametros(parametros);
 		}
-		else if(!strncmp(linea,"exit",4)){
+		else if(!strncmp(linea,"exit",4) || !strncmp(linea,"EXIT",4)){
 			exit_gracefully(EXIT_SUCCESS);
 			free(linea);
 			break;
