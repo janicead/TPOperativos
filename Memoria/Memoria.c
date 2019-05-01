@@ -3,8 +3,8 @@
 int main(void) {
 	verificarArchivoConfigMemoria();
 	mostrarDatosArchivoConfigMemoria();
-	/*escuchar();
-	multiplexacion(socketMemoria);*/
+	escuchar();
+	multiplexacion(socketMemoria);
 	freeDatosConfigMemoria();
 	exit_gracefully(EXIT_SUCCESS);
 	return EXIT_SUCCESS;

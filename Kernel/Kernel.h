@@ -9,9 +9,16 @@
 #include <string.h>
 #include "configKernel.h"
 #include <sockets.h>
+#include "consolaKernel.h"
+#include "planificador.h"
+#include <types.h>
 
 
+char* puertoMemoria;
+char* ipMemoria;
 
+void iniciar();
+void conectarAMemoria();
 
 
 #endif /* KERNEL_H_ */
