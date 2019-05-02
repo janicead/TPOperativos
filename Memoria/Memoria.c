@@ -3,8 +3,9 @@
 int main(void) {
 	verificarArchivoConfigMemoria();
 	mostrarDatosArchivoConfigMemoria();
-	escuchar();
-	multiplexacion(socketMemoria);
+	/*escuchar();
+	multiplexacion(socketMemoria);*/
+	setConsole(); //agregar un hilo para la consola
 	freeDatosConfigMemoria();
 	exit_gracefully(EXIT_SUCCESS);
 	return EXIT_SUCCESS;

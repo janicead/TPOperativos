@@ -9,6 +9,7 @@
 #include <sockets.h>
 #include "memoria_commons.h"
 #include "configMemoria.h"
+#include "consolaMemoria.h"
 
 int socketMemoria;  //Socket servidor
 
