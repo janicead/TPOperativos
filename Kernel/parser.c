@@ -7,14 +7,6 @@ t_LQL_operacion parse_error(){
 	return op;
 }
 
-
-void destruir_operacion(t_LQL_operacion op){
-	if(op._raw){
-		string_iterate_lines(op._raw, (void*) free);
-		free(op._raw);
-	}
-}
-
 t_LQL_operacion parse(char* linea){
 	if(linea == NULL || string_equals_ignore_case(linea, "")){
 		log_error(loggerKernel, "No pude interpretar una linea vacia\n");
