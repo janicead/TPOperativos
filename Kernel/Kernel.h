@@ -11,6 +11,7 @@
 #include <sockets.h>
 #include "consolaKernel.h"
 #include "planificador.h"
+#include "kernel_commons.h"
 #include <types.h>
 
 

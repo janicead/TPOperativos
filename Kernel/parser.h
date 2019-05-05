@@ -9,7 +9,6 @@
 
 
 t_LQL_operacion parse(char* linea);
-
 t_LQL_operacion parse_error();
 
 #endif /* PARSER_H_ */

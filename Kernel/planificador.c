@@ -57,8 +57,7 @@ void parsear(FILE* archivo){
 	                    log_error(loggerKernel, "No pude interpretar %s", linea);
 	                    exit(EXIT_FAILURE);
 	            }
-
-	            destruir_operacion(operacion);
+	            destruir_operacion(&operacion);
 	        } else {
 	            log_error(loggerKernel, "La linea %s no es valida", linea);
 	            exit(EXIT_FAILURE);
@@ -70,3 +69,63 @@ void parsear(FILE* archivo){
 	        free(linea);
 	    }
 }
+
+void lql_select(t_LQL_operacion* operacion){
+	t_tabla* tabla = devuelve_tabla(operacion->argumentos.SELECT.nombre_tabla);
+	if(tabla == NULL){
+		log_error(loggerKernel,"La tabla de nombre:  %s no existe",operacion->argumentos.SELECT.nombre_tabla);
+	}
+	else{
+		t_memoria* memoria;
+		memoria = obtener_memoria(tabla->consistencia);
+		if(!memoria->valida){
+			log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,operacion->argumentos.SELECT.nombre_tabla);
+			//free_tabla(tabla);
+		}
+		else{
+			puts("SELECT OK");
+			printf("%d",memoria->id_mem);
+			//enviar paquete a la memoria seleccinada con los datos
+			//free_tabla(tabla);
+		}
+	}
+}
+
+t_tabla* devuelve_tabla(char* nombre){
+
+	bool same_table(t_tabla* table){
+		return string_equals_ignore_case(table->nombre_tabla,nombre);
+	}
+
+	return list_find(tablas,(void*) same_table);
+}
+
+t_memoria* obtener_memoria(char* consistencia){
+	t_memoria* mem = (t_memoria*)malloc(sizeof(t_memoria));
+
+	if(string_equals_ignore_case("SC",consistencia)){
+		free_memoria(mem);
+		return sc;
+	}
+	else if(string_equals_ignore_case("SHC",consistencia)){
+		if(!list_is_empty(shc)){
+			mem = list_get(shc,0); // SOLO TEMPORAL, FUNCION DE HASH
+			mem->valida = true;
+			return mem;
+		}
+	}
+	else if(string_equals_ignore_case("CEC",consistencia)){
+		if(!list_is_empty(cec)){
+			mem = list_get(cec,0);
+			mem->valida = true;
+			return mem;
+		}
+	}
+	mem->valida = false;
+	return mem;
+}
+
+
+
+
+

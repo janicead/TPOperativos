@@ -5,8 +5,10 @@
 #include <commons/config.h>
 #include <commons/collections/queue.h>
 #include <commons/collections/list.h>
+#include <commons/string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 /**
 * @NAME: t_LQL_operacion
@@ -81,17 +83,41 @@ typedef struct{
 	t_estado estado;
 }t_lcb;
 
-int id;
+typedef struct{
+	char* nombre_tabla;
+	char* consistencia;
+}t_tabla;
+
+typedef struct{
+	int id_mem;
+	int socket_mem;
+	bool valida;
+}t_memoria;
+
+int idLCB, idMEM;
 t_log* loggerKernel;
 t_config* archivoConfigKernel;
-t_queue* queue_new,queue_ready,queue_exit;
+t_queue* queue_new;
+t_queue* queue_ready;
+t_queue* queue_exit;
+t_list* tablas;
+t_list* shc;
+t_list* cec;
+t_memoria* sc;
 
 void configure_logger_kernel();
 void destruir_operacion(t_LQL_operacion* op);
 void crear_colas();
+void crear_listas();
 t_lcb* crear_lcb();
 void exit_gracefully(int exitInfo);
-void inicializarId();
+void inicializarIds();
+void agregar_op_lcb(t_lcb* lcb,t_LQL_operacion* op);
 void free_lcb(t_lcb* lcb);
+void destruir_listas();
+void destruir_colas();
+void free_memoria(t_memoria* memoria);
+void free_tabla(t_tabla* tabla);
+void agregar_tabla(t_tabla* tabla);
 
 #endif /* KERNEL_COMMONS_H_ */

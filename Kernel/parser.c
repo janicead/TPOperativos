@@ -1,6 +1,5 @@
 #include "parser.h"
 
-
 t_LQL_operacion parse_error(){
 	t_LQL_operacion op;
 	op.valido = false;

@@ -3,6 +3,7 @@
 void setConsole(){
 	char* linea;
 	int cantidadParametros;
+	t_LQL_operacion* op = (t_LQL_operacion*)malloc(sizeof(t_LQL_operacion));
 	while(1){
 		linea = readline(">");
 		if(linea){
@@ -23,7 +24,14 @@ void setConsole(){
 				puts(parametros[1]);
 				key = atoi(parametros[2]);
 				printf("%d\n",key);
-				//select(parametros[1],key);
+				t_lcb* lcb = crear_lcb();
+				op->keyword = SELECT;
+				op->argumentos.SELECT.nombre_tabla= parametros[1];
+				op->argumentos.SELECT.key = key;
+				op->_raw = parametros;
+				agregar_op_lcb(lcb,op);
+				lcb->estado = READY;
+				lql_select(list_get(lcb->operaciones,lcb->program_counter));
 			}
 			freeParametros(parametros);
 		}
