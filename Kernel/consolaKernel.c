@@ -3,7 +3,7 @@
 void setConsole(){
 	char* linea;
 	int cantidadParametros;
-	t_LQL_operacion* op = (t_LQL_operacion*)malloc(sizeof(t_LQL_operacion));
+
 	while(1){
 		linea = readline(">");
 		if(linea){
@@ -21,6 +21,7 @@ void setConsole(){
 				log_error(loggerKernel,"No se ha especificado ninguna key");
 			}
 			else{
+				t_LQL_operacion* op = (t_LQL_operacion*)malloc(sizeof(t_LQL_operacion));
 				puts(parametros[1]);
 				key = atoi(parametros[2]);
 				printf("%d\n",key);
@@ -28,9 +29,10 @@ void setConsole(){
 				op->keyword = SELECT;
 				op->argumentos.SELECT.nombre_tabla= parametros[1];
 				op->argumentos.SELECT.key = key;
-				op->_raw = parametros;
+				op->_raw = NULL;
 				agregar_op_lcb(lcb,op);
 				lcb->estado = READY;
+				queue_push(queue_ready,lcb);
 				lql_select(list_get(lcb->operaciones,lcb->program_counter));
 			}
 			freeParametros(parametros);

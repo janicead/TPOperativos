@@ -74,19 +74,18 @@ void lql_select(t_LQL_operacion* operacion){
 	t_tabla* tabla = devuelve_tabla(operacion->argumentos.SELECT.nombre_tabla);
 	if(tabla == NULL){
 		log_error(loggerKernel,"La tabla de nombre:  %s no existe",operacion->argumentos.SELECT.nombre_tabla);
+		free_tabla(tabla);
+		return;
 	}
 	else{
-		t_memoria* memoria;
-		memoria = obtener_memoria(tabla->consistencia);
+		t_memoria* memoria = obtener_memoria(tabla->consistencia);
 		if(!memoria->valida){
 			log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,operacion->argumentos.SELECT.nombre_tabla);
-			//free_tabla(tabla);
 		}
 		else{
 			puts("SELECT OK");
 			printf("%d",memoria->id_mem);
 			//enviar paquete a la memoria seleccinada con los datos
-			//free_tabla(tabla);
 		}
 	}
 }

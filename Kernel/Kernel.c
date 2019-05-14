@@ -6,11 +6,8 @@ void pruebaParser(){
 	return;
 }
 
-int main(void) {
-	iniciar();
-	//conectarAMemoria();
-	//pruebaParser();
-	/*t_tabla* tabla = (t_tabla*) malloc(sizeof(t_tabla));
+void iniciarValoresParaTest(){
+	t_tabla* tabla = (t_tabla*) malloc(sizeof(t_tabla));
 	tabla->consistencia = "SC";
 	tabla->nombre_tabla = "prueba";
 	agregar_tabla(tabla);
@@ -18,10 +15,15 @@ int main(void) {
 	memoria->id_mem = 1;
 	memoria->socket_mem = 5;
 	memoria->valida = true;
-	sc = memoria,
+	sc = memoria;
+}
+
+int main(void) {
+	iniciar();
+	//conectarAMemoria();
+	//pruebaParser();
+	iniciarValoresParaTest();
 	setConsole();
-	free_memoria(memoria);*/
-	free(puertoMemoria);
 	exit_gracefully(EXIT_SUCCESS);
 }
 

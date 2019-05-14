@@ -94,6 +94,7 @@ typedef struct{
 	bool valida;
 }t_memoria;
 
+char* puertoMemoria;
 int idLCB, idMEM;
 t_log* loggerKernel;
 t_config* archivoConfigKernel;
@@ -119,5 +120,6 @@ void destruir_colas();
 void free_memoria(t_memoria* memoria);
 void free_tabla(t_tabla* tabla);
 void agregar_tabla(t_tabla* tabla);
+void free_operacion(t_LQL_operacion* op);
 
 #endif /* KERNEL_COMMONS_H_ */

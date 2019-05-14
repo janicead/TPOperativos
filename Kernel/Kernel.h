@@ -15,7 +15,6 @@
 #include <types.h>
 
 
-char* puertoMemoria;
 char* ipMemoria;
 
 void iniciar();

@@ -9,6 +9,7 @@ void exit_gracefully(int exitInfo){
 	log_destroy(loggerKernel);
 	config_destroy(archivoConfigKernel);
 	free_memoria(sc);
+	free(puertoMemoria);
 	destruir_colas();
 	destruir_listas();
 	exit(exitInfo);
@@ -48,16 +49,22 @@ void agregar_op_lcb(t_lcb* lcb,t_LQL_operacion* op){
 	return;
 }
 
+void agregar_tabla(t_tabla* tabla){
+	list_add(tablas,tabla);
+	return;
+}
+
 void free_lcb(t_lcb* lcb){
-	if(!list_is_empty(lcb->operaciones)){
-		list_destroy_and_destroy_elements(lcb->operaciones,(void*) destruir_operacion);
-	}
+	list_destroy_and_destroy_elements(lcb->operaciones,(void*) destruir_operacion);
 	free(lcb);
 	return;
 }
 
 void destruir_operacion(t_LQL_operacion* op){
-	if(op->_raw){
+	if(op->_raw == NULL){
+		free(op);
+	}
+	else if(op->_raw){
 		string_iterate_lines(op->_raw, (void*) free);
 		free(op->_raw);
 	}
@@ -65,52 +72,20 @@ void destruir_operacion(t_LQL_operacion* op){
 }
 
 void destruir_listas(){
-	if(!list_is_empty(tablas)){
-		list_destroy_and_destroy_elements(tablas,(void*) free_tabla);
-	}
-	else{
-		list_destroy(tablas);
-	}
-	if(!list_is_empty(shc)){
-		list_destroy_and_destroy_elements(shc,(void*) free_memoria);
-	}
-	else{
-		list_destroy(shc);
-	}
-	if(!list_is_empty(cec)){
-		list_destroy_and_destroy_elements(cec,(void*) free_memoria);
-	}
-	else{
-		list_destroy(cec);
-	}
+	list_destroy_and_destroy_elements(tablas,(void*) free_tabla);
+	list_destroy_and_destroy_elements(shc,(void*) free_memoria);
+	list_destroy_and_destroy_elements(cec,(void*) free_memoria);
 	return;
 }
 
 void destruir_colas(){
-	if(!queue_is_empty(queue_new)){
-		queue_destroy_and_destroy_elements(queue_new,(void*) free_lcb);
-	}
-	else{
-		queue_destroy(queue_new);
-	}
-	if(!queue_is_empty(queue_ready)){
-		queue_destroy_and_destroy_elements(queue_ready,(void*) free_lcb);
-	}
-	else{
-		queue_destroy(queue_ready);
-	}
-	if(!queue_is_empty(queue_exit)){
-		queue_destroy_and_destroy_elements(queue_exit,(void*) free_lcb);
-	}
-	else{
-		queue_destroy(queue_exit);
-	}
+	queue_destroy_and_destroy_elements(queue_new,(void*) free_lcb);
+	queue_destroy_and_destroy_elements(queue_ready,(void*) free_lcb);
+	queue_destroy_and_destroy_elements(queue_exit,(void*) free_lcb);
 	return;
 }
 
 void free_tabla(t_tabla* tabla){
-	//free(tabla->consistencia);
-	//free(tabla->nombre_tabla);
 	free(tabla);
 	return;
 }
@@ -120,7 +95,3 @@ void free_memoria(t_memoria* memoria){
 	return;
 }
 
-void agregar_tabla(t_tabla* tabla){
-	list_add(tablas,tabla);
-	return;
-}
