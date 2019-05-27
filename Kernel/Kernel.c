@@ -24,6 +24,7 @@ int main(void) {
 	pruebaParser();
 	ejecutar();
 	ejecutar();
+	ejecutar();
 	//iniciarValoresParaTest();
 	//setConsole();
 	exit_gracefully(EXIT_SUCCESS);

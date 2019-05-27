@@ -4,7 +4,7 @@ void ejecutar(){
 	if(!queue_is_empty(queue_ready)){// luego irá un semáforo
 		t_lcb* lcb = queue_pop(queue_ready);
 		int quantum = configKernel.quantum;
-		while(quantum > 0 && !list_is_empty(lcb->operaciones)){
+		while(quantum > 0 && list_get(lcb->operaciones,lcb->program_counter) != NULL){
 			t_LQL_operacion* operacion = obtener_op_actual(lcb);
 			switch(operacion->keyword){
 				case SELECT:
