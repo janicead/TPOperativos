@@ -44,6 +44,23 @@ t_lcb* crear_lcb(){
 	return new_lcb;
 }
 
+void status_lcb(t_lcb* lcb){
+	printf("ID: %d\n",lcb->id_lcb);
+	printf("Program Counter: %d\n", lcb->program_counter);
+	printf("Cantidad operaciones: %d\n",list_size(lcb->operaciones));
+	return;
+}
+
+void pasar_lcb_a_ready(t_lcb* lcb){
+	lcb->estado = READY;
+	queue_push(queue_ready,lcb);
+	return;
+}
+
+t_LQL_operacion* obtener_op_actual(t_lcb* lcb){
+	return list_get(lcb->operaciones,lcb->program_counter);
+}
+
 void agregar_op_lcb(t_lcb* lcb,t_LQL_operacion* op){
 	list_add(lcb->operaciones,op);
 	return;
@@ -61,12 +78,13 @@ void free_lcb(t_lcb* lcb){
 }
 
 void destruir_operacion(t_LQL_operacion* op){
-	if(op->_raw == NULL){
-		free(op);
-	}
-	else if(op->_raw){
+	if(op->_raw){
 		string_iterate_lines(op->_raw, (void*) free);
 		free(op->_raw);
+		free(op);
+	}
+	else if(op->_raw == NULL){
+		free(op);
 	}
 	return;
 }

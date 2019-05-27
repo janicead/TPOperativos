@@ -21,19 +21,8 @@ void setConsole(){
 				log_error(loggerKernel,"No se ha especificado ninguna key");
 			}
 			else{
-				t_LQL_operacion* op = (t_LQL_operacion*)malloc(sizeof(t_LQL_operacion));
-				puts(parametros[1]);
 				key = atoi(parametros[2]);
-				printf("%d\n",key);
-				t_lcb* lcb = crear_lcb();
-				op->keyword = SELECT;
-				op->argumentos.SELECT.nombre_tabla= parametros[1];
-				op->argumentos.SELECT.key = key;
-				op->_raw = NULL;
-				agregar_op_lcb(lcb,op);
-				lcb->estado = READY;
-				queue_push(queue_ready,lcb);
-				lql_select(list_get(lcb->operaciones,lcb->program_counter));
+				//crear_lql_select(parametros[1],key);
 			}
 			freeParametros(parametros);
 		}
@@ -179,11 +168,12 @@ void setConsole(){
 }
 
 char** obtenerParametros(char* linea, int indice){
-		char** parametro = string_n_split(linea,indice," ");
-		return parametro;
+		char** parametros = string_n_split(linea,indice," ");
+		return parametros;
 }
 
 void freeParametros(char** parametros){
     string_iterate_lines(parametros, (void*) free);
 	free(parametros);
 }
+

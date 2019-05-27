@@ -1,5 +1,54 @@
 #include "planificador.h"
 
+void ejecutar(){
+	if(!queue_is_empty(queue_ready)){// luego irá un semáforo
+		t_lcb* lcb = queue_pop(queue_ready);
+		int quantum = configKernel.quantum;
+		while(quantum > 0 && !list_is_empty(lcb->operaciones)){
+			t_LQL_operacion* operacion = obtener_op_actual(lcb);
+			switch(operacion->keyword){
+				case SELECT:
+					printf("SELECT\tnombre de tabla: %s", operacion->argumentos.SELECT.nombre_tabla);
+					printf("\tkey: %d\n",operacion->argumentos.SELECT.key);
+					break;
+				case INSERT:
+					printf("INSERT\tnombre de tabla: %s", operacion->argumentos.INSERT.nombre_tabla);
+					printf("\tkey: %d",operacion->argumentos.INSERT.key);
+					printf("\tvalor: %s\n",operacion->argumentos.INSERT.valor);
+					break;
+				case CREATE:
+					printf("CREATE\tnombre de tabla: %s", operacion->argumentos.CREATE.nombre_tabla);
+					printf("\ttipo consistencia: %s",operacion->argumentos.CREATE.tipo_consistencia);
+					printf("\tnro particiones: %d",operacion->argumentos.CREATE.numero_particiones);
+					printf("\tcompactation time: %d\n",operacion->argumentos.CREATE.compactation_time);
+					break;
+				case DESCRIBE:
+					printf("DESCRIBE\tnombre de tabla: %s\n", operacion->argumentos.DESCRIBE.nombre_tabla);
+					break;
+				case DROP:
+					printf("CREATE\tnombre de tabla: %s\n", operacion->argumentos.DROP.nombre_tabla);
+					break;
+				case JOURNAL:
+					printf("JOURNAL\n");
+					break;
+				case ADD:
+					printf("ADD\tnumero de memoria: %d", operacion->argumentos.ADD.nro_memoria);
+					printf("\tcriterio: %s\n",operacion->argumentos.ADD.criterio);
+					break;
+				case RUN:
+					printf("RUN\tpath: %s\n", operacion->argumentos.RUN.path);
+					break;
+				case METRICS:
+					printf("METRICS\n");
+					break;
+			}
+			lcb->program_counter++;
+			quantum--;
+		}
+		queue_push(queue_ready,lcb);
+	}
+}
+
 
 FILE* abrirArchivo(char* path){
 	FILE* f = fopen(path,"r");
@@ -10,60 +59,23 @@ FILE* abrirArchivo(char* path){
 	return f;
 }
 
-void parsear(FILE* archivo){
+void lql_run(FILE* archivo){
 	char* linea = NULL;
 	size_t len = 0;
-
+	t_lcb* lcb = crear_lcb();
 	 while ((getline(&linea, &len, archivo)) != -1) {
-	        t_LQL_operacion operacion = parse(linea);
-
-	        if(operacion.valido){
-	            switch(operacion.keyword){
-	                case SELECT:
-	                    printf("SELECT\tnombre de tabla: %s", operacion.argumentos.SELECT.nombre_tabla);
-	                    printf("\tkey: %d\n",operacion.argumentos.SELECT.key);
-	                    break;
-	                case INSERT:
-	                    printf("INSERT\tnombre de tabla: %s", operacion.argumentos.INSERT.nombre_tabla);
-	                    printf("\tkey: %d",operacion.argumentos.INSERT.key);
-	                    printf("\tvalor: %s\n",operacion.argumentos.INSERT.valor);
-	                    break;
-	                case CREATE:
-	                    printf("CREATE\tnombre de tabla: %s", operacion.argumentos.CREATE.nombre_tabla);
-	                    printf("\ttipo consistencia: %s",operacion.argumentos.CREATE.tipo_consistencia);
-	                    printf("\tnro particiones: %d",operacion.argumentos.CREATE.numero_particiones);
-	                    printf("\tcompactation time: %d\n",operacion.argumentos.CREATE.compactation_time);
-	                    break;
-	                case DESCRIBE:
-	                    printf("DESCRIBE\tnombre de tabla: %s\n", operacion.argumentos.DESCRIBE.nombre_tabla);
-	                    break;
-	                case DROP:
-	                    printf("CREATE\tnombre de tabla: %s\n", operacion.argumentos.DROP.nombre_tabla);
-	                    break;
-	                case JOURNAL:
-	                    printf("JOURNAL\n");
-	                    break;
-	                case ADD:
-	                    printf("ADD\tnumero de memoria: %d", operacion.argumentos.ADD.nro_memoria);
-	                    printf("\tcriterio: %s\n",operacion.argumentos.ADD.criterio);
-	                    break;
-	                case RUN:
-	                    printf("RUN\tpath: %s\n", operacion.argumentos.RUN.path);
-	                    break;
-	                case METRICS:
-	                    printf("METRICS\n");
-	                    break;
-	                default:
-	                    log_error(loggerKernel, "No pude interpretar %s", linea);
-	                    exit(EXIT_FAILURE);
-	            }
-	            destruir_operacion(&operacion);
-	        } else {
+	        t_LQL_operacion* operacion = parse(linea);
+	        if(operacion->valido){
+	        	agregar_op_lcb(lcb,operacion);
+	        }
+	        else {
 	            log_error(loggerKernel, "La linea %s no es valida", linea);
 	            exit(EXIT_FAILURE);
 	        }
 	    }
-
+	 	if(!list_is_empty(lcb->operaciones)){
+	 		pasar_lcb_a_ready(lcb);
+	 	}
 	    fclose(archivo);
 	    if (linea){
 	        free(linea);
@@ -123,7 +135,6 @@ t_memoria* obtener_memoria(char* consistencia){
 	mem->valida = false;
 	return mem;
 }
-
 
 
 

@@ -2,7 +2,7 @@
 
 void pruebaParser(){
 	FILE* script = abrirArchivo("/home/utnso/tp-2019-1c-BEFGN/prueba.lql");
-	parsear(script);
+	lql_run(script);
 	return;
 }
 
@@ -21,9 +21,11 @@ void iniciarValoresParaTest(){
 int main(void) {
 	iniciar();
 	//conectarAMemoria();
-	//pruebaParser();
-	iniciarValoresParaTest();
-	setConsole();
+	pruebaParser();
+	ejecutar();
+	ejecutar();
+	//iniciarValoresParaTest();
+	//setConsole();
 	exit_gracefully(EXIT_SUCCESS);
 }
 

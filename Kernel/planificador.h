@@ -8,10 +8,12 @@
 #include <stdbool.h>
 
 FILE* abrirArchivo(char* path);
-void parsear(FILE* archivo);
+void lql_run(FILE* archivo);
 t_tabla* devuelve_tabla(char* nombre);
 void lql_select(t_LQL_operacion* operacion);
 void free_tabla(t_tabla* tabla);
 t_memoria* obtener_memoria(char* consistencia);
+void ejecutar();
+
 
 #endif /* PLANIFICADOR_H_ */
