@@ -3,8 +3,9 @@
 void ejecutar(){
 	if(!queue_is_empty(queue_ready)){// luego irá un semáforo
 		t_lcb* lcb = queue_pop(queue_ready);
+		lcb->estado = EXEC;
 		int quantum = configKernel.quantum;
-		while(quantum > 0 && list_get(lcb->operaciones,lcb->program_counter) != NULL){
+		while(quantum > 0 && lcb->program_counter < list_size(lcb->operaciones)){
 			t_LQL_operacion* operacion = obtener_op_actual(lcb);
 			switch(operacion->keyword){
 				case SELECT:
@@ -45,7 +46,12 @@ void ejecutar(){
 			lcb->program_counter++;
 			quantum--;
 		}
-		queue_push(queue_ready,lcb);
+		if(lcb->program_counter >= list_size(lcb->operaciones)){
+			pasar_lcb_a_exit(lcb);
+		}
+		else{
+			pasar_lcb_a_ready(lcb);
+		}
 	}
 }
 

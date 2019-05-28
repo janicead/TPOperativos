@@ -29,7 +29,6 @@ void crear_listas(){
 }
 
 void crear_colas(){
-	queue_new = queue_create();
 	queue_ready = queue_create();
 	queue_exit = queue_create();
 	return;
@@ -54,6 +53,12 @@ void status_lcb(t_lcb* lcb){
 void pasar_lcb_a_ready(t_lcb* lcb){
 	lcb->estado = READY;
 	queue_push(queue_ready,lcb);
+	return;
+}
+
+void pasar_lcb_a_exit(t_lcb* lcb){
+	lcb->estado = EXIT;
+	queue_push(queue_exit,lcb);
 	return;
 }
 
@@ -97,7 +102,6 @@ void destruir_listas(){
 }
 
 void destruir_colas(){
-	queue_destroy_and_destroy_elements(queue_new,(void*) free_lcb);
 	queue_destroy_and_destroy_elements(queue_ready,(void*) free_lcb);
 	queue_destroy_and_destroy_elements(queue_exit,(void*) free_lcb);
 	return;

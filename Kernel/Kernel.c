@@ -21,12 +21,12 @@ void iniciarValoresParaTest(){
 int main(void) {
 	iniciar();
 	//conectarAMemoria();
-	pruebaParser();
+	/*pruebaParser();
 	ejecutar();
 	ejecutar();
-	ejecutar();
+	ejecutar();*/
 	//iniciarValoresParaTest();
-	//setConsole();
+	setConsole();
 	exit_gracefully(EXIT_SUCCESS);
 }
 
