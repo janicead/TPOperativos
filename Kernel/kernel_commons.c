@@ -8,7 +8,7 @@ void configure_logger_kernel(){
 void exit_gracefully(int exitInfo){
 	log_destroy(loggerKernel);
 	config_destroy(archivoConfigKernel);
-	free_memoria(sc);
+	//free_memoria(strong_consistency);
 	free(puertoMemoria);
 	destruir_colas();
 	destruir_listas();
@@ -21,10 +21,20 @@ void inicializarIds(){
 	return;
 }
 
+int getID(int id){
+	if(id == 0){
+		int aux = id;
+		id++;
+		return aux;
+	}
+	return id++;
+}
+
 void crear_listas(){
 	tablas = list_create();
-	shc = list_create();
-	cec = list_create();
+	strong_hash_consistency = list_create();
+	eventual_consistency = list_create();
+	memorias = list_create();
 	return;
 }
 
@@ -34,9 +44,17 @@ void crear_colas(){
 	return;
 }
 
+void agregar_memoria(int socket){
+	t_memoria* memoria = (t_memoria*)malloc(sizeof(t_memoria));
+	memoria->id_mem = getID(idMEM);
+	memoria->socket_mem = socket;
+	list_add(memorias,memoria);
+	return;
+}
+
 t_lcb* crear_lcb(){
 	t_lcb* new_lcb = (t_lcb*)malloc(sizeof(t_lcb));
-	new_lcb->id_lcb = idLCB++;
+	new_lcb->id_lcb = getID(idLCB);
 	new_lcb->estado = NEW;
 	new_lcb->program_counter = 0;
 	new_lcb->operaciones = list_create();
@@ -96,8 +114,9 @@ void destruir_operacion(t_LQL_operacion* op){
 
 void destruir_listas(){
 	list_destroy_and_destroy_elements(tablas,(void*) free_tabla);
-	list_destroy_and_destroy_elements(shc,(void*) free_memoria);
-	list_destroy_and_destroy_elements(cec,(void*) free_memoria);
+	list_destroy_and_destroy_elements(memorias,(void*) free_memoria);
+	list_destroy(strong_hash_consistency);
+	list_destroy(eventual_consistency);
 	return;
 }
 

@@ -4,6 +4,6 @@ CREATE partida SH 4 5000
 DESCRIBE personajes
 DROP personajes
 JOURNAL
-ADD MEMORY 5 TO SH
+ADD MEMORY 0 TO SHC
 RUN prueba.lql
 METRICS

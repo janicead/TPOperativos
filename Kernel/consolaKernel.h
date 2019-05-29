@@ -14,6 +14,8 @@ void setConsole();
 char** obtenerParametros(char* linea, int indice);
 void freeParametros(char** parametros);
 
+
+//FUNCIONES QUE SE EJECUTAN SEGUN EL COMANDO QUE SE INGRESE EN LA CONSOLA
 void crear_lql_select(char* nombre_tabla, int key);
 void crear_lql_insert(char* nombre_tabla, int key, char* value);
 void crear_lql_create(char* nombre_tabla, int compactation_time, int cant_particiones, char* consistencia);

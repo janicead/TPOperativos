@@ -101,28 +101,38 @@ t_config* archivoConfigKernel;
 t_queue* queue_ready;
 t_queue* queue_exit;
 t_list* tablas;
-t_list* shc;
-t_list* cec;
-t_memoria* sc;
+t_list* memorias;
+t_list* strong_hash_consistency;
+t_list* eventual_consistency;
+t_memoria* strong_consistency;
 
-void configure_logger_kernel();
-void destruir_operacion(t_LQL_operacion* op);
+//FUNCIONES DE CONFIGURACIÓN INICIAL
 void crear_colas();
 void crear_listas();
+void configure_logger_kernel();
+void inicializarIds();
+int getID(int id);
+
+//FUNCIONES DE GESTIÓN DE LCBs
 t_lcb* crear_lcb();
 void status_lcb(t_lcb*);
 void pasar_lcb_a_ready();
 void pasar_lcb_a_exit(t_lcb* lcb);
-void exit_gracefully(int exitInfo);
-void inicializarIds();
 void agregar_op_lcb(t_lcb* lcb,t_LQL_operacion* op);
 t_LQL_operacion* obtener_op_actual(t_lcb* lcb);
+
+//FUNCIONES DE MANEJO DE LAS TABLAS Y MEMORIAS
+void agregar_tabla(t_tabla* tabla);
+void agregar_memoria(int socket);
+
+//FUNCIONES DE LIBERAR MEMORIA
+void destruir_operacion(t_LQL_operacion* op);
+void exit_gracefully(int exitInfo);
+void free_operacion(t_LQL_operacion* op);
 void free_lcb(t_lcb* lcb);
 void destruir_listas();
 void destruir_colas();
 void free_memoria(t_memoria* memoria);
 void free_tabla(t_tabla* tabla);
-void agregar_tabla(t_tabla* tabla);
-void free_operacion(t_LQL_operacion* op);
 
 #endif /* KERNEL_COMMONS_H_ */

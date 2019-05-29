@@ -11,22 +11,24 @@ void iniciarValoresParaTest(){
 	tabla->consistencia = "SC";
 	tabla->nombre_tabla = "prueba";
 	agregar_tabla(tabla);
-	t_memoria* memoria = (t_memoria*) malloc(sizeof(t_memoria));
-	memoria->id_mem = 1;
-	memoria->socket_mem = 5;
-	memoria->valida = true;
-	sc = memoria;
+	t_tabla* tabla2 = (t_tabla*) malloc(sizeof(t_tabla));
+	tabla2->consistencia = "SC";
+	tabla2->nombre_tabla = "personajes";
+	agregar_tabla(tabla2);
+	agregar_memoria(5);
+	strong_consistency = obtener_memoria_por_id(0);
+	strong_consistency->valida = true;
 }
 
 int main(void) {
 	iniciar();
+	iniciarValoresParaTest();
 	//conectarAMemoria();
-	/*pruebaParser();
+	pruebaParser();
 	ejecutar();
 	ejecutar();
-	ejecutar();*/
-	//iniciarValoresParaTest();
-	setConsole();
+	ejecutar();
+	//setConsole();
 	exit_gracefully(EXIT_SUCCESS);
 }
 
