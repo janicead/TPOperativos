@@ -2,6 +2,8 @@
 
 void pruebaParser(){
 	FILE* script = abrirArchivo("/home/utnso/tp-2019-1c-BEFGN/prueba.lql");
+	FILE* script2 = abrirArchivo("/home/utnso/tp-2019-1c-BEFGN/prueba2.lql");
+	lql_run(script2);
 	lql_run(script);
 	return;
 }
@@ -15,9 +17,22 @@ void iniciarValoresParaTest(){
 	tabla2->consistencia = "SC";
 	tabla2->nombre_tabla = "personajes";
 	agregar_tabla(tabla2);
+	t_tabla* tabla3 = (t_tabla*) malloc(sizeof(t_tabla));
+	tabla3->consistencia = "EC";
+	tabla3->nombre_tabla = "Hash";
+	agregar_tabla(tabla3);
 	agregar_memoria(5);
+	agregar_memoria(6);
+	agregar_memoria(7);
+	agregar_memoria(8);
 	strong_consistency = obtener_memoria_por_id(0);
 	strong_consistency->valida = true;
+	list_add(strong_hash_consistency,obtener_memoria_por_id(1));
+	list_add(strong_hash_consistency,obtener_memoria_por_id(2));
+	list_add(strong_hash_consistency,obtener_memoria_por_id(3));
+	list_add(eventual_consistency,obtener_memoria_por_id(1));
+	list_add(eventual_consistency,obtener_memoria_por_id(2));
+	list_add(eventual_consistency,obtener_memoria_por_id(3));
 }
 
 int main(void) {
@@ -25,8 +40,6 @@ int main(void) {
 	iniciarValoresParaTest();
 	//conectarAMemoria();
 	pruebaParser();
-	ejecutar();
-	ejecutar();
 	ejecutar();
 	//setConsole();
 	exit_gracefully(EXIT_SUCCESS);
@@ -37,6 +50,7 @@ void iniciar(){
 	mostrarDatosArchivoConfigKernel();
 	puertoMemoria = int_to_string(configKernel.puerto_memoria);
 	inicializarIds();
+	srandom(time(NULL));
 	crear_colas();
 	crear_listas();
 	return;

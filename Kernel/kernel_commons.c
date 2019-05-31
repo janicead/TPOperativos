@@ -27,7 +27,7 @@ int getID(int id){
 		id++;
 		return aux;
 	}
-	return id++;
+	return ++id;
 }
 
 void crear_listas(){
@@ -46,7 +46,8 @@ void crear_colas(){
 
 void agregar_memoria(int socket){
 	t_memoria* memoria = (t_memoria*)malloc(sizeof(t_memoria));
-	memoria->id_mem = getID(idMEM);
+	memoria->id_mem = idMEM;
+	idMEM++;
 	memoria->socket_mem = socket;
 	list_add(memorias,memoria);
 	return;
@@ -54,7 +55,8 @@ void agregar_memoria(int socket){
 
 t_lcb* crear_lcb(){
 	t_lcb* new_lcb = (t_lcb*)malloc(sizeof(t_lcb));
-	new_lcb->id_lcb = getID(idLCB);
+	new_lcb->id_lcb = idLCB;
+	idLCB++;
 	new_lcb->estado = NEW;
 	new_lcb->program_counter = 0;
 	new_lcb->operaciones = list_create();

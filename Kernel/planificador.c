@@ -1,7 +1,7 @@
 #include "planificador.h"
 
 void ejecutar(){
-	if(!queue_is_empty(queue_ready)){// luego irá un semáforo
+	while(!queue_is_empty(queue_ready)){// luego irá un semáforo
 		t_lcb* lcb = queue_pop(queue_ready);
 		lcb->estado = EXEC;
 		int quantum = configKernel.quantum;
@@ -38,6 +38,7 @@ void ejecutar(){
 			}
 			lcb->program_counter++;
 			quantum--;
+			//usleep(configKernel.sleep_execution*1000);
 		}
 		if(lcb->program_counter >= list_size(lcb->operaciones)){
 			pasar_lcb_a_exit(lcb);
@@ -65,9 +66,10 @@ void lql_select(t_LQL_operacion* operacion){
 		free_tabla(tabla);
 		return;
 	}
-	t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia);
+	t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia,operacion->argumentos.SELECT.key);
 	if(!memoria->valida){
 		log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,operacion->argumentos.SELECT.nombre_tabla);
+		free_memoria(memoria);
 		return;
 	}
 	puts("SELECT OK");
@@ -82,9 +84,10 @@ void lql_insert(t_LQL_operacion* op){
 		free_tabla(tabla);
 		return;
 	}
-	t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia);
+	t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia,op->argumentos.INSERT.key);
 	if(!memoria->valida){
 		log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,op->argumentos.INSERT.nombre_tabla);
+		free_memoria(memoria);
 		return;
 	}
 	puts("INSERT OK");
@@ -92,6 +95,18 @@ void lql_insert(t_LQL_operacion* op){
 }
 
 void lql_create(t_LQL_operacion* op){
+	t_tabla* tabla = devuelve_tabla(op->argumentos.DROP.nombre_tabla);
+	if(tabla != NULL){
+		log_error(loggerKernel,"La tabla de nombre:  %s ya existe",op->argumentos.CREATE.nombre_tabla);
+		free_tabla(tabla);
+		return;
+	}
+	t_memoria* memoria = obtener_memoria_consistencia(op->argumentos.CREATE.tipo_consistencia,-1);
+	if(!memoria->valida){
+		log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",op->argumentos.CREATE.tipo_consistencia,op->argumentos.CREATE.nombre_tabla);
+		free_memoria(memoria);
+		return;
+	}
 	puts("CREATE OK");
 	return;
 }
@@ -101,6 +116,18 @@ void lql_describe(t_LQL_operacion* op){
 		puts("DESCRIBE TOTAL OK");
 	}
 	else{
+		t_tabla* tabla = devuelve_tabla(op->argumentos.DESCRIBE.nombre_tabla);
+		if(tabla == NULL){
+			log_error(loggerKernel,"La tabla de nombre:  %s no existe",op->argumentos.DESCRIBE.nombre_tabla);
+			free_tabla(tabla);
+			return;
+		}
+		t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia,-1);
+		if(!memoria->valida){
+			log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,op->argumentos.DESCRIBE.nombre_tabla);
+			free_memoria(memoria);
+			return;
+		}
 		puts("DESCRIBE OK");
 	}
 }
@@ -112,9 +139,10 @@ void lql_drop(t_LQL_operacion* op){
 		free_tabla(tabla);
 		return;
 	}
-	t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia);
+	t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia,-1);
 	if(!memoria->valida){
 		log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,op->argumentos.DROP.nombre_tabla);
+		free_memoria(memoria);
 		return;
 	}
 	puts("DROP OK");
@@ -133,6 +161,7 @@ void lql_add(t_LQL_operacion* op){
 	if(string_equals_ignore_case(op->argumentos.ADD.criterio,"SC")){
 		if(strong_consistency == NULL){
 			strong_consistency = obtener_memoria_por_id(op->argumentos.ADD.nro_memoria);
+			strong_consistency->valida = true;
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Strong Consistency",strong_consistency->id_mem);
 			return;
 		}
@@ -147,13 +176,13 @@ void lql_add(t_LQL_operacion* op){
 			return;
 		}
 		else{
-			lql_journal(strong_hash_consistency);
 			list_add(strong_hash_consistency,obtener_memoria_por_id(op->argumentos.ADD.nro_memoria));
+			lql_journal(strong_hash_consistency);
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Strong Hash Consistency",op->argumentos.ADD.nro_memoria);
 			return;
 		}
 	}
-	if(string_equals_ignore_case(op->argumentos.ADD.criterio,"EV")){
+	if(string_equals_ignore_case(op->argumentos.ADD.criterio,"EC")){
 		if(memoria_existente(eventual_consistency,op->argumentos.ADD.nro_memoria)){
 			log_error(loggerKernel,"La memoria %d ya se encuentra asignada al criterio Eventual Consistency",op->argumentos.ADD.nro_memoria);
 			return;
@@ -208,27 +237,47 @@ t_tabla* devuelve_tabla(char* nombre){
 	return list_find(tablas,(void*) same_table);
 }
 
-t_memoria* obtener_memoria_consistencia(char* consistencia){
-	t_memoria* mem = (t_memoria*)malloc(sizeof(t_memoria));
-
+t_memoria* obtener_memoria_consistencia(char* consistencia, int key){
+	t_memoria* mem = NULL;
 	if(string_equals_ignore_case("SC",consistencia)){
+		if(strong_consistency == NULL){
+			mem = (t_memoria*)malloc(sizeof(t_memoria));
+			mem->valida = false;
+			return mem;
+		}
 		free_memoria(mem);
 		return strong_consistency;
 	}
 	else if(string_equals_ignore_case("SHC",consistencia)){
 		if(!list_is_empty(strong_hash_consistency)){
-			mem = list_get(strong_hash_consistency,0); // SOLO TEMPORAL, FUNCION DE HASH
+			if(key >= 0){
+				mem = hash_memory(key);
+			}
+			else{
+				mem = list_get(strong_hash_consistency,0);
+			}
 			mem->valida = true;
 			return mem;
 		}
+		else{
+			mem = (t_memoria*)malloc(sizeof(t_memoria));
+			mem->valida = false;
+			return mem;
+		}
 	}
-	else if(string_equals_ignore_case("CEC",consistencia)){
+	else if(string_equals_ignore_case("EC",consistencia)){
 		if(!list_is_empty(eventual_consistency)){
-			mem = list_get(eventual_consistency,0);
+			mem = random_memory();
 			mem->valida = true;
 			return mem;
 		}
+		else{
+			mem = (t_memoria*)malloc(sizeof(t_memoria));
+			mem->valida = false;
+			return mem;
+		}
 	}
+	mem = (t_memoria*)malloc(sizeof(t_memoria));
 	mem->valida = false;
 	return mem;
 }
@@ -249,4 +298,13 @@ bool memoria_existente(t_list* l_memorias,int id){
 	return list_any_satisfy(l_memorias,(void*) same_id);
 }
 
+t_memoria* hash_memory(int key){
+	int index = key % list_size(strong_hash_consistency);
+	return list_get(strong_hash_consistency,index);
+}
+
+t_memoria* random_memory(){
+	int index = random() % list_size(eventual_consistency);
+	return list_get(eventual_consistency,index);
+}
 

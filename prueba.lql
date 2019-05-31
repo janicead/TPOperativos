@@ -1,6 +1,6 @@
 SELECT personajes 2
 INSERT personajes 5 "Zed"
-CREATE partida SH 4 5000
+CREATE partida SHC 4 5000
 DESCRIBE personajes
 DROP personajes
 JOURNAL

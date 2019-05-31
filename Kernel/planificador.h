@@ -10,9 +10,11 @@
 void ejecutar();
 
 //FUNCIONES SOBRE LAS MEMORIAS
-t_memoria* obtener_memoria_consistencia(char* consistencia);
+t_memoria* obtener_memoria_consistencia(char* consistencia,int key);
 t_memoria* obtener_memoria_por_id(int id);
 bool memoria_existente(t_list* l_memorias,int id);
+t_memoria* hash_memory(int key);
+t_memoria* random_memory();
 
 //FUNCIONES DE COMANDOS
 void lql_select(t_LQL_operacion* operacion);
