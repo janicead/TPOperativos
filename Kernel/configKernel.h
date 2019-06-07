@@ -10,7 +10,7 @@
 #include "kernel_commons.h"
 
 
-#define PATH_KERNEL_CONFIG "/home/utnso/tp-2019-1c-BEFGN/Kernel/Config/kernel.config"
+#define PATH_KERNEL_CONFIG "/home/utnso/Kernel/Kernel/Config/kernel.config"
 
 typedef struct
 {

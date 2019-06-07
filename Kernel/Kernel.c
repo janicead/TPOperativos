@@ -1,8 +1,8 @@
 #include "Kernel.h"
 
 void pruebaParser(){
-	FILE* script = abrirArchivo("/home/utnso/tp-2019-1c-BEFGN/prueba.lql");
-	FILE* script2 = abrirArchivo("/home/utnso/tp-2019-1c-BEFGN/prueba2.lql");
+	FILE* script = abrirArchivo("/home/utnso/Kernel/prueba.lql");
+	FILE* script2 = abrirArchivo("/home/utnso/Kernel/prueba2.lql");
 	lql_run(script2);
 	lql_run(script);
 	return;
@@ -39,13 +39,14 @@ int main(void) {
 	iniciar();
 	iniciarValoresParaTest();
 	//conectarAMemoria();
+	crear_hilos_iniciales();
 	pruebaParser();
-	ejecutar();
-	//setConsole();
+	pthread_join(consola,NULL);
 	exit_gracefully(EXIT_SUCCESS);
 }
 
 void iniciar(){
+	iniciar_semaforos();
 	verificarArchivoConfigKernel();
 	mostrarDatosArchivoConfigKernel();
 	puertoMemoria = int_to_string(configKernel.puerto_memoria);
@@ -53,6 +54,18 @@ void iniciar(){
 	srandom(time(NULL));
 	crear_colas();
 	crear_listas();
+	return;
+}
+
+void crear_hilos_iniciales(){
+	pthread_create(&consola,NULL,setConsole,NULL);
+	pthread_create(&timer_thread,NULL,timer,NULL);
+	pthread_detach(timer_thread);
+	hilos = malloc(sizeof(pthread_t));
+	for(int i = 0; i<configKernel.multiprocesamiento; i++){
+		pthread_create(&hilos[i],NULL,ejecutar,NULL);
+		pthread_detach(hilos[i]);
+	}
 	return;
 }
 

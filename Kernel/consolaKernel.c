@@ -1,6 +1,6 @@
 #include "consolaKernel.h"
 
-void setConsole(){
+void* setConsole(){
 	char* linea;
 	int cantidadParametros;
 
@@ -142,16 +142,15 @@ void setConsole(){
 			log_info(loggerKernel,"La operación metrics fue ingresada la cola de ready");
 		}
 		else if(!strncmp(linea,"exit",4) || !strncmp(linea,"EXIT",4)){
-			exit_gracefully(EXIT_SUCCESS);
 			free(linea);
-			break;
+			return NULL;
 		}
 		else{
 			log_error(loggerKernel,"No se ingreso ningun comando valido");
 		}
 		free(linea);
 	}
-	//return NULL;
+	return NULL;
 }
 
 char** obtenerParametros(char* linea, int indice){

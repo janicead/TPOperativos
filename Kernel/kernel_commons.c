@@ -6,12 +6,17 @@ void configure_logger_kernel(){
 }
 
 void exit_gracefully(int exitInfo){
+	pthread_mutex_lock(&log_sem);
 	log_destroy(loggerKernel);
+	pthread_mutex_unlock(&log_sem);
+	pthread_mutex_lock(&config_sem);
 	config_destroy(archivoConfigKernel);
-	//free_memoria(strong_consistency);
+	pthread_mutex_unlock(&config_sem);
 	free(puertoMemoria);
 	destruir_colas();
 	destruir_listas();
+	destruir_semaforos();
+	free(hilos);
 	exit(exitInfo);
 }
 
@@ -19,15 +24,6 @@ void inicializarIds(){
 	idLCB = 0;
 	idMEM = 0;
 	return;
-}
-
-int getID(int id){
-	if(id == 0){
-		int aux = id;
-		id++;
-		return aux;
-	}
-	return ++id;
 }
 
 void crear_listas(){
@@ -44,12 +40,28 @@ void crear_colas(){
 	return;
 }
 
+void iniciar_semaforos(){
+	pthread_mutex_init(&queue_ready_sem,NULL);
+	pthread_mutex_init(&queue_exit_sem,NULL);
+	pthread_mutex_init(&config_sem,NULL);
+	pthread_mutex_init(&memorias_sem,NULL);
+	pthread_mutex_init(&strong_consistency_sem,NULL);
+	pthread_mutex_init(&strong_hash_consistency_sem,NULL);
+	pthread_mutex_init(&eventual_consistency_sem,NULL);
+	pthread_mutex_init(&tablas_sem,NULL);
+	pthread_mutex_init(&log_sem,NULL);
+	sem_init(&execute_sem,0,0);
+	return;
+}
+
 void agregar_memoria(int socket){
 	t_memoria* memoria = (t_memoria*)malloc(sizeof(t_memoria));
 	memoria->id_mem = idMEM;
 	idMEM++;
 	memoria->socket_mem = socket;
+	pthread_mutex_lock(&memorias_sem);
 	list_add(memorias,memoria);
+	pthread_mutex_unlock(&memorias_sem);
 	return;
 }
 
@@ -72,13 +84,18 @@ void status_lcb(t_lcb* lcb){
 
 void pasar_lcb_a_ready(t_lcb* lcb){
 	lcb->estado = READY;
+	pthread_mutex_lock(&queue_ready_sem);
 	queue_push(queue_ready,lcb);
+	pthread_mutex_unlock(&queue_ready_sem);
+	sem_post(&execute_sem);
 	return;
 }
 
 void pasar_lcb_a_exit(t_lcb* lcb){
 	lcb->estado = EXIT;
+	pthread_mutex_lock(&queue_exit_sem);
 	queue_push(queue_exit,lcb);
+	pthread_mutex_unlock(&queue_exit_sem);
 	return;
 }
 
@@ -92,7 +109,9 @@ void agregar_op_lcb(t_lcb* lcb,t_LQL_operacion* op){
 }
 
 void agregar_tabla(t_tabla* tabla){
+	pthread_mutex_lock(&tablas_sem);
 	list_add(tablas,tabla);
+	pthread_mutex_unlock(&tablas_sem);
 	return;
 }
 
@@ -115,16 +134,41 @@ void destruir_operacion(t_LQL_operacion* op){
 }
 
 void destruir_listas(){
+	pthread_mutex_lock(&tablas_sem);
 	list_destroy_and_destroy_elements(tablas,(void*) free_tabla);
+	pthread_mutex_unlock(&tablas_sem);
+	pthread_mutex_lock(&memorias_sem);
 	list_destroy_and_destroy_elements(memorias,(void*) free_memoria);
+	pthread_mutex_unlock(&memorias_sem);
+	pthread_mutex_lock(&strong_hash_consistency_sem);
 	list_destroy(strong_hash_consistency);
+	pthread_mutex_unlock(&strong_hash_consistency_sem);
+	pthread_mutex_lock(&eventual_consistency_sem);
 	list_destroy(eventual_consistency);
+	pthread_mutex_unlock(&eventual_consistency_sem);
 	return;
 }
 
 void destruir_colas(){
+	pthread_mutex_lock(&queue_ready_sem);
 	queue_destroy_and_destroy_elements(queue_ready,(void*) free_lcb);
+	pthread_mutex_unlock(&queue_ready_sem);
+	pthread_mutex_lock(&queue_exit_sem);
 	queue_destroy_and_destroy_elements(queue_exit,(void*) free_lcb);
+	pthread_mutex_unlock(&queue_exit_sem);
+	return;
+}
+
+void destruir_semaforos(){
+	pthread_mutex_destroy(&queue_ready_sem);
+	pthread_mutex_destroy(&queue_exit_sem);
+	pthread_mutex_destroy(&config_sem);
+	pthread_mutex_destroy(&memorias_sem);
+	pthread_mutex_destroy(&strong_consistency_sem);
+	pthread_mutex_destroy(&strong_hash_consistency_sem);
+	pthread_mutex_destroy(&eventual_consistency_sem);
+	pthread_mutex_destroy(&tablas_sem);
+	sem_destroy(&execute_sem);
 	return;
 }
 

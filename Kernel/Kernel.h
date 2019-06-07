@@ -19,6 +19,7 @@ char* ipMemoria;
 
 void iniciar();
 void conectarAMemoria();
+void crear_hilos_iniciales();
 
 
 #endif /* KERNEL_H_ */

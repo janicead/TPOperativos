@@ -7,7 +7,8 @@
 #include <commons/collections/list.h>
 #include <stdbool.h>
 
-void ejecutar();
+
+void* ejecutar();
 
 //FUNCIONES SOBRE LAS MEMORIAS
 t_memoria* obtener_memoria_consistencia(char* consistencia,int key);
@@ -26,6 +27,7 @@ void lql_journal(t_list* lista_mem);
 void lql_add(t_LQL_operacion* op);
 void lql_run(FILE* archivo);
 void lql_metrics();
+void* timer();
 
 //FUNCIONES EXTRA
 FILE* abrirArchivo(char* path);

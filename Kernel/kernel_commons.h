@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <pthread.h>
+#include <semaphore.h>
 
 /**
 * @NAME: t_LQL_operacion
@@ -96,22 +98,45 @@ typedef struct{
 
 char* puertoMemoria;
 int idLCB, idMEM;
+
+//VARIABLES DE CONFIGURACIÓN
 t_log* loggerKernel;
 t_config* archivoConfigKernel;
+
+//COLAS
 t_queue* queue_ready;
 t_queue* queue_exit;
+
+//LISTAS
 t_list* tablas;
 t_list* memorias;
 t_list* strong_hash_consistency;
 t_list* eventual_consistency;
 t_memoria* strong_consistency;
 
+//SEMÁFOROS
+pthread_mutex_t queue_ready_sem;
+pthread_mutex_t queue_exit_sem;
+pthread_mutex_t config_sem;
+pthread_mutex_t memorias_sem;
+pthread_mutex_t strong_consistency_sem;
+pthread_mutex_t strong_hash_consistency_sem;
+pthread_mutex_t eventual_consistency_sem;
+pthread_mutex_t tablas_sem;
+pthread_mutex_t log_sem;
+sem_t execute_sem;
+
+//HILOS
+pthread_t* hilos;
+pthread_t consola;
+pthread_t timer_thread;
+
 //FUNCIONES DE CONFIGURACIÓN INICIAL
 void crear_colas();
 void crear_listas();
 void configure_logger_kernel();
 void inicializarIds();
-int getID(int id);
+void iniciar_semaforos();
 
 //FUNCIONES DE GESTIÓN DE LCBs
 t_lcb* crear_lcb();
@@ -132,6 +157,7 @@ void free_operacion(t_LQL_operacion* op);
 void free_lcb(t_lcb* lcb);
 void destruir_listas();
 void destruir_colas();
+void destruir_semaforos();
 void free_memoria(t_memoria* memoria);
 void free_tabla(t_tabla* tabla);
 

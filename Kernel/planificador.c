@@ -1,10 +1,16 @@
 #include "planificador.h"
 
-void ejecutar(){
-	while(!queue_is_empty(queue_ready)){// luego irá un semáforo
+void* ejecutar(){
+	while(1){
+		sem_wait(&execute_sem);
+		pthread_mutex_lock(&queue_ready_sem);
 		t_lcb* lcb = queue_pop(queue_ready);
+		pthread_mutex_unlock(&queue_ready_sem);
 		lcb->estado = EXEC;
+		pthread_mutex_lock(&config_sem);
 		int quantum = configKernel.quantum;
+		int sleep_time = configKernel.sleep_execution;
+		pthread_mutex_unlock(&config_sem);
 		while(quantum > 0 && lcb->program_counter < list_size(lcb->operaciones)){
 			t_LQL_operacion* operacion = obtener_op_actual(lcb);
 			switch(operacion->keyword){
@@ -24,7 +30,9 @@ void ejecutar(){
 					lql_drop(operacion);
 					break;
 				case JOURNAL:
+					pthread_mutex_lock(&memorias_sem);
 					lql_journal(memorias);
+					pthread_mutex_unlock(&memorias_sem);
 					break;
 				case ADD:
 					lql_add(operacion);
@@ -38,7 +46,7 @@ void ejecutar(){
 			}
 			lcb->program_counter++;
 			quantum--;
-			//usleep(configKernel.sleep_execution*1000);
+			usleep(sleep_time*100);
 		}
 		if(lcb->program_counter >= list_size(lcb->operaciones)){
 			pasar_lcb_a_exit(lcb);
@@ -47,6 +55,7 @@ void ejecutar(){
 			pasar_lcb_a_ready(lcb);
 		}
 	}
+	return NULL;
 }
 
 
@@ -60,7 +69,9 @@ FILE* abrirArchivo(char* path){
 }
 
 void lql_select(t_LQL_operacion* operacion){
+	pthread_mutex_lock(&tablas_sem);
 	t_tabla* tabla = devuelve_tabla(operacion->argumentos.SELECT.nombre_tabla);
+	pthread_mutex_unlock(&tablas_sem);
 	if(tabla == NULL){
 		log_error(loggerKernel,"La tabla de nombre:  %s no existe",operacion->argumentos.SELECT.nombre_tabla);
 		free_tabla(tabla);
@@ -78,7 +89,9 @@ void lql_select(t_LQL_operacion* operacion){
 }
 
 void lql_insert(t_LQL_operacion* op){
+	pthread_mutex_lock(&tablas_sem);
 	t_tabla* tabla = devuelve_tabla(op->argumentos.INSERT.nombre_tabla);
+	pthread_mutex_unlock(&tablas_sem);
 	if(tabla == NULL){
 		log_error(loggerKernel,"La tabla de nombre:  %s no existe",op->argumentos.INSERT.nombre_tabla);
 		free_tabla(tabla);
@@ -95,7 +108,9 @@ void lql_insert(t_LQL_operacion* op){
 }
 
 void lql_create(t_LQL_operacion* op){
+	pthread_mutex_lock(&tablas_sem);
 	t_tabla* tabla = devuelve_tabla(op->argumentos.DROP.nombre_tabla);
+	pthread_mutex_unlock(&tablas_sem);
 	if(tabla != NULL){
 		log_error(loggerKernel,"La tabla de nombre:  %s ya existe",op->argumentos.CREATE.nombre_tabla);
 		free_tabla(tabla);
@@ -116,7 +131,9 @@ void lql_describe(t_LQL_operacion* op){
 		puts("DESCRIBE TOTAL OK");
 	}
 	else{
+		pthread_mutex_lock(&tablas_sem);
 		t_tabla* tabla = devuelve_tabla(op->argumentos.DESCRIBE.nombre_tabla);
+		pthread_mutex_unlock(&tablas_sem);
 		if(tabla == NULL){
 			log_error(loggerKernel,"La tabla de nombre:  %s no existe",op->argumentos.DESCRIBE.nombre_tabla);
 			free_tabla(tabla);
@@ -133,7 +150,9 @@ void lql_describe(t_LQL_operacion* op){
 }
 
 void lql_drop(t_LQL_operacion* op){
+	pthread_mutex_lock(&tablas_sem);
 	t_tabla* tabla = devuelve_tabla(op->argumentos.DROP.nombre_tabla);
+	pthread_mutex_unlock(&tablas_sem);
 	if(tabla == NULL){
 		log_error(loggerKernel,"La tabla de nombre:  %s no existe",op->argumentos.DROP.nombre_tabla);
 		free_tabla(tabla);
@@ -159,37 +178,46 @@ void lql_journal(t_list* list_mem){
 
 void lql_add(t_LQL_operacion* op){
 	if(string_equals_ignore_case(op->argumentos.ADD.criterio,"SC")){
+		pthread_mutex_lock(&strong_consistency_sem);
 		if(strong_consistency == NULL){
 			strong_consistency = obtener_memoria_por_id(op->argumentos.ADD.nro_memoria);
 			strong_consistency->valida = true;
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Strong Consistency",strong_consistency->id_mem);
+			pthread_mutex_unlock(&strong_consistency_sem);
 			return;
 		}
 		else{
 			log_error(loggerKernel,"El criterio Strong Consistency ya posee una memoria asociada");
+			pthread_mutex_unlock(&strong_consistency_sem);
 			return;
 		}
 	}
 	if(string_equals_ignore_case(op->argumentos.ADD.criterio,"SHC")){
+		pthread_mutex_lock(&strong_hash_consistency_sem);
 		if(memoria_existente(strong_hash_consistency,op->argumentos.ADD.nro_memoria)){
 			log_error(loggerKernel,"La memoria %d ya se encuentra asignada al criterio Strong Hash Consistency",op->argumentos.ADD.nro_memoria);
+			pthread_mutex_unlock(&strong_hash_consistency_sem);
 			return;
 		}
 		else{
 			list_add(strong_hash_consistency,obtener_memoria_por_id(op->argumentos.ADD.nro_memoria));
 			lql_journal(strong_hash_consistency);
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Strong Hash Consistency",op->argumentos.ADD.nro_memoria);
+			pthread_mutex_unlock(&strong_hash_consistency_sem);
 			return;
 		}
 	}
 	if(string_equals_ignore_case(op->argumentos.ADD.criterio,"EC")){
+		pthread_mutex_lock(&eventual_consistency_sem);
 		if(memoria_existente(eventual_consistency,op->argumentos.ADD.nro_memoria)){
 			log_error(loggerKernel,"La memoria %d ya se encuentra asignada al criterio Eventual Consistency",op->argumentos.ADD.nro_memoria);
+			pthread_mutex_unlock(&eventual_consistency_sem);
 			return;
 		}
 		else{
 			list_add(eventual_consistency,obtener_memoria_por_id(op->argumentos.ADD.nro_memoria));
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Eventual Consistency",op->argumentos.ADD.nro_memoria);
+			pthread_mutex_unlock(&eventual_consistency_sem);
 			return;
 		}
 	}
@@ -228,6 +256,17 @@ void lql_metrics(){
 	return;
 }
 
+void* timer(){
+	while(1){
+		usleep(30000000);
+		lql_metrics();
+		pthread_mutex_lock(&queue_exit_sem);
+		queue_clean_and_destroy_elements(queue_exit,(void*) free_lcb);
+		pthread_mutex_unlock(&queue_exit_sem);
+	}
+	return NULL;
+}
+
 t_tabla* devuelve_tabla(char* nombre){
 
 	bool same_table(t_tabla* table){
@@ -240,38 +279,48 @@ t_tabla* devuelve_tabla(char* nombre){
 t_memoria* obtener_memoria_consistencia(char* consistencia, int key){
 	t_memoria* mem = NULL;
 	if(string_equals_ignore_case("SC",consistencia)){
+		pthread_mutex_lock(&strong_consistency_sem);
 		if(strong_consistency == NULL){
+			pthread_mutex_unlock(&strong_consistency_sem);
 			mem = (t_memoria*)malloc(sizeof(t_memoria));
 			mem->valida = false;
 			return mem;
 		}
-		free_memoria(mem);
-		return strong_consistency;
+		mem = strong_consistency;
+		pthread_mutex_unlock(&strong_consistency_sem);
+		return mem;
 	}
 	else if(string_equals_ignore_case("SHC",consistencia)){
+		pthread_mutex_lock(&strong_hash_consistency_sem);
 		if(!list_is_empty(strong_hash_consistency)){
 			if(key >= 0){
 				mem = hash_memory(key);
+				pthread_mutex_unlock(&strong_hash_consistency_sem);
 			}
 			else{
 				mem = list_get(strong_hash_consistency,0);
+				pthread_mutex_unlock(&strong_hash_consistency_sem);
 			}
 			mem->valida = true;
 			return mem;
 		}
 		else{
+			pthread_mutex_unlock(&strong_hash_consistency_sem);
 			mem = (t_memoria*)malloc(sizeof(t_memoria));
 			mem->valida = false;
 			return mem;
 		}
 	}
 	else if(string_equals_ignore_case("EC",consistencia)){
+		pthread_mutex_lock(&eventual_consistency_sem);
 		if(!list_is_empty(eventual_consistency)){
 			mem = random_memory();
+			pthread_mutex_unlock(&eventual_consistency_sem);
 			mem->valida = true;
 			return mem;
 		}
 		else{
+			pthread_mutex_unlock(&eventual_consistency_sem);
 			mem = (t_memoria*)malloc(sizeof(t_memoria));
 			mem->valida = false;
 			return mem;
