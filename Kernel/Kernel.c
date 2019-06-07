@@ -1,8 +1,8 @@
 #include "Kernel.h"
 
 void pruebaParser(){
-	FILE* script = abrirArchivo("/home/utnso/Kernel/prueba.lql");
-	FILE* script2 = abrirArchivo("/home/utnso/Kernel/prueba2.lql");
+	FILE* script = abrirArchivo("/home/utnso/tp-2019-1c-BEFGN/prueba.lql");
+	FILE* script2 = abrirArchivo("/home/utnso/tp-2019-1c-BEFGN/prueba2.lql");
 	lql_run(script2);
 	lql_run(script);
 	return;
