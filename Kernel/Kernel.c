@@ -61,7 +61,7 @@ void crear_hilos_iniciales(){
 	pthread_create(&consola,NULL,setConsole,NULL);
 	pthread_create(&timer_thread,NULL,timer,NULL);
 	pthread_detach(timer_thread);
-	hilos = malloc(sizeof(pthread_t));
+	hilos = malloc(configKernel.multiprocesamiento * sizeof(pthread_t));
 	for(int i = 0; i<configKernel.multiprocesamiento; i++){
 		pthread_create(&hilos[i],NULL,ejecutar,NULL);
 		pthread_detach(hilos[i]);
