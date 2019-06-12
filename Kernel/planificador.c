@@ -295,13 +295,12 @@ t_memoria* obtener_memoria_consistencia(char* consistencia, int key){
 		if(!list_is_empty(strong_hash_consistency)){
 			if(key >= 0){
 				mem = hash_memory(key);
-				pthread_mutex_unlock(&strong_hash_consistency_sem);
 			}
 			else{
 				mem = list_get(strong_hash_consistency,0);
-				pthread_mutex_unlock(&strong_hash_consistency_sem);
 			}
 			mem->valida = true;
+			pthread_mutex_unlock(&strong_hash_consistency_sem);
 			return mem;
 		}
 		else{
@@ -315,8 +314,8 @@ t_memoria* obtener_memoria_consistencia(char* consistencia, int key){
 		pthread_mutex_lock(&eventual_consistency_sem);
 		if(!list_is_empty(eventual_consistency)){
 			mem = random_memory();
-			pthread_mutex_unlock(&eventual_consistency_sem);
 			mem->valida = true;
+			pthread_mutex_unlock(&eventual_consistency_sem);
 			return mem;
 		}
 		else{

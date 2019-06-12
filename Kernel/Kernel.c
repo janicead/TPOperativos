@@ -65,7 +65,6 @@ void crear_hilos_iniciales(){
 	for(int i = 0; i<configKernel.multiprocesamiento; i++){
 		pthread_create(&hilos[i],NULL,ejecutar,NULL);
 		pthread_detach(hilos[i]);
-		puts("hilo creado");
 	}
 	return;
 }
