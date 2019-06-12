@@ -2,41 +2,40 @@
 #define CONFIGMEMORIA_H_
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
+#include <stdlib.h>
 #include <commons/log.h>
-#include <commons/string.h>
-#include "memoria_commons.h"
+#include <commons/collections/list.h>
+#include <commons/config.h>
+#include <bibliotecaFunciones/usoVariado.h>
 
-
-#define PATH_MEMORIA_CONFIG "/home/utnso/tp-2019-1c-BEFGN/Memoria/Config/memoria.config"
+#define configMemoriaDir "/home/utnso/workspace/tp-2019-1c-BEFGN/Memoria/Config/memoria.conf"
+t_log *loggerMemoria;
+t_config *archivoConfigMemoria;
 
 typedef struct
 {
-	int puerto;
-	char* ip_fs; //ip del file system
-	int puerto_fs;
-	char** ip_seeds;
-	char** puerto_seeds;
-	int retardo_mem;
-	int retardo_fs;
-	int tam_mem;
-	int retardo_journal;
-	int retardo_gossiping;
-	int memory_number;
+	int puertoDeEscucha;
+	char* ipDeEscucha;
+	char *ipDelFileSystem;
+	int puertoDelFileSystem;
+	char **ipDeSeeds;
+	int *puertosDeSeeds[150];
+	int retardoAccesoMemoriaPrincipal;
+	int retardoAccesoFileSystem;
+	int tamanioMemoria;
+	int tiempoJournal;
+	int tiempoGossiping;
+	int numeroDeMemoria;
 
 }t_ConfigMemoria;
 
 t_ConfigMemoria configMemoria;
 
-int leerConfigMemoria();
-void verificarArchivoConfigMemoria();
-void mostrarDatosArchivoConfigMemoria();
-/**
- * 		PARA LIBERAR LA MEMORIA DE LOS CHAR**
- */
-void freeDatosConfigMemoria();
+t_ConfigMemoria leerConfigMemoria(void);
+void mostrarDatosArchivoConfig();
+void configurarLoggerMemoria();
+void exit_gracefully(int exitInfo);
 
 #endif /* CONFIGMEMORIA_H_ */
+

@@ -8,11 +8,10 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <pthread.h>
-#include "memoria_commons.h"
-#include <commons/string.h>
+#include "configMemoria.h"
+#include <bibliotecaFunciones/usoVariado.h>
 
-void setConsole();
-char** obtenerParametros(char* linea, int indice);
-void freeParametros(char** parametros);
+void* crearConsolaMemoria();
+
 
 #endif /* CONSOLAMEMORIA_H_ */
