@@ -1,8 +1,8 @@
 #include "Kernel.h"
 
 void pruebaParser(){
-	FILE* script = abrirArchivo("/home/utnso/tp-2019-1c-BEFGN/prueba.lql");
-	FILE* script2 = abrirArchivo("/home/utnso/tp-2019-1c-BEFGN/prueba2.lql");
+	FILE* script = abrirArchivo("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba.lql");
+	FILE* script2 = abrirArchivo("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba2.lql");
 	lql_run(script2);
 	lql_run(script);
 	return;
@@ -71,7 +71,7 @@ void crear_hilos_iniciales(){
 
 void conectarAMemoria(){
 	char * buffer[1024];
-	int socketMemoria = conectarAlServidor(configKernel.ip_memoria,puertoMemoria);
+	int socketMemoria = conectarAlServidor(configKernel.ip_memoria,puertoMemoria, loggerKernel);
 	send(socketMemoria,"Hola Memoria",strlen("Hola Memoria"),0);
 	int bytes = recv(socketMemoria,buffer,1024,0);
 	buffer[bytes] = '\0';
