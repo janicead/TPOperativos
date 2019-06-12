@@ -8,11 +8,11 @@
 #include <netinet/in.h>
 #include <string.h>
 #include "configKernel.h"
-#include <sockets.h>
+#include <bibliotecaFunciones/sockets.h>
 #include "consolaKernel.h"
 #include "planificador.h"
 #include "kernel_commons.h"
-#include <types.h>
+#include <bibliotecaFunciones/types.h>
 
 
 char* ipMemoria;
