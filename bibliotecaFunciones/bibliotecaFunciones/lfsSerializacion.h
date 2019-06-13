@@ -21,62 +21,97 @@
 //#################################
 typedef struct
 {
-	uint32_t longPath;
-	char *Path;
-}t_ValidarPath;
+	uint32_t longString;
+	char *String;
+}t_UnString;
 
-t_ValidarPath *definirT_ValidarPath(char *unPath);
-char *serializarT_ValidarPath(t_ValidarPath *structASerializar);
+t_UnString *definirT_UnString(char *unString);
+char *serializarT_UnString(t_UnString *structASerializar);
 /*LIBERA LA MEMORIA DE LO Q DEVUELVE*/
-t_ValidarPath *deserializarAT_ValidarPath(char *t_ValidarPathSerializado);
+t_UnString *deserializarT_UnString(char *t_UnStringSerializado);
 
-void freeT_ValidarPath(t_ValidarPath *unStruct);
-
-//#################################
-typedef struct
-{
-	uint32_t NcantidadBytes;
-	uint32_t longPath;
-	char *Path;
-}t_CrearArchivo;
-
-t_CrearArchivo *definirT_CrearArchivo(char *unPath, int nCantidadDeBytes);//
-char *serializarT_CrearArchivo(t_CrearArchivo *structASerializar);
-t_CrearArchivo *deserializarAT_CrearArchivo(char *t_CrearArchivoSerializado);
-
-void freeT_CrearArchivo(t_CrearArchivo *unStruct);
+void freeT_UnString(t_UnString *unStruct);
 
 //#################################
 typedef struct
 {
-	uint32_t Offset;
-	uint32_t Size;
-	uint32_t longPath;
-	char *Path;
-}t_ObtenerDatos;
+	uint32_t KEY;
+	uint32_t longNombre;
+	char *nombreTabla;
+}t_SELECT;
 
-t_ObtenerDatos *definirT_ObtenerDatos(char *unPath, int offset, int size);
-char *serializarT_ObtenerDatos(t_ObtenerDatos *structASerializar);
-t_ObtenerDatos *deserializarAT_ObtenerDatos(char *t_ObtenerDatosSerializado);
+t_SELECT *definirT_SELECT(char* nombreTabla, int unaKey);//
+char *serializarT_SELECT(t_SELECT *structASerializar);
+t_SELECT *deserializarT_SELECT(char *t_SELECTSerializado);
 
-void freeT_ObtenerDatos(t_ObtenerDatos *unStruct);
+void freeT_SELECT(t_SELECT *unStruct);
 
 //#################################
 typedef struct
 {
-	uint32_t Offset;
-	uint32_t Size;
-	uint32_t longPath;
-	uint32_t longBuffer;
-	char *Path;
-	char *Buffer;
-}t_GuardarDatos;
+	uint32_t KEY;
+	uint32_t timeStamp;
+	uint32_t longNombre;
+	uint32_t longValue;
+	char *nombreTabla;
+	char *Value;
+}t_INSERT;
 
-t_GuardarDatos *definirT_GuardarDatos(char *unPath, int offset, int size, char *buffer);
-char *serializarT_GuardarDatos(t_GuardarDatos *structASerializar);
-t_GuardarDatos *deserializarAT_GuardarDatos(char *t_GuardarDatosSerializado);
+t_INSERT *definirT_INSERT(char *nombreTabla, int unaKey, char* unValue, int timeStamp);
+char *serializarT_INSERT(t_INSERT *structASerializar);
+t_INSERT *deserializarT_INSERT(char *t_INSERTSerializado);
 
-void freeT_GuardarDatos(t_GuardarDatos *unStruct);
+void freeT_INSERT(t_INSERT *unStruct);
+
+//#################################
+typedef struct
+{
+	uint32_t nParticiones;
+	uint32_t tiempoCompactacion;
+	uint32_t longNombre;
+	uint32_t longConsistencia;
+	char *nombreTabla;
+	char *tipoConsistencia;
+}t_CREATE;
+
+t_CREATE *definirT_CREATE(char *nombreTabla, char* tipoConsistencia, int nroParticiones, int tiempoCompactacion);
+char *serializarT_CREATE(t_CREATE *structASerializar);
+t_CREATE *deserializarT_CREATE(char *t_CREATESerializado);
+
+void freeT_CREATE(t_CREATE *unStruct);
+
+//#################################
+typedef struct
+{
+	uint32_t longNombre;
+	char *nombreTabla;
+}t_DESCRIBE;
+
+t_DESCRIBE *definirT_DESCRIBE(char *unNombreTabla);
+char *serializarT_DESCRIBE(t_DESCRIBE *structASerializar);
+/*LIBERA LA MEMORIA DE LO Q DEVUELVE*/
+t_DESCRIBE *deserializarT_DESCRIBE(char *t_DESCRIBESerializado);
+
+void freeT_DESCRIBE(t_DESCRIBE *unStruct);
+
+//#################################
+typedef struct
+{
+	uint32_t longNombre;
+	char *nombreTabla;
+}t_DROP;
+
+t_DROP *definirT_DROP(char *unNombreTabla);
+char *serializarT_DROP(t_DROP *structASerializar);
+/*LIBERA LA MEMORIA DE LO Q DEVUELVE*/
+t_DROP *deserializarT_DROP(char *t_DROPSerializado);
+
+void freeT_DROP(t_DROP *unStruct);
+
+//#################################
+
+//#################################
+
 
 //#################################
 /*PayloadRespuesta, seria el PAYLOAD "Datos" del paquete recibido, osea la RESPUESTA
@@ -84,10 +119,6 @@ void freeT_GuardarDatos(t_GuardarDatos *unStruct);
  * USAR FREE()  CON LO Q DEVUELVE*/
 char *deserializarRespuesta(char *PayloadRespuesta);
 //#################################
-//### OTRAS FUNCIONES ######################################
-char **splitSegunTamanioCorte(char *s,int longS,int tamanioCorte);
-int cuantosBloquesNecesitoPara(int nCantidadBytes,int tamanioBloque);//char *archivo);
-void freeArrayDePunteros(char **unArrayDePunteros);
 
 //##########################################################
 

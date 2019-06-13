@@ -10,23 +10,23 @@
 
 
 //##########################################################
-t_ValidarPath *definirT_ValidarPath(char *unPath)
+t_UnString *definirT_UnString(char *unString)
 {
-	t_ValidarPath *unStructPath = (t_ValidarPath *) malloc(sizeof(t_ValidarPath));
+	t_UnString *unStructPath = (t_UnString *) malloc(sizeof(t_UnString));
 
-	unStructPath->longPath = strlen(unPath);
+	unStructPath->longString = strlen(unString);
 
-	unStructPath->Path = malloc((unStructPath->longPath * sizeof(char)) +1); //+1 V
+	unStructPath->String = malloc((unStructPath->longString * sizeof(char)) +1); //+1 V
 
-	strcpy(unStructPath->Path,unPath);  //EXPLOTA TOD0 ASI, NI IDEA XQ  (CREO Q AL PASAR EL PATH X LA FUNCION COMO NO TIENEE \0, AL MOMENTO DE HACER EL COPY COPIA DEMAS :/)
+	strcpy(unStructPath->String,unString);  //EXPLOTA TOD0 ASI, NI IDEA XQ  (CREO Q AL PASAR EL PATH X LA FUNCION COMO NO TIENEE \0, AL MOMENTO DE HACER EL COPY COPIA DEMAS :/)
 	//no alocaba y escribia en sectores no alocados  -.-
 
 	return unStructPath;
 }
 
-char *serializarT_ValidarPath(t_ValidarPath *structASerializar)
+char *serializarT_UnString(t_UnString *structASerializar)
 {
-	char *unPathSerializado = malloc(sizeof(uint32_t) + structASerializar->longPath); // => 40  (4 + 36)
+	char *unPathSerializado = malloc(sizeof(uint32_t) + structASerializar->longString); // => 40  (4 + 36)
 	/// EN EL MALLOC EXPLOTA TOD0, al ser 40
 	if (unPathSerializado==NULL)
 		printf("\nEN NULL");
@@ -35,337 +35,405 @@ char *serializarT_ValidarPath(t_ValidarPath *structASerializar)
 	//printf("\ndentro de serializarPath():\nlongPath: %d\nPath: %s\n",unPath->longPath,unPath->Path);
 
 	offset = 0;
-	memcpy(unPathSerializado + offset, &(structASerializar->longPath),sizeof(structASerializar->longPath));
+	memcpy(unPathSerializado + offset, &(structASerializar->longString),sizeof(structASerializar->longString));
 
-	offset += sizeof(structASerializar->longPath);
-	memcpy(unPathSerializado + offset, (structASerializar->Path),structASerializar->longPath);
+	offset += sizeof(structASerializar->longString);
+	memcpy(unPathSerializado + offset, (structASerializar->String),structASerializar->longString);
 
 	//printf("unPathSerializado: %s\nstrlen(unPathSerializado): %d",unPathSerializado,strlen(unPathSerializado));
 	return unPathSerializado;
 }
 
-t_ValidarPath *deserializarAT_ValidarPath(char *t_ValidarPathSerializado)
+t_UnString *deserializarT_UnString(char *t_UnStringSerializado)
 {
-	t_ValidarPath *unPath = (t_ValidarPath*) malloc(sizeof(t_ValidarPath));
+	t_UnString *unPath = (t_UnString*) malloc(sizeof(t_UnString));
 	int offset = 0;
 
 
-	memcpy(&unPath->longPath, t_ValidarPathSerializado + offset,sizeof(uint32_t));
+	memcpy(&unPath->longString, t_UnStringSerializado + offset,sizeof(uint32_t));
 
-	unPath->Path = (char *) malloc(unPath->longPath +1); //+1 V
+	unPath->String = (char *) malloc(unPath->longString +1); //+1 V
 
-	offset += sizeof(unPath->longPath);
+	offset += sizeof(unPath->longString);
 	//offset += sizeof(uint32_t);  // es lo mismo q lo anteriro ,
-	memcpy(unPath->Path, t_ValidarPathSerializado + offset,(unPath->longPath)); //ojo Q ACA NO VA EL "&"
+	memcpy(unPath->String, t_UnStringSerializado + offset,(unPath->longString)); //ojo Q ACA NO VA EL "&"
 
-	unPath->Path[unPath->longPath]='\0';  //ES NECESARIO? -> SI
+	unPath->String[unPath->longString]='\0';  //ES NECESARIO? -> SI
 
 
 	return unPath;
 }
 
-void freeT_ValidarPath(t_ValidarPath *unStruct)
+void freeT_UnString(t_UnString *unStruct)
 {
-	free(unStruct->Path);
+	free(unStruct->String);
 	free(unStruct);
 }
 
 //##########################################################
-t_CrearArchivo *definirT_CrearArchivo(char *unPath, int nCantidadDeBytes)
+t_SELECT *definirT_SELECT(char* nombreTabla, int unaKey)
 {
-	t_CrearArchivo *unStruct = (t_CrearArchivo *) malloc(sizeof(t_CrearArchivo));
+	t_SELECT *unStruct = (t_SELECT *) malloc(sizeof(t_SELECT));
 
-	unStruct->NcantidadBytes = nCantidadDeBytes;
-	unStruct->longPath = strlen(unPath);
+	unStruct->KEY = unaKey;
+	unStruct->longNombre = strlen(nombreTabla);
 
-	unStruct->Path = malloc(unStruct->longPath * sizeof(char) +1); //V
+	unStruct->nombreTabla = malloc(unStruct->longNombre * sizeof(char) +1); //V
 
-	strcpy(unStruct->Path,unPath);
+	strcpy(unStruct->nombreTabla,nombreTabla);
 
 	return unStruct;
 }
 
-char *serializarT_CrearArchivo(t_CrearArchivo *structASerializar)
+char *serializarT_SELECT(t_SELECT *structASerializar)
 {
-	char *structSerializado = malloc((sizeof(uint32_t) * 2) + structASerializar->longPath);
+	char *structSerializado = malloc((sizeof(uint32_t) * 2) + structASerializar->longNombre);
 	int offset;
 
 	offset = 0;
-	memcpy(structSerializado + offset,&(structASerializar->NcantidadBytes),sizeof(structASerializar->NcantidadBytes));
+	memcpy(structSerializado + offset,&(structASerializar->KEY),sizeof(structASerializar->KEY));
 
-	offset += sizeof(structASerializar->NcantidadBytes);
-	memcpy(structSerializado + offset,&(structASerializar->longPath),sizeof(structASerializar->longPath));
+	offset += sizeof(structASerializar->KEY);
+	memcpy(structSerializado + offset,&(structASerializar->longNombre),sizeof(structASerializar->longNombre));
 
-	offset += sizeof(structASerializar->longPath);
-	memcpy(structSerializado + offset, (structASerializar->Path),structASerializar->longPath);
+	offset += sizeof(structASerializar->longNombre);
+	memcpy(structSerializado + offset, (structASerializar->nombreTabla),structASerializar->longNombre);
 
 	return structSerializado;
 }
 
-t_CrearArchivo *deserializarAT_CrearArchivo(char *t_CrearArchivoSerializado)
+t_SELECT *deserializarT_SELECT(char *t_SELECTSerializado)
 {
-	t_CrearArchivo *structDeserializado = (t_CrearArchivo *) malloc(sizeof(t_CrearArchivo));
+	t_SELECT *structDeserializado = (t_SELECT *) malloc(sizeof(t_SELECT));
 
 	int offset = 0;
-	memcpy(&structDeserializado->NcantidadBytes, t_CrearArchivoSerializado + offset, sizeof(uint32_t));
+	memcpy(&structDeserializado->KEY, t_SELECTSerializado + offset, sizeof(uint32_t));
 
 	offset += sizeof(uint32_t);
-	memcpy(&structDeserializado->longPath, t_CrearArchivoSerializado + offset, sizeof(uint32_t));
+	memcpy(&structDeserializado->longNombre, t_SELECTSerializado + offset, sizeof(uint32_t));
 
-	structDeserializado->Path = (char *) malloc(structDeserializado->longPath +1); //+1 V?
-	offset += sizeof(structDeserializado->longPath); // = OFFSET += SIZEOF(uint32_t);
-	memcpy(structDeserializado->Path, t_CrearArchivoSerializado + offset, structDeserializado->longPath);//ojo Q ACA NO VA EL "&"
+	structDeserializado->nombreTabla = (char *) malloc(structDeserializado->longNombre +1); //+1 V?
+	offset += sizeof(structDeserializado->longNombre); // = OFFSET += SIZEOF(uint32_t);
+	memcpy(structDeserializado->nombreTabla, t_SELECTSerializado + offset, structDeserializado->longNombre);//ojo Q ACA NO VA EL "&"
 
-	structDeserializado->Path[structDeserializado->longPath] = '\0'; //ES NECESARIO? -> SI
+	structDeserializado->nombreTabla[structDeserializado->longNombre] = '\0'; //ES NECESARIO? -> SI
 
 	return structDeserializado;
 }
 
-void freeT_CrearArchivo(t_CrearArchivo *unStruct)
+void freeT_SELECT(t_SELECT *unStruct)
 {
-	free(unStruct->Path);
-	free(unStruct);
-}
-
-
-//##########################################################
-t_ObtenerDatos *definirT_ObtenerDatos(char *unPath, int offset, int size)
-{
-	t_ObtenerDatos *unStruct = (t_ObtenerDatos *) malloc(sizeof(t_ObtenerDatos));
-
-	unStruct->Offset = offset;
-	unStruct->Size = size;
-	unStruct->longPath = strlen(unPath);
-
-	unStruct->Path = malloc(unStruct->longPath * sizeof(char));
-
-	strcpy(unStruct->Path,unPath);
-
-	return unStruct;
-}
-
-char *serializarT_ObtenerDatos(t_ObtenerDatos *structASerializar)
-{
-	char *structSerializado = malloc((sizeof(uint32_t) * 3) + structASerializar->longPath);
-	int offset;
-
-	offset = 0;
-	memcpy(structSerializado + offset,&(structASerializar->Offset),sizeof(structASerializar->Offset));
-
-	offset += sizeof(structASerializar->Offset);
-	memcpy(structSerializado + offset,&(structASerializar->Size),sizeof(structASerializar->Size));
-
-	offset += sizeof(structASerializar->Size);
-	memcpy(structSerializado + offset,&(structASerializar->longPath),sizeof(structASerializar->longPath));
-
-	offset += sizeof(structASerializar->longPath);
-	memcpy(structSerializado + offset, (structASerializar->Path),structASerializar->longPath);
-
-	return structSerializado;
-}
-
-t_ObtenerDatos *deserializarAT_ObtenerDatos(char *t_ObtenerDatosSerializado)
-{
-	t_ObtenerDatos *structDeserializado = (t_ObtenerDatos *) malloc(sizeof(t_ObtenerDatos));
-
-	int offset = 0;
-	memcpy(&structDeserializado->Offset, t_ObtenerDatosSerializado + offset, sizeof(uint32_t));
-
-	offset += sizeof(uint32_t);
-	memcpy(&structDeserializado->Size, t_ObtenerDatosSerializado + offset, sizeof(uint32_t));
-
-	offset += sizeof(uint32_t);
-	memcpy(&structDeserializado->longPath, t_ObtenerDatosSerializado + offset, sizeof(uint32_t));
-
-	structDeserializado->Path = (char *) malloc(structDeserializado->longPath +1);
-	offset += sizeof(structDeserializado->longPath); // = OFFSET += SIZEOF(uint32_t);
-	memcpy(structDeserializado->Path, t_ObtenerDatosSerializado + offset, structDeserializado->longPath);//ojo Q ACA NO VA EL "&"
-
-	structDeserializado->Path[structDeserializado->longPath] = '\0'; //ES NECESARIO? -> SI
-
-	return structDeserializado;
-}
-
-void freeT_ObtenerDatos(t_ObtenerDatos *unStruct)
-{
-	free(unStruct->Path);
+	free(unStruct->nombreTabla);
 	free(unStruct);
 }
 
 //##########################################################
-t_GuardarDatos *definirT_GuardarDatos(char *unPath, int offset, int size, char *buffer)
+t_INSERT *definirT_INSERT(char *nombreTabla, int unaKey, char* unValue, int timeStamp)
 {
-	t_GuardarDatos *unStruct = (t_GuardarDatos *) malloc(sizeof(t_GuardarDatos));
+	t_INSERT *unStruct = (t_INSERT *) malloc(sizeof(t_INSERT));
 
-	unStruct->Offset = offset;
-	unStruct->Size = size;
-	unStruct->longPath = strlen(unPath);
-	unStruct->longBuffer = strlen(buffer);
+	unStruct->KEY = unaKey;
+	unStruct->timeStamp = timeStamp;
+	unStruct->longNombre = strlen(nombreTabla);
+	unStruct->longValue = strlen(unValue);
 
-	unStruct->Path = malloc(unStruct->longPath * sizeof(char) +1);
-	strcpy(unStruct->Path,unPath);
+	unStruct->nombreTabla = malloc(unStruct->longNombre * sizeof(char) +1);
+	strcpy(unStruct->nombreTabla,nombreTabla);
 
-	unStruct->Buffer = malloc(unStruct->longBuffer * sizeof(char) +1);
-	strcpy(unStruct->Buffer,buffer);
+	unStruct->Value = malloc(unStruct->longValue * sizeof(char) +1);
+	strcpy(unStruct->Value,unValue);
 
-	if(unStruct->Size > unStruct->longBuffer)
-	{
-		printf("\nERROR al definir SIZE, es mayor que la longitud del BUFFER\n");
-		freeT_GuardarDatos(unStruct);
-		exit(1);
-	}
 
 	return unStruct;
 }
 
-char *serializarT_GuardarDatos(t_GuardarDatos *structASerializar)
+char *serializarT_INSERT(t_INSERT *structASerializar)
 {
-	char *structSerializado = malloc((sizeof(uint32_t) * 4) + structASerializar->longPath + structASerializar->longBuffer);
+	char *structSerializado = malloc((sizeof(uint32_t) * 4) + structASerializar->longNombre + structASerializar->longValue);
 	int offset;
 
 	offset = 0;
-	memcpy(structSerializado + offset,&(structASerializar->Offset),sizeof(structASerializar->Offset));
+	memcpy(structSerializado + offset,&(structASerializar->KEY),sizeof(structASerializar->KEY));
 
-	offset += sizeof(structASerializar->Offset);
-	memcpy(structSerializado + offset,&(structASerializar->Size),sizeof(structASerializar->Size));
+	offset += sizeof(structASerializar->KEY);
+	memcpy(structSerializado + offset,&(structASerializar->timeStamp),sizeof(structASerializar->timeStamp));
 
-	offset += sizeof(structASerializar->Size);
-	memcpy(structSerializado + offset,&(structASerializar->longPath),sizeof(structASerializar->longPath));
+	offset += sizeof(structASerializar->timeStamp);
+	memcpy(structSerializado + offset,&(structASerializar->longNombre),sizeof(structASerializar->longNombre));
 
-	offset += sizeof(structASerializar->longPath);
-	memcpy(structSerializado + offset,&(structASerializar->longBuffer),sizeof(structASerializar->longBuffer));
+	offset += sizeof(structASerializar->longNombre);
+	memcpy(structSerializado + offset,&(structASerializar->longValue),sizeof(structASerializar->longValue));
 
-	offset += sizeof(structASerializar->longBuffer);
-	memcpy(structSerializado + offset, (structASerializar->Path),structASerializar->longPath);
+	offset += sizeof(structASerializar->longValue);
+	memcpy(structSerializado + offset, (structASerializar->nombreTabla),structASerializar->longNombre);
 
-	offset += structASerializar->longPath;
-	memcpy(structSerializado + offset, (structASerializar->Buffer),structASerializar->longBuffer);
+	offset += structASerializar->longNombre;
+	memcpy(structSerializado + offset, (structASerializar->Value),structASerializar->longValue);
 
 	return structSerializado;
 }
 
-t_GuardarDatos *deserializarAT_GuardarDatos(char *t_GuardarDatosSerializado)
+t_INSERT *deserializarT_INSERT(char *t_INSERTSerializado)
 {
-	t_GuardarDatos *structDeserializado = (t_GuardarDatos *) malloc(sizeof(t_GuardarDatos));
+	t_INSERT *structDeserializado = (t_INSERT *) malloc(sizeof(t_INSERT));
 
 	int offset = 0;
-	memcpy(&structDeserializado->Offset, t_GuardarDatosSerializado + offset, sizeof(uint32_t));
+	memcpy(&structDeserializado->KEY, t_INSERTSerializado + offset, sizeof(uint32_t));
 
 	offset += sizeof(uint32_t);
-	memcpy(&structDeserializado->Size, t_GuardarDatosSerializado + offset, sizeof(uint32_t));
+	memcpy(&structDeserializado->timeStamp, t_INSERTSerializado + offset, sizeof(uint32_t));
 
 	offset += sizeof(uint32_t);
-	memcpy(&structDeserializado->longPath, t_GuardarDatosSerializado + offset, sizeof(uint32_t));
+	memcpy(&structDeserializado->longNombre, t_INSERTSerializado + offset, sizeof(uint32_t));
 
 	offset += sizeof(uint32_t);
-	memcpy(&structDeserializado->longBuffer, t_GuardarDatosSerializado + offset, sizeof(uint32_t));
+	memcpy(&structDeserializado->longValue, t_INSERTSerializado + offset, sizeof(uint32_t));
 
 
 
-	structDeserializado->Path = (char *) malloc(structDeserializado->longPath +1);
-	offset += sizeof(structDeserializado->longBuffer); // = OFFSET += SIZEOF(uint32_t);
-	memcpy(structDeserializado->Path, t_GuardarDatosSerializado + offset, structDeserializado->longPath);//ojo Q ACA NO VA EL "&"
+	structDeserializado->nombreTabla = (char *) malloc(structDeserializado->longNombre +1);
+	offset += sizeof(structDeserializado->longValue); // = OFFSET += SIZEOF(uint32_t);
+	memcpy(structDeserializado->nombreTabla, t_INSERTSerializado + offset, structDeserializado->longNombre);//ojo Q ACA NO VA EL "&"
 
-	structDeserializado->Path[structDeserializado->longPath] = '\0'; //ES NECESARIO? -> SI
+	structDeserializado->nombreTabla[structDeserializado->longNombre] = '\0'; //ES NECESARIO? -> SI
 
 
-	structDeserializado->Buffer = (char *) malloc(structDeserializado->longBuffer +1);
-	offset += structDeserializado->longPath;
-	memcpy(structDeserializado->Buffer, t_GuardarDatosSerializado + offset, structDeserializado->longBuffer);//ojo Q ACA NO VA EL "&"
+	structDeserializado->Value = (char *) malloc(structDeserializado->longValue +1);
+	offset += structDeserializado->longNombre;
+	memcpy(structDeserializado->Value, t_INSERTSerializado + offset, structDeserializado->longValue);//ojo Q ACA NO VA EL "&"
 
-	structDeserializado->Buffer[structDeserializado->longBuffer] = '\0'; //ES NECESARIO? -> SI
+	structDeserializado->Value[structDeserializado->longValue] = '\0'; //ES NECESARIO? -> SI
 
 	return structDeserializado;
 }
 
-void freeT_GuardarDatos(t_GuardarDatos *unStruct)
+void freeT_INSERT(t_INSERT *unStruct)
 {
-	free(unStruct->Path);
-	free(unStruct->Buffer);
+	free(unStruct->nombreTabla);
+	free(unStruct->Value);
 	free(unStruct);
 }
+
+//##########################################################
+t_CREATE *definirT_CREATE(char *nombreTabla, char* tipoConsistencia, int nroParticiones, int tiempoCompactacion)
+{
+	t_CREATE *unStruct = (t_CREATE *) malloc(sizeof(t_CREATE));
+
+	unStruct->nParticiones = nroParticiones;
+	unStruct->tiempoCompactacion = tiempoCompactacion;
+	unStruct->longNombre = strlen(nombreTabla);
+	unStruct->longConsistencia = strlen(tipoConsistencia);
+
+	unStruct->nombreTabla = malloc(unStruct->longNombre * sizeof(char) +1);
+	strcpy(unStruct->nombreTabla,nombreTabla);
+
+	unStruct->tipoConsistencia = malloc(unStruct->longConsistencia * sizeof(char) +1);
+	strcpy(unStruct->tipoConsistencia,tipoConsistencia);
+
+
+	return unStruct;
+}
+
+char *serializarT_CREATE(t_CREATE *structASerializar)
+{
+	char *structSerializado = malloc((sizeof(uint32_t) * 4) + structASerializar->longNombre + structASerializar->longConsistencia);
+	int offset;
+
+	offset = 0;
+	memcpy(structSerializado + offset,&(structASerializar->nParticiones),sizeof(structASerializar->nParticiones));
+
+	offset += sizeof(structASerializar->nParticiones);
+	memcpy(structSerializado + offset,&(structASerializar->tiempoCompactacion),sizeof(structASerializar->tiempoCompactacion));
+
+	offset += sizeof(structASerializar->tiempoCompactacion);
+	memcpy(structSerializado + offset,&(structASerializar->longNombre),sizeof(structASerializar->longNombre));
+
+	offset += sizeof(structASerializar->longNombre);
+	memcpy(structSerializado + offset,&(structASerializar->longConsistencia),sizeof(structASerializar->longConsistencia));
+
+	offset += sizeof(structASerializar->longConsistencia);
+	memcpy(structSerializado + offset, (structASerializar->nombreTabla),structASerializar->longNombre);
+
+	offset += structASerializar->longNombre;
+	memcpy(structSerializado + offset, (structASerializar->tipoConsistencia),structASerializar->longConsistencia);
+
+	return structSerializado;
+}
+
+t_CREATE *deserializarT_CREATE(char *t_CREATESerializado)
+{
+	t_CREATE *structDeserializado = (t_CREATE *) malloc(sizeof(t_CREATE));
+
+	int offset = 0;
+	memcpy(&structDeserializado->nParticiones, t_CREATESerializado + offset, sizeof(uint32_t));
+
+	offset += sizeof(uint32_t);
+	memcpy(&structDeserializado->tiempoCompactacion, t_CREATESerializado + offset, sizeof(uint32_t));
+
+	offset += sizeof(uint32_t);
+	memcpy(&structDeserializado->longNombre, t_CREATESerializado + offset, sizeof(uint32_t));
+
+	offset += sizeof(uint32_t);
+	memcpy(&structDeserializado->longConsistencia, t_CREATESerializado + offset, sizeof(uint32_t));
+
+
+
+	structDeserializado->nombreTabla = (char *) malloc(structDeserializado->longNombre +1);
+	offset += sizeof(structDeserializado->longConsistencia); // = OFFSET += SIZEOF(uint32_t);
+	memcpy(structDeserializado->nombreTabla, t_CREATESerializado + offset, structDeserializado->longNombre);//ojo Q ACA NO VA EL "&"
+
+	structDeserializado->nombreTabla[structDeserializado->longNombre] = '\0'; //ES NECESARIO? -> SI
+
+
+	structDeserializado->tipoConsistencia = (char *) malloc(structDeserializado->longConsistencia +1);
+	offset += structDeserializado->longNombre;
+	memcpy(structDeserializado->tipoConsistencia, t_CREATESerializado + offset, structDeserializado->longConsistencia);//ojo Q ACA NO VA EL "&"
+
+	structDeserializado->tipoConsistencia[structDeserializado->longConsistencia] = '\0'; //ES NECESARIO? -> SI
+
+	return structDeserializado;
+}
+
+void freeT_CREATE(t_CREATE *unStruct)
+{
+	free(unStruct->nombreTabla);
+	free(unStruct->tipoConsistencia);
+	free(unStruct);
+}
+
+//##########################################################
+t_DESCRIBE *definirT_DESCRIBE(char *unNombreTabla)
+{
+	t_DESCRIBE *unStructPath = (t_DESCRIBE *) malloc(sizeof(t_DESCRIBE));
+
+	unStructPath->longNombre = strlen(unNombreTabla);
+
+	unStructPath->nombreTabla = malloc((unStructPath->longNombre * sizeof(char)) +1); //+1 V
+
+	strcpy(unStructPath->nombreTabla,unNombreTabla);  //EXPLOTA TOD0 ASI, NI IDEA XQ  (CREO Q AL PASAR EL PATH X LA FUNCION COMO NO TIENEE \0, AL MOMENTO DE HACER EL COPY COPIA DEMAS :/)
+	//no alocaba y escribia en sectores no alocados  -.-
+
+	return unStructPath;
+}
+
+char *serializarT_DESCRIBE(t_DESCRIBE *structASerializar)
+{
+	char *unPathSerializado = malloc(sizeof(uint32_t) + structASerializar->longNombre); // => 40  (4 + 36)
+	/// EN EL MALLOC EXPLOTA TOD0, al ser 40
+	if (unPathSerializado==NULL)
+		printf("\nEN NULL");
+	int offset;
+
+	//printf("\ndentro de serializarPath():\nlongPath: %d\nPath: %s\n",unPath->longPath,unPath->Path);
+
+	offset = 0;
+	memcpy(unPathSerializado + offset, &(structASerializar->longNombre),sizeof(structASerializar->longNombre));
+
+	offset += sizeof(structASerializar->longNombre);
+	memcpy(unPathSerializado + offset, (structASerializar->nombreTabla),structASerializar->longNombre);
+
+	//printf("unPathSerializado: %s\nstrlen(unPathSerializado): %d",unPathSerializado,strlen(unPathSerializado));
+	return unPathSerializado;
+}
+
+t_DESCRIBE *deserializarT_DESCRIBE(char *t_DESCRIBESerializado)
+{
+	t_DESCRIBE *unPath = (t_DESCRIBE*) malloc(sizeof(t_DESCRIBE));
+	int offset = 0;
+
+
+	memcpy(&unPath->longNombre, t_DESCRIBESerializado + offset,sizeof(uint32_t));
+
+	unPath->nombreTabla = (char *) malloc(unPath->longNombre +1); //+1 V
+
+	offset += sizeof(unPath->longNombre);
+	//offset += sizeof(uint32_t);  // es lo mismo q lo anteriro ,
+	memcpy(unPath->nombreTabla, t_DESCRIBESerializado + offset,(unPath->longNombre)); //ojo Q ACA NO VA EL "&"
+
+	unPath->nombreTabla[unPath->longNombre]='\0';  //ES NECESARIO? -> SI
+
+
+	return unPath;
+}
+
+void freeT_DESCRIBE(t_DESCRIBE *unStruct)
+{
+	free(unStruct->nombreTabla);
+	free(unStruct);
+}
+
+//##########################################################
+t_DROP *definirT_DROP(char *unNombreTabla)
+{
+	t_DROP *unStructPath = (t_DROP *) malloc(sizeof(t_DROP));
+
+	unStructPath->longNombre = strlen(unNombreTabla);
+
+	unStructPath->nombreTabla = malloc((unStructPath->longNombre * sizeof(char)) +1); //+1 V
+
+	strcpy(unStructPath->nombreTabla,unNombreTabla);  //EXPLOTA TOD0 ASI, NI IDEA XQ  (CREO Q AL PASAR EL PATH X LA FUNCION COMO NO TIENEE \0, AL MOMENTO DE HACER EL COPY COPIA DEMAS :/)
+	//no alocaba y escribia en sectores no alocados  -.-
+
+	return unStructPath;
+}
+
+char *serializarT_DROP(t_DROP *structASerializar)
+{
+	char *unPathSerializado = malloc(sizeof(uint32_t) + structASerializar->longNombre); // => 40  (4 + 36)
+	/// EN EL MALLOC EXPLOTA TOD0, al ser 40
+	if (unPathSerializado==NULL)
+		printf("\nEN NULL");
+	int offset;
+
+	//printf("\ndentro de serializarPath():\nlongPath: %d\nPath: %s\n",unPath->longPath,unPath->Path);
+
+	offset = 0;
+	memcpy(unPathSerializado + offset, &(structASerializar->longNombre),sizeof(structASerializar->longNombre));
+
+	offset += sizeof(structASerializar->longNombre);
+	memcpy(unPathSerializado + offset, (structASerializar->nombreTabla),structASerializar->longNombre);
+
+	//printf("unPathSerializado: %s\nstrlen(unPathSerializado): %d",unPathSerializado,strlen(unPathSerializado));
+	return unPathSerializado;
+}
+
+t_DROP *deserializarT_DROP(char *t_DROPSerializado)
+{
+	t_DROP *unPath = (t_DROP*) malloc(sizeof(t_DROP));
+	int offset = 0;
+
+
+	memcpy(&unPath->longNombre, t_DROPSerializado + offset,sizeof(uint32_t));
+
+	unPath->nombreTabla = (char *) malloc(unPath->longNombre +1); //+1 V
+
+	offset += sizeof(unPath->longNombre);
+	//offset += sizeof(uint32_t);  // es lo mismo q lo anteriro ,
+	memcpy(unPath->nombreTabla, t_DROPSerializado + offset,(unPath->longNombre)); //ojo Q ACA NO VA EL "&"
+
+	unPath->nombreTabla[unPath->longNombre]='\0';  //ES NECESARIO? -> SI
+
+
+	return unPath;
+}
+
+void freeT_DROP(t_DROP *unStruct)
+{
+	free(unStruct->nombreTabla);
+	free(unStruct);
+}
+
 
 //##########################################################
 
 char *deserializarRespuesta(char *PayloadRespuesta)
 {
-	t_ValidarPath *respuestaPATH;
-	respuestaPATH = deserializarAT_ValidarPath(PayloadRespuesta);
+	t_UnString *respuestaSTRING;
+	respuestaSTRING = deserializarT_UnString(PayloadRespuesta);
 
-	char *Respuesta = string_from_format("%s",respuestaPATH->Path);
-	freeT_ValidarPath(respuestaPATH);
+	char *Respuesta = string_from_format("%s",respuestaSTRING->String);
+	freeT_UnString(respuestaSTRING);
 
 	return Respuesta;
 }
 //##########################################################
-//### OTRAS FUNCIONES ######################################
-char **splitSegunTamanioCorte(char *s, int longS,int tamanioCorte)//, int bloques)//
-{
-	char **sSplit;
-	int nBytes = longS; //strlen(s);
-	int tope = cuantosBloquesNecesitoPara(nBytes,tamanioCorte);
-	int i;
-	int ini,fin;
-
-	sSplit = malloc((tope +1)* sizeof(char*));
-
-	sSplit[tope] = NULL; //
-
-	ini = 0;
-	fin = tamanioCorte;
-
-	for(i=0; i < tope;i++)
-	{
-		if(i == (tope - 1) && (nBytes % tamanioCorte) != 0) //la 2da sentencia es para el caso de q entre justo en n Bloques (sin frag. interna)
-		{
-			fin = nBytes % tamanioCorte;
-		}
-		sSplit[i] = string_substring(s,ini,fin);
-
-		ini += tamanioCorte;
-	}
-
-	return sSplit;
-}
-
-int cuantosBloquesNecesitoPara(int nCantidadBytes, int tamanioBloque)//char *archivo)
-{
-	int resto;
-	int cantBloquesOcupados;
-	//int tamanioDelArchivo;
-
-	//tamanioDelArchivo = strlen(archivo);
-	cantBloquesOcupados = nCantidadBytes / tamanioBloque;
-	if(cantBloquesOcupados == 0)
-	{
-		cantBloquesOcupados = 1;
-	}
-	else
-	{
-		resto = nCantidadBytes % tamanioBloque;
-		if(resto != 0)
-			cantBloquesOcupados++;
-	}
-
-	return cantBloquesOcupados;
-}
-
-/*
- * EL ARRAY DEBE TERMINAR CON EL ULTIMO ELEMENTO EN NULL
- */
-void freeArrayDePunteros(char **unArrayDePunteros)
-{
-	int i;
-
-	for(i=0; unArrayDePunteros[i] != NULL ;i++)
-	{
-		free(unArrayDePunteros[i]);
-	}
-
-	//free(unArrayDePunteros[i+1]);
-
-	free(unArrayDePunteros);
-}
-//##########################################################
-
-

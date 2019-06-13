@@ -193,8 +193,6 @@ void empaquetarEnviarMensaje(int socketReceptor, int unID, int longitudDatos, ch
 	}
 
 	free(paqueteListo);
-	free(package->Datos);//
-	free(package);//
 
 }
 void definirHeader(t_PaqueteDeDatos *unPackage,int unID, int unaLongitudData)
@@ -319,7 +317,8 @@ char** cortaPalabra(char* mensaje){
 int verificarMensajeDeKernel(char* mensaje,t_identidad identidad){
 	return string_equals_ignore_case(mensaje,"SOY KERNEL");
 }
-t_PaqueteDeDatos *recibirPaquete(int socketEmisor)
+
+t_PaqueteDeDatos *recibirPaquete(int socketEmisor)  //v1.5
 {
 
 	int bytesRecibidos;
@@ -330,17 +329,27 @@ t_PaqueteDeDatos *recibirPaquete(int socketEmisor)
 
 	bytesRecibidos = recv(socketEmisor, &package->ID,sizeof(uint32_t),MSG_WAITALL);
 
+	if(bytesRecibidos <= 0)
+	{
+		package->ID = bytesRecibidos;
+		//printf("\nID: %d   longDatos: %d\n",package->ID,package->longDatos);
+		return package;
+	}
+
+
 	bytesRecibidos = recv(socketEmisor, &package->longDatos,sizeof(uint32_t),MSG_WAITALL);
+	//if(package->ID == 0)
+
+	//printf("\nID: %d   longDatos: %d\n",package->ID,package->longDatos);
+
 
 	package->Datos = (char*) malloc(package->longDatos +1); //+1 VALGRIND
-
 
 	bytesRecibidos = recv(socketEmisor, package->Datos, package->longDatos, MSG_WAITALL);
 
 	bytesRecibidos = 0;
 
 	return package;
-	// RECORDAR QUE AL USAR ESTA FUNCION HAY Q HACER UN FREE(handshake->datos);
 }
 t_handShake* deserializarHandShake(char *handShakeSerializado){
 	t_handShake *handShake = (t_handShake*) malloc(sizeof(t_handShake));
