@@ -4,7 +4,6 @@
 void* crearConsolaMemoria(){
 	char *linea;
 	char **operacion;
-	int cantArgumentos;
 
 	while(1){
 		linea = readline(">");
@@ -13,7 +12,8 @@ void* crearConsolaMemoria(){
 			add_history(linea);
 		}
 		operacion = string_split(linea," ");
-		uint16_t * key;
+		uint16_t * key = malloc(sizeof(uint16_t));
+
 
 		if(string_equals_ignore_case(operacion[0],"INSERT")){
 
@@ -21,29 +21,36 @@ void* crearConsolaMemoria(){
 			char*lineadup = string_new();
 			if(tamanio<5){
 				linea = strdup(operacion[0]);
+				free(lineadup);
 			}else {
 			char* value= armarValue(operacion);
-			operacion[3]= strdup(value);
 			char* stringFinal= string_new();
+
 			string_append(&stringFinal, operacion[0]);
 			string_append(&stringFinal," ");
 			string_append(&stringFinal,operacion[1]);
 			string_append(&stringFinal," ");
 			string_append(&stringFinal,operacion[2]);
 			string_append(&stringFinal," ");
-			string_append(&stringFinal, operacion[3]);
+			string_append(&stringFinal, value);
 			string_append(&stringFinal," ");
 			string_append(&stringFinal, operacion[tamanio-1]);
-
+			hacerFreeArray(operacion);
+			free(operacion);
 			operacion= string_split(stringFinal, " ");
 			int tamanio2 = tamanioArray(operacion);
 
 			for(int i = 0; i <tamanio2; i++){
 				string_append(&lineadup, operacion[i]);
+				if(i!=tamanio2-1){
 				string_append(&lineadup, " ");
+				}
 			}
-
+			free(linea);
 			linea = strdup(lineadup);
+			free(value);
+			free(stringFinal);
+			free(lineadup);
 			}
 		}
 
@@ -56,16 +63,20 @@ void* crearConsolaMemoria(){
 					}
 					mostrarElementosMemoriaPrincipal(memoriaPrincipal);
 					mostrarElementosTablaSegmentos();
+
+					printf("COMANDO select\n");
 					break;
 				case CMD_INSERT:
 					printf("");
 					int timestamp = atoi(operacion[4]);
 					if (pasarAUint16(operacion[2], key)){
-						INSERTMemoria(operacion[1], *key, quitarEspacioFalso(operacion[3]), timestamp, memoriaPrincipal);
+						char* value = quitarEspacioFalso(operacion[3]);
+						INSERTMemoria(operacion[1], *key, value, timestamp, memoriaPrincipal);
 						printf("COMANDO INSERT\n");
 					}
 					mostrarElementosMemoriaPrincipal(memoriaPrincipal);
 					mostrarElementosTablaSegmentos();
+					printf("COMANDO INSERT\n");
 
 					break;
 				case CMD_CREATE:
@@ -75,7 +86,10 @@ void* crearConsolaMemoria(){
 					printf("COMANDO DESCRIBE\n");
 					break;
 				case CMD_DROP:
+					DROPMemoria(operacion[1],memoriaPrincipal);
 					printf("COMANDO DROP\n");
+
+
 					break;
 				case CMD_JOURNAL:
 					printf("COMANDO JOURNAL\n");
@@ -89,6 +103,7 @@ void* crearConsolaMemoria(){
 		free(linea);
 		hacerFreeArray(operacion);
 		free(operacion);
+		free(key);
 	}
 	return NULL;
 }
@@ -112,9 +127,11 @@ int buscarFinalValue(char** value){
 	int cantElementos= tamanioArray(value);
 	for(int i = 4; i< cantElementos; i++){
 		if(string_ends_with(value[i], ptr)){
+			free(ptr);
 			return i;
 		}
 	}
+	free(ptr);
 	return 0;
 }
 
@@ -134,6 +151,7 @@ char* quitarEspacioFalso(char* value){
 	int tamanio = tamanioArray(valuearray);
 	if(tamanio== 0){
 		free(operacionFinal);
+		hacerFreeArray(valuearray);
 		free(valuearray);
 		return quitarComillas(value);
 	}else {
@@ -145,7 +163,12 @@ char* quitarEspacioFalso(char* value){
 	}
 	hacerFreeArray(valuearray);
 	free(valuearray);
-	return quitarComillas(operacionFinal);
+	char** a = string_split(operacionFinal, "\"");
+	free(operacionFinal);
+	char* v = strdup(a[0]);
+	hacerFreeArray(a);
+	free(a);
+	return v;
 	}
 }
 

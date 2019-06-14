@@ -448,6 +448,7 @@ void DROPMemoria(char* nombreTabla, t_registro* memoriaPrincipal){
 		}
 		else{
 			puts("INFO: Dicha tabla no se encuentra en la tabla de SEGMENTOS");
+			//aca tengo que avisarle al FS que borre la tabla
 		}
 }
 
