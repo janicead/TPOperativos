@@ -43,7 +43,9 @@ void* setConsole(){
 			}
 			else{
 				key = atoi(parametros[2]);
-				crear_lql_insert(parametros[1],key,parametros[3]);
+				char** value = string_n_split(parametros[3],2,"\"");
+				crear_lql_insert(parametros[1],key,value[0]);
+				freeParametros(value);
 				log_info(loggerKernel,"La operación insert fue ingresada la cola de ready");
 			}
 			freeParametros(parametros);
