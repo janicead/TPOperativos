@@ -25,7 +25,6 @@ void* crearConsolaMemoria(){
 			}else {
 			char* value= armarValue(operacion);
 			char* stringFinal= string_new();
-
 			string_append(&stringFinal, operacion[0]);
 			string_append(&stringFinal," ");
 			string_append(&stringFinal,operacion[1]);
