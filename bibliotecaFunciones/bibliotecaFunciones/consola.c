@@ -18,6 +18,7 @@ static t_comando tablaComandos[] = {
 	{ "EXIT", CMD_EXIT }
 };
 
+
 int comandoDeString(char *key)
 {
     int i;
@@ -32,8 +33,7 @@ int validarComando(char* linea, t_log* logger){
 	char **operacion;
 	int cantArgumentos, valido = 1;
 	operacion = string_split(linea," ");
-	cantArgumentos = longitudArrayDePunteros(operacion); //SAQUE EL -1 DE ACA PORQUE HAY SOLICITUDES SIN PARAMETROS
-
+	cantArgumentos = longitudArrayDePunteros(operacion);
 	if(strcmp(linea, "") == 0){
 		valido = 0;
 		log_error(logger, "Ingrese una operacion\n");

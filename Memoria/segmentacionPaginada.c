@@ -13,7 +13,7 @@ void borrarElementos(){
 }
 void mostrarElementosMemoriaPrincipal(t_registro *memoriaPrincipal){
 	for(int i = 0; i<cantMaxPags; i ++){
-		printf("En la posicion %d de la MEMORIA PRINCIPAL, la KEY es %d, el VALUE es %s\n", i, memoriaPrincipal[i].key,memoriaPrincipal[i].value);
+		printf("En la posicion %d de la MEMORIA PRINCIPAL, la KEY es %d, el VALUE es '%s'\n", i, memoriaPrincipal[i].key,memoriaPrincipal[i].value);
 	}
 }
 
@@ -162,7 +162,7 @@ int buscarEspacioEnMP(t_registro* memoriaPrincipal){
 t_segmento* guardarEnTablaDeSegmentos(char* nombreTabla){
 	int cantPaginasGuardadas;
 	t_segmento* segmento = malloc(sizeof(t_segmento));
-	segmento->nombreTabla= nombreTabla;
+	segmento->nombreTabla =strdup( nombreTabla);
 	segmento->tablaPaginas= list_create();
 	list_add(tablaDeSegmentos, (void*)segmento);
 	return segmento;
@@ -310,7 +310,7 @@ int tamanioArray(void** array){
 }
 
 int obtenerTimeStamp(){
-	return time(NULL)* 0.001;
+	return time(NULL);
 }
 
 char* recibirRespuestaSELECTMemoriaLfs(){

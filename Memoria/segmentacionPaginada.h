@@ -48,7 +48,6 @@ t_list * tablaDeSegmentos; //elementos de tipo t_segmento
 int cantMaxPags;
 t_list* listaJournal;
 t_registro* memoriaPrincipal;
-t_registro ** mp;
 int tamanioMemoriaPrincipal;
 
 void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS);
