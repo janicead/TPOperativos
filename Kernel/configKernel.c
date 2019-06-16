@@ -1,10 +1,14 @@
 #include "configKernel.h"
 
 int leerConfigKernel(){
+	archivoConfigKernel = config_create(PATH_KERNEL_CONFIG);
 	log_info(loggerKernel, "Leyendo archivo de configuracion");
 
 	if (config_has_property(archivoConfigKernel, "IP_MEMORIA")) {
-		configKernel.ip_memoria = config_get_string_value(archivoConfigKernel,"IP_MEMORIA");
+		char** ip = string_n_split(config_get_string_value(archivoConfigKernel,"IP_MEMORIA"),2,"\"");
+		configKernel.ip_memoria = ip[0];
+		string_iterate_lines(ip, (void*) free);
+		free(ip);
 	} else {
 		log_error(loggerKernel,"No se encontro la key IP_MEMORIA en el archivo de configuracion");
 		return -1;
@@ -24,7 +28,7 @@ int leerConfigKernel(){
 		return -1;
 	}
 	if (config_has_property(archivoConfigKernel, "MULTIPROCESAMIENTO")) {
-		configKernel.multiprocesamiento = config_get_int_value(archivoConfigKernel,"MULTIPROCESAMIENTO");
+		actualizar_multiprocesamiento();
 	} else {
 		log_error(loggerKernel,"No se encontro la key MULTIPROCESAMIENTO en el archivo de configuracion");
 		return -1;
@@ -43,6 +47,7 @@ int leerConfigKernel(){
 		log_error(loggerKernel,"No se encontro la key SLEEP_EJECUCION en el archivo de configuracion");
 		return -1;
 	}
+	config_destroy(archivoConfigKernel);
 	return 1;
 }
 
@@ -62,6 +67,38 @@ void mostrarDatosArchivoConfigKernel(){
 	log_info(loggerKernel,"MULTIPROCESAMIENTO: %d",configKernel.multiprocesamiento);
 	log_info(loggerKernel,"METADATA_REFRESH: %d",configKernel.metadata_refresh);
 	log_info(loggerKernel,"SLEEP_EXECUTION: %d",configKernel.sleep_execution);
+	return;
+}
+
+void actualizar_multiprocesamiento(){
+	//int mp_old,mp_new;
+	//mp_old = configKernel.multiprocesamiento;
+	configKernel.multiprocesamiento = config_get_int_value(archivoConfigKernel,"MULTIPROCESAMIENTO");
+	pthread_t hilo;
+	int thread_id = pthread_create(&hilo,NULL,ejecutar,NULL);
+	list_add(hilos_ejec,(void*)thread_id);
+	pthread_detach(hilo);
+	//mp_new = configKernel.multiprocesamiento;
+	/*if(mp_old > mp_new){
+		int dif = mp_old - mp_new;
+		pthread_mutex_lock(&multiProcesamiento_sem);
+		cambioMultiProcesamiento -= dif;
+		pthread_mutex_unlock(&multiProcesamiento_sem);
+		return;
+	}
+	if(mp_old < mp_new){
+		int dif = mp_new - mp_old;
+		for(int i = 0; i < dif; i++){
+			pthread_t hilo;
+			int thread_id = pthread_create(&hilo,NULL,ejecutar,NULL);
+			pthread_mutex_lock(&hilos_ejec_sem);
+			list_add(hilos_ejec,(void*)thread_id);
+			pthread_mutex_unlock(&hilos_ejec_sem);
+			pthread_detach(hilo);
+			log_info(loggerKernel,"Hilo de ejecución creado");
+		}
+		return;
+	}*/
 	return;
 }
 

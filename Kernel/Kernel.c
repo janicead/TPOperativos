@@ -47,14 +47,13 @@ int main(void) {
 
 void iniciar(){
 	configure_logger_kernel();
-	archivoConfigKernel = config_create(PATH_KERNEL_CONFIG);
 	iniciar_semaforos();
-	verificarArchivoConfigKernel();
-	puertoMemoria = int_to_string(configKernel.puerto_memoria);
 	inicializarIds();
 	srandom(time(NULL));
 	crear_colas();
 	crear_listas();
+	verificarArchivoConfigKernel();
+	puertoMemoria = int_to_string(configKernel.puerto_memoria);
 	return;
 }
 
@@ -62,11 +61,6 @@ void crear_hilos_iniciales(){
 	pthread_create(&consola,NULL,setConsole,NULL);
 	pthread_create(&timer_thread,NULL,timer,NULL);
 	pthread_detach(timer_thread);
-	hilos = malloc(configKernel.multiprocesamiento * sizeof(pthread_t));
-	for(int i = 0; i<configKernel.multiprocesamiento; i++){
-		pthread_create(&hilos[i],NULL,ejecutar,NULL);
-		pthread_detach(hilos[i]);
-	}
 	pthread_create(&config_observer,NULL,observer_config,NULL);
 	pthread_detach(config_observer);
 	return;

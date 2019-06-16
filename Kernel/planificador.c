@@ -3,14 +3,30 @@
 void* ejecutar(){
 	while(1){
 		sem_wait(&execute_sem);
-		pthread_mutex_lock(&queue_ready_sem);
-		t_lcb* lcb = queue_pop(queue_ready);
-		pthread_mutex_unlock(&queue_ready_sem);
-		lcb->estado = EXEC;
 		pthread_mutex_lock(&config_sem);
 		int quantum = configKernel.quantum;
 		int sleep_time = configKernel.sleep_execution;
 		pthread_mutex_unlock(&config_sem);
+		//Si el grado de multiprogramación baja, se ejecutaría esta porción de código
+		/*pthread_mutex_lock(&multiProcesamiento_sem);
+		int multi = cambioMultiProcesamiento;
+		log_info(loggerKernel,"multi: %d",multi);
+		if(multi < 0){
+			cambioMultiProcesamiento++;
+			pthread_mutex_unlock(&multiProcesamiento_sem);
+			pthread_mutex_lock(&hilos_ejec_sem);
+			if(!list_is_empty(hilos_ejec)){
+				list_remove_and_destroy_element(hilos_ejec,0,(void*) free);
+			}
+			pthread_mutex_unlock(&hilos_ejec_sem);
+			sem_post(&execute_sem);
+			return NULL;
+		}
+		pthread_mutex_unlock(&multiProcesamiento_sem);*/
+		pthread_mutex_lock(&queue_ready_sem);
+		t_lcb* lcb = queue_pop(queue_ready);
+		pthread_mutex_unlock(&queue_ready_sem);
+		lcb->estado = EXEC;
 		while(quantum > 0 && lcb->program_counter < list_size(lcb->operaciones)){
 			t_LQL_operacion* operacion = obtener_op_actual(lcb);
 			switch(operacion->keyword){

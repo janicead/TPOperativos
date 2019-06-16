@@ -9,9 +9,6 @@ void exit_gracefully(int exitInfo){
 	pthread_mutex_lock(&log_sem);
 	log_destroy(loggerKernel);
 	pthread_mutex_unlock(&log_sem);
-	pthread_mutex_lock(&config_sem);
-	config_destroy(archivoConfigKernel);
-	pthread_mutex_unlock(&config_sem);
 	free(puertoMemoria);
 	destruir_colas();
 	destruir_listas();
@@ -31,6 +28,7 @@ void crear_listas(){
 	strong_hash_consistency = list_create();
 	eventual_consistency = list_create();
 	memorias = list_create();
+	hilos_ejec = list_create();
 	return;
 }
 
@@ -146,6 +144,7 @@ void destruir_listas(){
 	pthread_mutex_lock(&eventual_consistency_sem);
 	list_destroy(eventual_consistency);
 	pthread_mutex_unlock(&eventual_consistency_sem);
+	list_destroy_and_destroy_elements(hilos_ejec,(void*) free);
 	return;
 }
 

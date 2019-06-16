@@ -9,6 +9,7 @@
 #include <sys/inotify.h>
 #include <commons/log.h>
 #include "kernel_commons.h"
+#include "planificador.h"
 
 
 #define PATH_KERNEL_CONFIG "/home/utnso/workspace/tp-2019-1c-BEFGN/Kernel/Config/kernel.config"
@@ -31,5 +32,6 @@ int leerConfigKernel();
 void verificarArchivoConfigKernel();
 void mostrarDatosArchivoConfigKernel();
 void* observer_config();
+void actualizar_multiprocesamiento();
 
 #endif /* CONFIGKERNEL_H_ */

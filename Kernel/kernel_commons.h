@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <signal.h>
 
 /**
 * @NAME: t_LQL_operacion
@@ -97,7 +98,7 @@ typedef struct{
 }t_memoria;
 
 char* puertoMemoria;
-int idLCB, idMEM;
+int idLCB, idMEM, cambioMultiProcesamiento;
 
 //VARIABLES DE CONFIGURACIÓN
 t_log* loggerKernel;
@@ -108,6 +109,7 @@ t_queue* queue_ready;
 t_queue* queue_exit;
 
 //LISTAS
+t_list* hilos_ejec;
 t_list* tablas;
 t_list* memorias;
 t_list* strong_hash_consistency;
