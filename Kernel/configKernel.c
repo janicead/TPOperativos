@@ -78,7 +78,9 @@ void* observer_config(){
 
 	while(1){
 		read(file_descriptor,buffer,buffer_size);
+		pthread_mutex_lock(&config_sem);
 		verificarArchivoConfigKernel();
+		pthread_mutex_unlock(&config_sem);
 	}
 
 	inotify_rm_watch(file_descriptor,file_observer);
