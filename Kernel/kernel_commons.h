@@ -130,6 +130,7 @@ sem_t execute_sem;
 pthread_t* hilos;
 pthread_t consola;
 pthread_t timer_thread;
+pthread_t config_observer;
 
 //FUNCIONES DE CONFIGURACIÓN INICIAL
 void crear_colas();

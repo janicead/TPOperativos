@@ -6,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/inotify.h>
 #include <commons/log.h>
 #include "kernel_commons.h"
 
@@ -29,5 +30,6 @@ t_ConfigKernel configKernel;
 int leerConfigKernel();
 void verificarArchivoConfigKernel();
 void mostrarDatosArchivoConfigKernel();
+void* observer_config();
 
 #endif /* CONFIGKERNEL_H_ */

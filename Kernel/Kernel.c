@@ -37,18 +37,19 @@ void iniciarValoresParaTest(){
 
 int main(void) {
 	iniciar();
+	crear_hilos_iniciales();
 	iniciarValoresParaTest();
 	//conectarAMemoria();
-	crear_hilos_iniciales();
 	pruebaParser();
 	pthread_join(consola,NULL);
 	exit_gracefully(EXIT_SUCCESS);
 }
 
 void iniciar(){
+	configure_logger_kernel();
+	archivoConfigKernel = config_create(PATH_KERNEL_CONFIG);
 	iniciar_semaforos();
 	verificarArchivoConfigKernel();
-	mostrarDatosArchivoConfigKernel();
 	puertoMemoria = int_to_string(configKernel.puerto_memoria);
 	inicializarIds();
 	srandom(time(NULL));
@@ -66,14 +67,16 @@ void crear_hilos_iniciales(){
 		pthread_create(&hilos[i],NULL,ejecutar,NULL);
 		pthread_detach(hilos[i]);
 	}
+	pthread_create(&config_observer,NULL,observer_config,NULL);
+	pthread_detach(config_observer);
 	return;
 }
 
 void conectarAMemoria(){
-	char * buffer[1024];
-	int socketMemoria = conectarAlServidor(configKernel.ip_memoria,puertoMemoria, loggerKernel);
-	send(socketMemoria,"Hola Memoria",strlen("Hola Memoria"),0);
-	int bytes = recv(socketMemoria,buffer,1024,0);
-	buffer[bytes] = '\0';
-	printf("%s%",buffer);
+	//char * buffer[1024];
+	//int socketMemoria = conectarAlServidor(configKernel.ip_memoria,puertoMemoria, loggerKernel);
+	//send(socketMemoria,"Hola Memoria",strlen("Hola Memoria"),0);
+	//int bytes = recv(socketMemoria,buffer,1024,0);
+	//buffer[bytes] = '\0';
+	//printf("%s%",buffer);
 }
