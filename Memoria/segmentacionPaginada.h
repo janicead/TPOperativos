@@ -22,7 +22,7 @@ int socketLFS;
 
 typedef struct {
 	int numeroPag;
-	int indiceMemoria;
+	int numeroMarco;
 	int flagModificado;
 	uint16_t key;
 	int contadorVecesSolicitado;
@@ -44,38 +44,50 @@ typedef struct {
 	t_registro* registro;
 }t_JOURNAL;
 
-t_list * tablaDeSegmentos; //elementos de tipo t_segmento
-int cantMaxPags;
+t_list* tablaDeSegmentos; //elementos de tipo t_segmento
+int cantMaxMarcos;
+int cantMarcosIngresados;
+int obtenerValue;
+int tamanioUnRegistro;
+int* marcosOcupados;
+int tamanioDadoPorLFS;
 t_list* listaJournal;
-t_registro* memoriaPrincipal;
+void* memoriaPrincipal;
 int tamanioMemoriaPrincipal;
 
+
+//----------------------------------------GENERALES--------------------------------------------------------------//
 void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS);
-void mostrarElementosMemoriaPrincipal(t_registro *memoriaPrincipal);
-void mostrarElementosTablaSegmentos();
-void mostrarElementosTablaPaginas(t_list * lista);
-void mostrarElementosListaJournal();
-int buscarTablaSegmentos(char* nombreTabla);
-char* buscarTablaPaginas(t_list* tabla,uint16_t key, t_registro* memoriaPrincipal);
-int buscarEnTablaPaginasINSERT(t_list* tabla, uint16_t key,int timeStamp, t_registro* memoriaPrincipal , char* value);
-char* buscarEnMemoriaPrincipal( int indice,t_registro* memoriaPrincipal);
-int buscarEnMemoriaPrincipalTimeStamp( int indice,t_registro* memoriaPrincipal);
-uint16_t buscarEnMemoriaPrincipalKey(int indice, t_registro* memoriaPrincipal);
-void actualizarMemoriaPrincipal( int indice,t_registro* memoriaPrincipal, int timeStamp, char* value);
-t_segmento* guardarEnTablaDeSegmentos(char* nombreTabla);
-int buscarEspacioEnMP(t_registro * memoriaPrincipal);
-void guardarEnTablaDePaginas(t_segmento * segmento, int indice,uint16_t key, int flagModificado);
-t_LRU * LRU();
-int buscarSiExistePaginaNoModificada (t_list*tablaDePaginas);
-int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, t_registro* memoriaPrincipal);
-int tamanioArray(void** array);
-int obtenerTimeStamp();
-char* recibirRespuestaSELECTMemoriaLfs();
-void quitarEspaciosGuardadosEnMemoria(t_list* lista , t_registro* memoriaPrincipal);
-void borrarDeMemoria (int indice, t_registro* memoriaPrincipal);
-void borrarTablaDePaginas(t_list* lista);
-char* SELECTMemoria(char * nombreTabla, uint16_t key, t_registro* memoriaPrincipal, int flagModificado);
-void INSERTMemoria(char * nombreTabla, uint16_t key, char* value, int timeStamp, t_registro* memoriaPrincipal);
 int tamanioLista(t_list * lista);
+char* recibirRespuestaSELECTMemoriaLfs();
+int obtenerTimeStamp();
+//-------------------------------------BORRADO------------------------------------------------------------------//
+void destructor2(t_pagina * pagina);
+void destructor(t_segmento* segmento);
+void borrarElementos();
+void borrarTodo();
+//------------------------------------------SEGMENTOS----------------------------------------------------------//
+int buscarTablaSegmentos(char* nombreTabla);
+t_segmento* guardarEnTablaDeSegmentos(char* nombreTabla);
+void mostrarElementosTablaSegmentos();
+//----------------------------------------PAGINAS-------------------------------------------------------------//
+char* buscarTablaPaginas(t_list* tabla, uint16_t key);
+void guardarEnTablaDePaginas(t_segmento * segmento, int nroMarco,uint16_t key, int flagModificado );
+void mostrarElementosTablaPaginas(t_list * lista);
+//------------------------------------------MEMORIA----------------------------------------------------------//
+t_registro* buscarEnMemoriaPrincipal( int nroMarco);
+int buscarEspacioLibreEnMP();
+void settearMarcoEnMP(int nroMarco, int nroDeseado);
+void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco);
+int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value);
+void mostrarElementosMemoriaPrincipal();
+//---------------------------------------LRU----------------------------------------------------------------//
+t_LRU * LRU ();
+//-------------------------------------JOURNAL-------------------------------------------------------------//
+void mostrarElementosListaJournal();
+char* convertirAStringListaJournal();
+void iniciarJournal();
+//---------------------------------------REQUESTS--------------------------------------------------------//
+char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado);
 
 #endif /* SEGMENTACIONPAGINADA_H_ */

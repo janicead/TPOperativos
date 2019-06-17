@@ -16,7 +16,7 @@ typedef struct{
  * */
 
 typedef struct{
-	unsigned timestamp;
+	unsigned long int timestamp;
 	u_int16_t key;
 	char* value;
 }t_registro;

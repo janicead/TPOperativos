@@ -3,11 +3,12 @@
 int main(void) {
 
 	pthread_t multiplexacionMemoria, clienteMemoria, gossip;
-	//crearConsolaMemoria();
+	definirTamanioMemoriaPrincipal(20);
+	crearConsolaMemoria();
 	configurarLoggerMemoria();
 	configMemoria =leerConfigMemoria();
 	mostrarDatosArchivoConfig();
-	iniciarEscuchaMemoria();
+	/*iniciarEscuchaMemoria();
 	t_list * listaMemoriasQueMeConecte=  list_create();
 	tablaDeGossip = list_create();
 	agregarATablaDeGossip(configMemoria.puertoDeEscucha,configMemoria.ipDeEscucha, configMemoria.numeroDeMemoria);
@@ -22,6 +23,6 @@ int main(void) {
 	pthread_exit(gossip);
 	pthread_exit(multiplexacionMemoria);
 	pthread_exit(clienteMemoria);
-
+*/
 	return 0;
 }

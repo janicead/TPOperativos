@@ -57,16 +57,17 @@ void* crearConsolaMemoria(){
 			switch(comandoDeString(operacion[0])){
 				case CMD_SELECT:
 					if (pasarAUint16(operacion[2], key)){
-					char* valor = SELECTMemoria(operacion[1], *key, memoriaPrincipal, 0);
+					char* valor = SELECTMemoria(operacion[1], *key, 0);
 					printf("Respuesta SELECT: '%s' \n", valor);
 					}
-					mostrarElementosMemoriaPrincipal(memoriaPrincipal);
+					mostrarElementosMemoriaPrincipal();
 					mostrarElementosTablaSegmentos();
+					mostrarDatosMarcos();
 
 					printf("COMANDO select\n");
 					break;
 				case CMD_INSERT:
-					printf("");
+					/*printf("");
 					int timestamp = atoi(operacion[4]);
 					if (pasarAUint16(operacion[2], key)){
 						char* value = quitarEspacioFalso(operacion[3]);
@@ -76,7 +77,7 @@ void* crearConsolaMemoria(){
 					mostrarElementosMemoriaPrincipal(memoriaPrincipal);
 					mostrarElementosTablaSegmentos();
 					printf("COMANDO INSERT\n");
-
+*/
 					break;
 				case CMD_CREATE:
 					printf("COMANDO CREATE\n");
@@ -85,10 +86,11 @@ void* crearConsolaMemoria(){
 					printf("COMANDO DESCRIBE\n");
 					break;
 				case CMD_DROP:
+					/*
 					DROPMemoria(operacion[1],memoriaPrincipal);
 					printf("COMANDO DROP\n");
 
-
+*/
 					break;
 				case CMD_JOURNAL:
 					printf("COMANDO JOURNAL\n");
