@@ -37,6 +37,7 @@ typedef struct{
 	t_list* tablaPaginas;
 	int numeroPag;
 	char* nombreTabla;
+	int posicionSegmento;
 } t_LRU;
 
 typedef struct {
@@ -61,6 +62,7 @@ void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS);
 int tamanioLista(t_list * lista);
 char* recibirRespuestaSELECTMemoriaLfs();
 int obtenerTimeStamp();
+void mostrarDatosMarcos();
 //-------------------------------------BORRADO------------------------------------------------------------------//
 void destructor2(t_pagina * pagina);
 void destructor(t_segmento* segmento);
@@ -75,6 +77,8 @@ char* buscarTablaPaginas(t_list* tabla, uint16_t key);
 void guardarEnTablaDePaginas(t_segmento * segmento, int nroMarco,uint16_t key, int flagModificado );
 void mostrarElementosTablaPaginas(t_list * lista);
 int buscarEnTablaPaginasINSERT(t_list* tabla, uint16_t key,int timeStamp , char* value);
+void destructorPaginas(void* elemento);
+void borrarTablaDePaginas(t_list* lista);
 //------------------------------------------MEMORIA----------------------------------------------------------//
 t_registro* buscarEnMemoriaPrincipal( int nroMarco);
 int buscarEspacioLibreEnMP();
@@ -83,6 +87,7 @@ void actualizarMemoriaPrincipal(int nroMarco, unsigned long int timeStamp, char*
 void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco);
 int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value);
 void mostrarElementosMemoriaPrincipal();
+void quitarEspaciosGuardadosEnMemoria(t_list* lista);
 //---------------------------------------LRU----------------------------------------------------------------//
 t_LRU * LRU ();
 //-------------------------------------JOURNAL-------------------------------------------------------------//
@@ -92,5 +97,5 @@ void iniciarJournal();
 //---------------------------------------REQUESTS--------------------------------------------------------//
 char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado);
 void INSERTMemoria(char * nombreTabla, uint16_t key, char* value, int timeStamp);
-
+void DROPMemoria(char* nombreTabla);
 #endif /* SEGMENTACIONPAGINADA_H_ */

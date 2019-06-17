@@ -70,12 +70,13 @@ void* crearConsolaMemoria(){
 					if (pasarAUint16(operacion[2], key)){
 						char* value = quitarEspacioFalso(operacion[3]);
 						INSERTMemoria(operacion[1], *key, value, timestamp);
-
+						free(value);
 					}
 					mostrarElementosMemoriaPrincipal(memoriaPrincipal);
 					mostrarElementosTablaSegmentos();
 					mostrarDatosMarcos();
 					printf("COMANDO INSERT\n");
+
 
 					break;
 				case CMD_CREATE:
@@ -85,11 +86,8 @@ void* crearConsolaMemoria(){
 					printf("COMANDO DESCRIBE\n");
 					break;
 				case CMD_DROP:
-					/*
-					DROPMemoria(operacion[1],memoriaPrincipal);
+					DROPMemoria(operacion[1]);
 					printf("COMANDO DROP\n");
-
-*/
 					break;
 				case CMD_JOURNAL:
 					printf("COMANDO JOURNAL\n");
@@ -165,7 +163,8 @@ char* quitarEspacioFalso(char* value){
 	free(valuearray);
 	char** a = string_split(operacionFinal, "\"");
 	free(operacionFinal);
-	char* v = strdup(a[0]);
+	char* v =malloc(tamanioDadoPorLFS);
+	strcpy(v, a[0]);
 	hacerFreeArray(a);
 	free(a);
 	return v;
