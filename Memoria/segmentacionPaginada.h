@@ -74,10 +74,12 @@ void mostrarElementosTablaSegmentos();
 char* buscarTablaPaginas(t_list* tabla, uint16_t key);
 void guardarEnTablaDePaginas(t_segmento * segmento, int nroMarco,uint16_t key, int flagModificado );
 void mostrarElementosTablaPaginas(t_list * lista);
+int buscarEnTablaPaginasINSERT(t_list* tabla, uint16_t key,int timeStamp , char* value);
 //------------------------------------------MEMORIA----------------------------------------------------------//
 t_registro* buscarEnMemoriaPrincipal( int nroMarco);
 int buscarEspacioLibreEnMP();
 void settearMarcoEnMP(int nroMarco, int nroDeseado);
+void actualizarMemoriaPrincipal(int nroMarco, unsigned long int timeStamp, char* value);
 void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco);
 int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value);
 void mostrarElementosMemoriaPrincipal();
@@ -89,5 +91,6 @@ char* convertirAStringListaJournal();
 void iniciarJournal();
 //---------------------------------------REQUESTS--------------------------------------------------------//
 char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado);
+void INSERTMemoria(char * nombreTabla, uint16_t key, char* value, int timeStamp);
 
 #endif /* SEGMENTACIONPAGINADA_H_ */

@@ -3,11 +3,12 @@
 int main(void) {
 
 	pthread_t multiplexacionMemoria, clienteMemoria, gossip;
-	definirTamanioMemoriaPrincipal(20);
-	crearConsolaMemoria();
+
 	configurarLoggerMemoria();
 	configMemoria =leerConfigMemoria();
 	mostrarDatosArchivoConfig();
+	definirTamanioMemoriaPrincipal(20);
+	crearConsolaMemoria();
 	/*iniciarEscuchaMemoria();
 	t_list * listaMemoriasQueMeConecte=  list_create();
 	tablaDeGossip = list_create();

@@ -63,21 +63,20 @@ void* crearConsolaMemoria(){
 					mostrarElementosMemoriaPrincipal();
 					mostrarElementosTablaSegmentos();
 					mostrarDatosMarcos();
-
-					printf("COMANDO select\n");
 					break;
 				case CMD_INSERT:
-					/*printf("");
+					printf("");
 					int timestamp = atoi(operacion[4]);
 					if (pasarAUint16(operacion[2], key)){
 						char* value = quitarEspacioFalso(operacion[3]);
-						INSERTMemoria(operacion[1], *key, value, timestamp, memoriaPrincipal);
-						printf("COMANDO INSERT\n");
+						INSERTMemoria(operacion[1], *key, value, timestamp);
+
 					}
 					mostrarElementosMemoriaPrincipal(memoriaPrincipal);
 					mostrarElementosTablaSegmentos();
+					mostrarDatosMarcos();
 					printf("COMANDO INSERT\n");
-*/
+
 					break;
 				case CMD_CREATE:
 					printf("COMANDO CREATE\n");

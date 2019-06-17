@@ -80,7 +80,6 @@ t_segmento* guardarEnTablaDeSegmentos(char* nombreTabla){
 
 void mostrarElementosTablaSegmentos(){
 	int tamanioTS= tamanioLista(tablaDeSegmentos);
-	puts("----------------------MOSTRANDO SEGMENTOS----------------------");
 	if(tamanioTS==0){
 		puts("INFO: No hay SEGMENTOS en la TABLA DE SEGMENTOS");
 	}
@@ -122,7 +121,6 @@ void guardarEnTablaDePaginas(t_segmento * segmento, int nroMarco,uint16_t key, i
 
 void mostrarElementosTablaPaginas(t_list * lista){
 	int tamanioTP= tamanioLista(lista);
-	puts("----------------------MOSTRANDO PAGINAS----------------------");
 	if(tamanioTP==0){
 		puts("INFO: No hay PAGINAS en la TABLA DE PAGINAS");
 	}
@@ -131,6 +129,26 @@ void mostrarElementosTablaPaginas(t_list * lista){
 		t_pagina* pagina = (t_pagina*) elemento;
 		printf("NUMERO DE PAG %d, SU KEY ES %d y su INDICE EN MEMORIA ES %d\n", pagina->numeroPag, pagina->key, pagina->numeroMarco);
 	}
+}
+
+
+int buscarEnTablaPaginasINSERT(t_list* tabla, uint16_t key,int timeStamp , char* value){
+
+	int cantPaginas = tamanioLista(tabla);
+	for(int i = 0; i<cantPaginas; i++){
+		void * elemento = list_get(tabla, i);
+		t_pagina *pagina =(t_pagina*)elemento;
+		if(pagina->key ==key){
+			t_registro * registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
+			if(timeStamp>=registro->timestamp){ // asi lo modifica si se llega a dar el caso q se hace en el mismo momento
+				actualizarMemoriaPrincipal(pagina->numeroMarco, timeStamp, value);
+				pagina->flagModificado=1;
+				puts("INFO: Se actualizo la MEMORIA PRINCIPAL");
+			}
+			return timeStamp;
+		}
+	}
+	return 0;
 }
 
 //------------------------------------------MEMORIA------------------------------------------//
@@ -160,6 +178,15 @@ void settearMarcoEnMP(int nroMarco, int nroDeseado){
 	marcosOcupados[nroMarco]=nroDeseado;
 }
 
+void actualizarMemoriaPrincipal(int nroMarco, unsigned long int timeStamp, char* value){
+	t_registro * registro = malloc(sizeof(t_registro));
+	registro->value = value;
+	registro->timestamp= timeStamp;
+	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro+sizeof(uint16_t), &registro->timestamp, sizeof(unsigned long int));
+	memcpy(memoriaPrincipal+nroMarco*tamanioUnRegistro+sizeof(uint16_t)+ sizeof(unsigned long int), registro->value, tamanioDadoPorLFS);
+	free(registro);
+}
+
 void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco){
 	t_registro * registro = malloc(sizeof(t_registro));
 	registro->key = key;
@@ -170,10 +197,20 @@ void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco){
 	memcpy(memoriaPrincipal+nroMarco*tamanioUnRegistro+sizeof(uint16_t)+ sizeof(unsigned long int), registro->value, tamanioDadoPorLFS);
 	cantMarcosIngresados++;
 	settearMarcoEnMP(nroMarco, 1);
-	printf("el espacio es %d \n", nroMarco);
 	free(registro);
 }
 
+void borrarTablaSegmentos(char* nombreTabla){
+	int cantElementosSegmentos= tamanioLista(tablaDeSegmentos);
+	for(int i= 0; i<cantElementosSegmentos; i++){
+		void * elemento = list_get(tablaDeSegmentos, i);
+		t_segmento *segmento =(t_segmento*)elemento;
+		if(string_equals_ignore_case(segmento->nombreTabla,nombreTabla)){
+			puts("ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+
+		}
+	}
+}
 
 int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value){
 	int nroMarco = buscarEspacioLibreEnMP();
@@ -186,11 +223,19 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value){
 		if(lru->numeroPag != cantMaxMarcos){
 			void * elemento = list_remove(lru->tablaPaginas, lru->numeroPag);
 			t_pagina *pagina =(t_pagina*)elemento;
+			int tamanioTablaPags = tamanioLista(lru->tablaPaginas);
+			printf("EL TAMANO ESSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS %d\n", tamanioTablaPags);
+			if(tamanioTablaPags == 1){
+				borrarTablaSegmentos(lru->nombreTabla);
+				puts("aca deberia borrarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr\n");
+			}
 			printf("INFO: La PAGINA que voy a reemplazar es la nro %d del SEGMENTO '%s' \n", lru->numeroPag, lru->nombreTabla);
 			settearMarcoEnMP(pagina->numeroMarco, 0);
 			guardarEnMPLugarEspecifico(key, value, pagina->numeroMarco);
 			free(lru);
-			return pagina->numeroMarco;
+			int nroMarco = pagina->numeroMarco;
+			free(pagina);
+			return nroMarco;
 		}
 		else {
 			puts("INFO: Tengo que realizar JOURNAL\n");
@@ -211,22 +256,25 @@ void mostrarElementosMemoriaPrincipal(){
 	 char* elvalue = malloc(tamanioDadoPorLFS);
 	 puts("----------------------MOSTRANDO DATOS MEMORIA----------------------");
 	 int copiarDesde = 0;
-	 for(int i = 0 ; i <cantMaxMarcos; i++){
+	 int valor = cantMaxMarcos;
+	 if(cantMarcosIngresados<cantMaxMarcos){
+		 valor= cantMarcosIngresados;
+	 }
+	 for(int i = 0 ; i <valor; i++){
 		 printf("el i es %d\n", i);
-	 memcpy(&key, memoriaPrincipal + tamanioUnRegistro * i + copiarDesde,sizeof(uint16_t));
-	 copiarDesde += sizeof(uint16_t);
-	 memcpy(&eltimestamp, memoriaPrincipal+tamanioUnRegistro * i+ copiarDesde, sizeof(unsigned long int));
-	 copiarDesde += sizeof(unsigned long int);
-	 memcpy(elvalue, memoriaPrincipal + tamanioUnRegistro * i+ copiarDesde,tamanioDadoPorLFS);
-	 printf("LA KEY ES %d\n",key);
-	 printf("EL TIMESTAMP ES %lu\n",eltimestamp);
-	 printf("EL VALUE ES '%s'\n",elvalue);
-	 puts("--------------------------------------------");
-	 copiarDesde = 0;
+		 memcpy(&key, memoriaPrincipal + tamanioUnRegistro * i + copiarDesde,sizeof(uint16_t));
+		 copiarDesde += sizeof(uint16_t);
+		 memcpy(&eltimestamp, memoriaPrincipal+tamanioUnRegistro * i+ copiarDesde, sizeof(unsigned long int));
+		 copiarDesde += sizeof(unsigned long int);
+		 memcpy(elvalue, memoriaPrincipal + tamanioUnRegistro * i+ copiarDesde,tamanioDadoPorLFS);
+		 printf("LA KEY ES %d\n",key);
+		 printf("EL TIMESTAMP ES %lu\n",eltimestamp);
+		 printf("EL VALUE ES '%s'\n",elvalue);
+		 puts("--------------------------------------------");
+		 copiarDesde = 0;
 	 }
 	 free(elvalue);
 }
-
 
 //---------------------------------------LRU-------------------------------------------------------//
 
@@ -370,8 +418,39 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		segmento->tablaPaginas= list_create();
 		int nroMarco = guardarEnMemoria(nombreTabla, key, value);
 		guardarEnTablaDePaginas(segmento, nroMarco, key, flagModificado);
-		puts("INFO: Se guardo en la MP, en la tabla de PAGINAS y en tabla de SEGMENTOS");
+		puts("INFO: Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
 		return value;
 	}
 
+}
+
+
+void INSERTMemoria(char * nombreTabla, uint16_t key, char* value, int timeStamp){
+	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
+	int cantSegmentos = tamanioLista(tablaDeSegmentos);
+	if(ubicacionSegmento!=(cantSegmentos+1)){ //esta en tabla de SEGMENTOS
+		puts("INFO: Esta en la tabla de SEGMENTOS");
+		void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
+		t_segmento *segmento =(t_segmento*)elemento;
+		int valor =  buscarEnTablaPaginasINSERT(segmento->tablaPaginas, key, timeStamp, value );// aca tenemos que buscar en la tabla de paginas especifica de este segmento y meternos 1 x 1 en sus paginas para ver si en la memoria Principal esta el key
+		if(valor!= 0){ //lo encontro en tabla de paginas
+			//tengo que verificar los timestamps entre ambos a ver cual se queda en memoria principal
+			puts("INFO: Esta en la tabla de PAGINAS");
+		}
+		else{ //no lo encontro en tabla de paginas
+			puts("INFO: No esta en la tabla de PAGINAS");
+			int indice = guardarEnMemoria(nombreTabla, key, value);
+			guardarEnTablaDePaginas(segmento, indice, key, 1);
+			puts("INFO: Se guardo en la tabla de PAGINAS y en la MEMORIA");
+
+		}
+	}
+	else{ // no esta en tabla de SEGMENTOS
+		puts("INFO: No se encontro en la tabla de SEGMENTOS");
+		int indice = guardarEnMemoria(nombreTabla, key, value);
+		t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
+		segmento->tablaPaginas= list_create();
+		guardarEnTablaDePaginas(segmento, indice, key, 1);
+		puts("INFO: Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
+	}
 }
