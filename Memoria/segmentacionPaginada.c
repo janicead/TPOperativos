@@ -497,4 +497,3 @@ void JOURNALMemoria(){
 	iniciarJournal();
 }
 
-
