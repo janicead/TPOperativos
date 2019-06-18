@@ -8,7 +8,7 @@ void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS){
 	tamanioUnRegistro = tamanioValueDadoXLFS + sizeof(unsigned long int) + sizeof(uint16_t); //6+ tamanioValueDado
 	obtenerValue = sizeof(unsigned long int) + sizeof(uint16_t);
 	memoriaPrincipal = malloc(tamanioMaxMemoria);
-	printf("el tamanio de un resgistro es de %d\n", tamanioUnRegistro);
+	log_info(loggerMemoria,"El tamanio de un resgistro es de %d\n", tamanioUnRegistro);
 	cantMaxMarcos = tamanioMaxMemoria/ tamanioUnRegistro;
 	cantMarcosIngresados= 0;
 	marcosOcupados=(int*)calloc(cantMaxMarcos,sizeof(int));
@@ -80,12 +80,12 @@ t_segmento* guardarEnTablaDeSegmentos(char* nombreTabla){
 void mostrarElementosTablaSegmentos(){
 	int tamanioTS= tamanioLista(tablaDeSegmentos);
 	if(tamanioTS==0){
-		puts("INFO: No hay SEGMENTOS en la TABLA DE SEGMENTOS");
+		log_info(loggerMemoria,"No hay SEGMENTOS en la TABLA DE SEGMENTOS");
 	}
 	for(int i = 0; i < tamanioTS; i++){
 		void* elemento = list_get(tablaDeSegmentos, i);
 		t_segmento* segmento = (t_segmento*) elemento;
-		printf("NOMBRE DE TABLA: '%s'\n",segmento->nombreTabla);
+		log_info(loggerMemoria, "NOMBRE DE TABLA: '%s'\n",segmento->nombreTabla);
 		mostrarElementosTablaPaginas(segmento->tablaPaginas);
 	}
 }
@@ -100,7 +100,7 @@ char* buscarTablaPaginas(t_list* tabla, uint16_t key){
 		if(pagina->key ==key){
 		t_registro* registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
 		pagina->contadorVecesSolicitado++;
-		printf("Cantidad veces solicitado %d\n", pagina->contadorVecesSolicitado);
+		log_info(loggerMemoria, "Cantidad veces solicitado %d\n", pagina->contadorVecesSolicitado);
 		return registro->value;
 		}
 	}
@@ -121,12 +121,12 @@ void guardarEnTablaDePaginas(t_segmento * segmento, int nroMarco,uint16_t key, i
 void mostrarElementosTablaPaginas(t_list * lista){
 	int tamanioTP= tamanioLista(lista);
 	if(tamanioTP==0){
-		puts("INFO: No hay PAGINAS en la TABLA DE PAGINAS");
+		log_info(loggerMemoria,"No hay PAGINAS en la TABLA DE PAGINAS");
 	}
 	for(int i = 0 ; i<tamanioTP; i++){
 		void* elemento = list_get(lista, i);
 		t_pagina* pagina = (t_pagina*) elemento;
-		printf("NUMERO DE PAG %d, SU KEY ES %d y su INDICE EN MEMORIA ES %d\n", pagina->numeroPag, pagina->key, pagina->numeroMarco);
+		log_info(loggerMemoria,"NUMERO DE PAG %d, SU KEY ES %d y su INDICE EN MEMORIA ES %d\n", pagina->numeroPag, pagina->key, pagina->numeroMarco);
 	}
 }
 
@@ -142,7 +142,7 @@ int buscarEnTablaPaginasINSERT(t_list* tabla, uint16_t key,int timeStamp , char*
 			if(timeStamp>=registro->timestamp){ // asi lo modifica si se llega a dar el caso q se hace en el mismo momento
 				actualizarMemoriaPrincipal(pagina->numeroMarco, timeStamp, value);
 				pagina->flagModificado=1;
-				puts("INFO: Se actualizo la MEMORIA PRINCIPAL");
+				log_info(loggerMemoria,"Se actualizo la MEMORIA PRINCIPAL");
 			}
 			return timeStamp;
 		}
@@ -158,7 +158,6 @@ void destructorPaginas(void* elemento){
 	pagina->key= NULL;
 	pagina->numeroPag= NULL;
 	free(pagina);
-	printf("Se borro la tabla de PAGINAS\n");
 }
 
 void borrarTablaDePaginas(t_list* lista){
@@ -230,7 +229,7 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value){
 			if(t==0){
 				DROPMemoria(lru->nombreTabla);
 			}
-			printf("INFO: La PAGINA que voy a reemplazar es la nro %d del SEGMENTO '%s' \n", lru->numeroPag, lru->nombreTabla);
+			log_info(loggerMemoria,"La PAGINA que voy a reemplazar es la nro %d del SEGMENTO '%s' \n", lru->numeroPag, lru->nombreTabla);
 			settearMarcoEnMP(pagina->numeroMarco, 0);
 			guardarEnMPLugarEspecifico(key, value, pagina->numeroMarco);
 			free(lru);
@@ -240,7 +239,7 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value){
 			return nroMarco;
 		}
 		else {
-			puts("INFO: Tengo que realizar JOURNAL\n");
+			log_info(loggerMemoria,"Tengo que realizar JOURNAL\n");
 			iniciarJournal();// se inicia journal, osea que queda vacia la memoria entonces tiene si o si espacio
 			//luego de realizar journal, se terminaria guardando el dato :D
 			nroMarco = buscarEspacioLibreEnMP();
@@ -284,7 +283,7 @@ void quitarEspaciosGuardadosEnMemoria(t_list* lista){
 		t_pagina * pagina = (t_pagina *) elemento;
 		settearMarcoEnMP(pagina->numeroMarco,0);
 	}
-	printf("INFO: Se borraron espacios guardados en Memoria Principal\n");
+	log_info(loggerMemoria,"Se borraron espacios guardados en Memoria Principal\n");
 }
 void borrarTodaMemoria(){
 	for(int i = 0; i<cantMaxMarcos; i++){
@@ -361,7 +360,7 @@ char* convertirAStringListaJournal(){
 		free(journal);
 		free(unRegistro);
 	}
-	printf("[INFO] LA LISTA ES----> %s \n", elementoEnviar);
+	log_info(loggerMemoria,"LA LISTA ES----> %s \n", elementoEnviar);
 
 	return elementoEnviar;
 }
@@ -369,12 +368,10 @@ char* convertirAStringListaJournal(){
 void iniciarJournal(){
 	int tamanioTablaSegmentos = tamanioLista(tablaDeSegmentos);
 	char* elementoEnviar = string_new();
-	printf("Tamanio tabla de segmentos %d\n", tamanioTablaSegmentos);
 	for(int i = 0 ; i < tamanioTablaSegmentos; i ++){
 		void * elemento = list_get(tablaDeSegmentos, i);
 		t_segmento *segmento =(t_segmento*)elemento;
 		int tamanioTablaPaginas = tamanioLista(segmento->tablaPaginas);
-		printf("Tamanio tabla de paginas %d para el segmento nro %d\n", tamanioTablaPaginas, i);
 		for(int j = 0; j<tamanioTablaPaginas; j++){
 			void * elemento = list_get(segmento->tablaPaginas, j);
 			t_pagina * pagina = (t_pagina *) elemento;
@@ -390,16 +387,15 @@ void iniciarJournal(){
 	}
 
 	puts("-------------------------------------------------------------------");
-	printf("[INFO]: Elementos en la lista de JOURNAL...\n");
+	log_info(loggerMemoria, "JOURNAL: lista a enviar es---> %s\n", elementoEnviar);
 	puts("-------------------------------------------------------------------");
-	printf("El mensaje que se va a enviar es: %s\n", elementoEnviar);
 
 	int t= tamanioLista(tablaDeSegmentos);
 	for(int j = 0; j < t ; j++){
 		void* elemento = list_get(tablaDeSegmentos, j);
 		t_segmento* s = (t_segmento *) elemento;
-		printf("El nombre de tabla a eliminar es: %s\n", s->nombreTabla);
 		borrarTablaDePaginas(s->tablaPaginas);
+		log_info(loggerMemoria, "Se borro la tabla de paginas %s \n", s->nombreTabla);
 		free(s->nombreTabla);
 		free(s);
 	}
@@ -416,18 +412,18 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
 	if(ubicacionSegmento!=(cantSegmentos+1)){ //esta en tabla de segmentos
-		puts("INFO: Esta en la tabla de SEGMENTOS");
+		log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
 		void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
 		t_segmento *segmento =(t_segmento*)elemento;
 		char* value = buscarTablaPaginas(segmento->tablaPaginas, key);// aca tenemos que buscar en la tabla de paginas especifica de este segmento y meternos 1 x 1 en sus paginas para ver si en la memoria Principal esta el key
 		if(value!= NULL){ //lo encontro en tabla de paginas, lo busca en memoria principal y devuelve lo que vale
-			puts("INFO: Esta en la tabla de PAGINAS");
+			log_info(loggerMemoria,"Esta en la tabla de PAGINAS");
 			return value;
 		}
 		else{ //no lo encontro en tabla de paginas
 			//tengo que consultarle a LFS PERO solo guardo en tabla de paginas
 			//consultaSELECTMemoriaLfs();// esto va a mandarle SELECT nombreTabla key con SOCKETS
-			puts("INFO: No esta en la tabla de PAGINAS");
+			log_info(loggerMemoria,"No esta en la tabla de PAGINAS");
 			int nroMarco = guardarEnMemoria(nombreTabla, key, value);
 			char* value = recibirRespuestaSELECTMemoriaLfs(); //con SOCKETS
 			guardarEnTablaDePaginas(segmento, nroMarco, key, flagModificado);
@@ -437,13 +433,13 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 	else{// no esta en tabla de segmentos
 		//pedirle a lfs y guardar datos en tabla segmentos y tabla paginas
 		//consultaSELECTMemoriaLfs();
-		puts("INFO: No se encontro en la tabla de SEGMENTOS");
+		log_info(loggerMemoria,"No se encontro en la tabla de SEGMENTOS");
 		char* value = recibirRespuestaSELECTMemoriaLfs();
 		t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
 		segmento->tablaPaginas= list_create();
 		int nroMarco = guardarEnMemoria(nombreTabla, key, value);
 		guardarEnTablaDePaginas(segmento, nroMarco, key, flagModificado);
-		puts("INFO: Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
+		log_info(loggerMemoria,"Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
 		return value;
 	}
 }
@@ -452,28 +448,28 @@ void INSERTMemoria(char * nombreTabla, uint16_t key, char* value, int timeStamp)
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
 	if(ubicacionSegmento!=(cantSegmentos+1)){ //esta en tabla de SEGMENTOS
-		puts("INFO: Esta en la tabla de SEGMENTOS");
+		log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
 		void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
 		t_segmento *segmento =(t_segmento*)elemento;
 		int valor =  buscarEnTablaPaginasINSERT(segmento->tablaPaginas, key, timeStamp, value );// aca tenemos que buscar en la tabla de paginas especifica de este segmento y meternos 1 x 1 en sus paginas para ver si en la memoria Principal esta el key
 		if(valor!= 0){ //lo encontro en tabla de paginas
 			//tengo que verificar los timestamps entre ambos a ver cual se queda en memoria principal
-			puts("INFO: Esta en la tabla de PAGINAS");
+			log_info(loggerMemoria,"Esta en la tabla de PAGINAS");
 		}
 		else{ //no lo encontro en tabla de paginas
-			puts("INFO: No esta en la tabla de PAGINAS");
+			log_info(loggerMemoria,"No esta en la tabla de PAGINAS");
 			int indice = guardarEnMemoria(nombreTabla, key, value);
 			guardarEnTablaDePaginas(segmento, indice, key, 1);
-			puts("INFO: Se guardo en la tabla de PAGINAS y en la MEMORIA");
+			log_info(loggerMemoria,"Se guardo en la tabla de PAGINAS y en la MEMORIA");
 		}
 	}
 	else{ // no esta en tabla de SEGMENTOS
-		puts("INFO: No se encontro en la tabla de SEGMENTOS");
+		log_info(loggerMemoria,"No se encontro en la tabla de SEGMENTOS");
 		int indice = guardarEnMemoria(nombreTabla, key, value);
 		t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
 		segmento->tablaPaginas= list_create();
 		guardarEnTablaDePaginas(segmento, indice, key, 1);
-		puts("INFO: Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
+		log_info(loggerMemoria, "Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
 	}
 
 }
@@ -482,7 +478,7 @@ void DROPMemoria(char* nombreTabla){
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 		int cantSegmentos = tamanioLista(tablaDeSegmentos);
 		if(ubicacionSegmento!=(cantSegmentos+1)){
-			puts("INFO: Esta en la tabla de SEGMENTOS");
+			log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
 			void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
 			t_segmento *segmento =(t_segmento*)elemento;
 			quitarEspaciosGuardadosEnMemoria(segmento->tablaPaginas);
@@ -493,9 +489,12 @@ void DROPMemoria(char* nombreTabla){
 			//aca tengo que avisarle al FS que se borro esta tabla
 		}
 		else{
-			puts("INFO: Dicha tabla no se encuentra en la tabla de SEGMENTOS");
+			log_info(loggerMemoria,"Dicha tabla no se encuentra en la tabla de SEGMENTOS");
 			//aca tengo que avisarle al FS que borre la tabla
 		}
+}
+void JOURNALMemoria(){
+	iniciarJournal();
 }
 
 

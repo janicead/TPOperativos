@@ -75,9 +75,6 @@ void* crearConsolaMemoria(){
 					mostrarElementosMemoriaPrincipal(memoriaPrincipal);
 					mostrarElementosTablaSegmentos();
 					mostrarDatosMarcos();
-					printf("COMANDO INSERT\n");
-
-
 					break;
 				case CMD_CREATE:
 					printf("COMANDO CREATE\n");
@@ -90,7 +87,7 @@ void* crearConsolaMemoria(){
 					printf("COMANDO DROP\n");
 					break;
 				case CMD_JOURNAL:
-					printf("COMANDO JOURNAL\n");
+					JOURNALMemoria();
 					break;
 				case CMD_NOENCONTRADO:default:
 					log_error(loggerMemoria, "No se reconoce el comando.");

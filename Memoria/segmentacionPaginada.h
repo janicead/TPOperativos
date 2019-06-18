@@ -16,6 +16,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <bibliotecaFunciones/usoVariado.h>
+#include "configMemoria.h"
 
 
 
@@ -101,4 +102,5 @@ void iniciarJournal();
 char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado);
 void INSERTMemoria(char * nombreTabla, uint16_t key, char* value, int timeStamp);
 void DROPMemoria(char* nombreTabla);
+void JOURNALMemoria();
 #endif /* SEGMENTACIONPAGINADA_H_ */
