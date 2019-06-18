@@ -17,6 +17,8 @@
 #include <semaphore.h>
 #include <bibliotecaFunciones/usoVariado.h>
 
+
+
 int socketLFS;
 
 
@@ -55,7 +57,7 @@ int tamanioDadoPorLFS;
 t_list* listaJournal;
 void* memoriaPrincipal;
 int tamanioMemoriaPrincipal;
-
+int tamanioMaxMemoria;
 
 //----------------------------------------GENERALES--------------------------------------------------------------//
 void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS);
@@ -88,6 +90,7 @@ void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco);
 int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value);
 void mostrarElementosMemoriaPrincipal();
 void quitarEspaciosGuardadosEnMemoria(t_list* lista);
+void borrarTodaMemoria();
 //---------------------------------------LRU----------------------------------------------------------------//
 t_LRU * LRU ();
 //-------------------------------------JOURNAL-------------------------------------------------------------//

@@ -3,7 +3,7 @@
 //----------------------------------------GENERALES-------------------------------------------//
 
 void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS){
-	int tamanioMaxMemoria = 52; //de archivo de config
+	tamanioMaxMemoria = 52; //de archivo de config
 	tamanioDadoPorLFS= tamanioValueDadoXLFS;
 	tamanioUnRegistro = tamanioValueDadoXLFS + sizeof(unsigned long int) + sizeof(uint16_t); //6+ tamanioValueDado
 	obtenerValue = sizeof(unsigned long int) + sizeof(uint16_t);
@@ -71,7 +71,7 @@ int buscarTablaSegmentos(char* nombreTabla){
 t_segmento* guardarEnTablaDeSegmentos(char* nombreTabla){
 	int cantPaginasGuardadas;
 	t_segmento* segmento = malloc(sizeof(t_segmento));
-	segmento->nombreTabla =strdup( nombreTabla);
+	segmento->nombreTabla = strdup(nombreTabla);
 	segmento->tablaPaginas= list_create();
 	list_add(tablaDeSegmentos, (void*)segmento);
 	return segmento;
@@ -157,7 +157,8 @@ void destructorPaginas(void* elemento){
 	pagina->numeroMarco= NULL;
 	pagina->key= NULL;
 	pagina->numeroPag= NULL;
-	pagina = NULL;
+	free(pagina);
+	printf("Se borro la tabla de PAGINAS\n");
 }
 
 void borrarTablaDePaginas(t_list* lista){
@@ -289,6 +290,7 @@ void borrarTodaMemoria(){
 	for(int i = 0; i<cantMaxMarcos; i++){
 		settearMarcoEnMP(i, 0);
 	}
+	memset(memoriaPrincipal, 0, tamanioMaxMemoria);
 }
 //---------------------------------------LRU-------------------------------------------------------//
 
@@ -348,45 +350,25 @@ void mostrarElementosListaJournal(){
 }
 
 char* convertirAStringListaJournal(){
-
 	int tamanioJOURNAL= tamanioLista(listaJournal);
-	char * elementoEnviar = string_new();
+	char* elementoEnviar = string_new();
+
 	for (int i = 0; i<tamanioJOURNAL; i ++){
 		void* elemento = list_get(listaJournal, i);
 		t_JOURNAL* journal = (t_JOURNAL*) elemento;
-
-		string_append(&elementoEnviar, journal->nombreTabla);
-		char* numeroKey= malloc (1500);
-		char* numeroTimestamp= malloc (1500);
-		string_append(&elementoEnviar, " ");
-		sprintf(numeroKey, "%d", journal->registro->key);
-		string_append(&elementoEnviar, numeroKey);
-		string_append(&elementoEnviar, " ");
-		string_append(&elementoEnviar, journal->registro->value);
-		string_append(&elementoEnviar, " ");
-		sprintf(numeroTimestamp, "%lu", journal->registro->timestamp);
-		string_append(&elementoEnviar, numeroTimestamp);
-		string_append(&elementoEnviar, "/");
-
-		//printf("La key es %d", journal->registro->key);
-		//printf("El timestamp es %lu", journal->registro->key);
-		//printf("La key es %d", journal->registro->key);
-
+		char *unRegistro= string_from_format("%s %d %s %lu/",journal->nombreTabla,journal->registro->key,journal->registro->value,journal->registro->timestamp);
+		string_append(&elementoEnviar, unRegistro);
 		free(journal);
+		free(unRegistro);
 	}
 	printf("[INFO] LA LISTA ES----> %s \n", elementoEnviar);
+
 	return elementoEnviar;
 }
 
-
-// INSERT TABLA1 3 "CHAU" 4
-// INSERT TABLA2 4 "HOLA" 9
-// INSERT TABLA3 6 "SI" 10
-
 void iniciarJournal(){
-	//generar lista
-	listaJournal= list_create();
 	int tamanioTablaSegmentos = tamanioLista(tablaDeSegmentos);
+	char* elementoEnviar = string_new();
 	printf("Tamanio tabla de segmentos %d\n", tamanioTablaSegmentos);
 	for(int i = 0 ; i < tamanioTablaSegmentos; i ++){
 		void * elemento = list_get(tablaDeSegmentos, i);
@@ -397,32 +379,34 @@ void iniciarJournal(){
 			void * elemento = list_get(segmento->tablaPaginas, j);
 			t_pagina * pagina = (t_pagina *) elemento;
 			if(pagina->flagModificado ==1){
-			t_JOURNAL* journal = malloc(sizeof(t_JOURNAL));
-			t_registro* registro =buscarEnMemoriaPrincipal( pagina->numeroMarco);
-			journal->nombreTabla= segmento->nombreTabla;
-			journal-> registro= registro;
-			list_add(listaJournal,(void*)journal);
+			t_registro* registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
+			char* unRegistro= string_from_format("%s %d %s %lu/",segmento->nombreTabla,registro->key,registro->value,registro->timestamp);
+			string_append(&elementoEnviar, unRegistro);
+			free(unRegistro);
+			free(registro->value);
+			free(registro);
 			}
 		}
 	}
+
 	puts("-------------------------------------------------------------------");
 	printf("[INFO]: Elementos en la lista de JOURNAL...\n");
-	mostrarElementosListaJournal();
 	puts("-------------------------------------------------------------------");
-	//char* msjEnviado = convertirAStringListaJournal();
-	//printf("El mensaje que se va a enviar es: %s\n", msjEnviado);
-	borrarTodaMemoria();
-	printf("ACA BORRARIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \n");
-	/*int c = tamanioLista(tablaDeSegmentos);
-	for(int i = 0; i <c; i++){
-		void* elemento = list_get(tablaDeSegmentos, i);
-		t_segmento * segmento = (t_segmento*) elemento;
-		DROPMemoria(segmento->nombreTabla);
-	}*/
+	printf("El mensaje que se va a enviar es: %s\n", elementoEnviar);
 
-	//borrarTodo();//borrar todo lo guardado
+	int t= tamanioLista(tablaDeSegmentos);
+	for(int j = 0; j < t ; j++){
+		void* elemento = list_get(tablaDeSegmentos, j);
+		t_segmento* s = (t_segmento *) elemento;
+		printf("El nombre de tabla a eliminar es: %s\n", s->nombreTabla);
+		borrarTablaDePaginas(s->tablaPaginas);
+		free(s->nombreTabla);
+		free(s);
+	}
+	list_clean(tablaDeSegmentos);
+	borrarTodaMemoria();
 	//empaquetarEnviarMensaje(socketLFS,22,strlen(msjEnviado),msjEnviado);
-	//free(msjEnviado);
+	free(elementoEnviar);
 }
 
 //----------------------------------------------------REQUESTS-------------------------------------------------//
@@ -462,9 +446,7 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		puts("INFO: Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
 		return value;
 	}
-
 }
-
 
 void INSERTMemoria(char * nombreTabla, uint16_t key, char* value, int timeStamp){
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
@@ -506,6 +488,8 @@ void DROPMemoria(char* nombreTabla){
 			quitarEspaciosGuardadosEnMemoria(segmento->tablaPaginas);
 			borrarTablaDePaginas(segmento->tablaPaginas);
 			list_remove(tablaDeSegmentos, ubicacionSegmento);
+			free(segmento->nombreTabla);
+			free(segmento);
 			//aca tengo que avisarle al FS que se borro esta tabla
 		}
 		else{
