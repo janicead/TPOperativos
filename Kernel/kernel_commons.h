@@ -12,6 +12,14 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <signal.h>
+#include <openssl/md5.h> // Para calcular el MD5
+#include <string.h>
+#include <sys/socket.h> // Para crear sockets, enviar, recibir, etc
+#include <netdb.h> // Para getaddrinfo
+#include <unistd.h> // Para close
+#include <bibliotecaFunciones/sockets.h>
+
+
 
 /**
 * @NAME: t_LQL_operacion
@@ -163,5 +171,6 @@ void destruir_colas();
 void destruir_semaforos();
 void free_memoria(t_memoria* memoria);
 void free_tabla(t_tabla* tabla);
+
 
 #endif /* KERNEL_COMMONS_H_ */

@@ -180,4 +180,3 @@ void free_memoria(t_memoria* memoria){
 	free(memoria);
 	return;
 }
-

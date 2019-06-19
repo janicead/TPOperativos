@@ -38,10 +38,19 @@ void iniciarValoresParaTest(){
 int main(void) {
 	iniciar();
 	crear_hilos_iniciales();
-	iniciarValoresParaTest();
+	//iniciarValoresParaTest();
 	//conectarAMemoria();
-	pruebaParser();
-	pthread_join(consola,NULL);
+	//pruebaParser();
+
+	//CONEXION A MEMORIAS
+	pthread_t recibirMemoriasYConectarme;
+	tablaDeGossip =  list_create();
+	memoriasALasQueMeConecte =  list_create();
+
+	conectarmeAMP();
+	pthread_create(&recibirMemoriasYConectarme, NULL, recibirMemorias, NULL);
+	pthread_join(recibirMemoriasYConectarme,NULL);
+	//pthread_join(consola,NULL);
 	exit_gracefully(EXIT_SUCCESS);
 }
 

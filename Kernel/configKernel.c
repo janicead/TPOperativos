@@ -5,10 +5,8 @@ int leerConfigKernel(){
 	log_info(loggerKernel, "Leyendo archivo de configuracion");
 
 	if (config_has_property(archivoConfigKernel, "IP_MEMORIA")) {
-		char** ip = string_n_split(config_get_string_value(archivoConfigKernel,"IP_MEMORIA"),2,"\"");
-		configKernel.ip_memoria = ip[0];
-		string_iterate_lines(ip, (void*) free);
-		free(ip);
+		configKernel.ip_memoria = malloc(sizeof(config_get_string_value(archivoConfigKernel, "IP_MEMORIA")));
+		strcpy(configKernel.ip_memoria,config_get_string_value(archivoConfigKernel,"IP_MEMORIA"));
 	} else {
 		log_error(loggerKernel,"No se encontro la key IP_MEMORIA en el archivo de configuracion");
 		return -1;
@@ -61,7 +59,7 @@ void verificarArchivoConfigKernel(){
 }
 
 void mostrarDatosArchivoConfigKernel(){
-	log_info(loggerKernel,"IP_MEMORIA: %d",configKernel.ip_memoria);
+	log_info(loggerKernel,"IP_MEMORIA: %s",configKernel.ip_memoria);
 	log_info(loggerKernel,"PUNTO_MEMORIA: %d",configKernel.puerto_memoria);
 	log_info(loggerKernel,"QUANTUM: %d",configKernel.quantum);
 	log_info(loggerKernel,"MULTIPROCESAMIENTO: %d",configKernel.multiprocesamiento);

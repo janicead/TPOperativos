@@ -12,6 +12,7 @@
 #include "consolaKernel.h"
 #include "planificador.h"
 #include "kernel_commons.h"
+#include "socketsKernel.h"
 #include <bibliotecaFunciones/types.h>
 
 
