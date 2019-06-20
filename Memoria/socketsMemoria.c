@@ -34,8 +34,6 @@ void realizarGossip(){
 }
 
 
-
-
 void iniciarEscuchaMemoria(){
 	int yes=1;
     if ((servidorEscuchaMemoria = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -100,6 +98,7 @@ void serCliente(char* ip , int puerto){
 	free(numeroMemoria);
 	}
 	free(ipServidor);
+	close(cliente);
 }
 void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger){
 
@@ -163,7 +162,7 @@ void realizarMultiplexacion(int socketEscuchando){
 		                    	fdmax = newfd;
 		                    }
 		                    int valor = recibirHandShakeMemoria(newfd,KERNELOMEMORIA, loggerMemoria);
-		                    if(valor!=0){
+		                    if(valor!=0 && valor!=1313){
 		                    	int numMemoria = configMemoria.numeroDeMemoria;
 		                    	char* soyMemoria = string_new();
 		                    	string_append(&soyMemoria, "SOY MEMORIA ");
@@ -175,10 +174,26 @@ void realizarMultiplexacion(int socketEscuchando){
 		                    	recibirMemoriasTablaDeGossip(newfd,KERNELOMEMORIA,loggerMemoria);
 		                    	mostrarmeMemoriasTablaGossip();
 		                    	enviarMemoriasTablaGossip(newfd,KERNELOMEMORIA,memoriasTablaGossip);
+		                    	/////////////////////////////////////////////////////////
+		                    	//aca se supone que le respondo al SELECT
+		                    	t_PaqueteDeDatos* paquete = recibirPaquete(newfd);
+		                    	printf("HOLA HOLA");
+		                    			t_SELECT* SELECT=deserializarT_SELECT(paquete->Datos);
+		                    			char* nombreTabla= malloc(sizeof(SELECT->nombreTabla));
+		                    			strcpy(nombreTabla,SELECT->nombreTabla);
+		                    			uint16_t k = (uint16_t) SELECT->KEY;
+		                    			char* verificado = SELECTMemoria(nombreTabla,k,0);
+		                    			empaquetarEnviarMensaje(newfd,13,sizeof(verificado),verificado);
+
+
+		                    		free(paquete->Datos);
+		                    		free(paquete);
+		                    	////////////////////////////////////////////////////////
+
 		                    	free(soyMemoria);
 		                    	free(memoriasTablaGossip);
 		                    }
-		                    else{
+		                    else {
 		                    	int numMemoria = configMemoria.numeroDeMemoria;
 		                    	char* soyMemoria = string_new();
 		                    	string_append(&soyMemoria, "SOY MEMORIA ");
@@ -192,7 +207,6 @@ void realizarMultiplexacion(int socketEscuchando){
 		                    	free(soyMemoria);
 		                    	free(memoriasTablaGossip);
 		                    }
-
 
 		                }
 		    	} else {
@@ -272,5 +286,8 @@ void exitGracefully(int return_nr, t_log* logger, int servidorEscucha)
 	close(servidorEscucha);
 	exit(return_nr);
 }
+
+
+
 
 

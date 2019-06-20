@@ -9,6 +9,7 @@
 #include <netdb.h> // Para getaddrinfo
 #include <unistd.h> // Para close
 #include <bibliotecaFunciones/sockets.h>
+
 #include "configKernel.h"
 
 t_list * memoriasALasQueMeConecte;

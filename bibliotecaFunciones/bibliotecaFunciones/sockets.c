@@ -458,6 +458,7 @@ void recibirMemoriasTablaDeGossip(int emisor,t_identidad identidad, t_log* logge
 	free(paquete);
 }
 
+
 char* memoriasTablaDeGossip(){
 
 	int puerto;

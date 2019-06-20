@@ -27,6 +27,8 @@ void conectarmeAMP(){
 		agregarATablaDeGossipKernel(configKernel.puerto_memoria,ipServidor,nroMemoria);
 		agregarAMemoriasConectadasAKernel(configKernel.puerto_memoria,ipServidor,nroMemoria);
 		mostrarmeMemoriasTablaGossip();
+		char* rsta= opSELECT(cliente, "TABLA12", 12);
+		printf("La respuesta es %s\n", rsta);
 	}
 	free(ipServidor);
 
