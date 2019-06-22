@@ -176,7 +176,7 @@ void realizarMultiplexacion(int socketEscuchando){
 		                    	enviarMemoriasTablaGossip(newfd,KERNELOMEMORIA,memoriasTablaGossip);
 		                    	/////////////////////////////////////////////////////////
 		                    	//aca se supone que le respondo al SELECT
-		                    	t_PaqueteDeDatos* paquete = recibirPaquete(newfd);
+		                    	/*t_PaqueteDeDatos* paquete = recibirPaquete(newfd);
 		                    	printf("HOLA HOLA");
 		                    			t_SELECT* SELECT=deserializarT_SELECT(paquete->Datos);
 		                    			char* nombreTabla= malloc(sizeof(SELECT->nombreTabla));
@@ -187,7 +187,7 @@ void realizarMultiplexacion(int socketEscuchando){
 
 
 		                    		free(paquete->Datos);
-		                    		free(paquete);
+		                    		free(paquete);*/
 		                    	////////////////////////////////////////////////////////
 
 		                    	free(soyMemoria);

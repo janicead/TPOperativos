@@ -5,7 +5,7 @@ int leerConfigKernel(){
 	log_info(loggerKernel, "Leyendo archivo de configuracion");
 
 	if (config_has_property(archivoConfigKernel, "IP_MEMORIA")) {
-		configKernel.ip_memoria = malloc(sizeof(config_get_string_value(archivoConfigKernel, "IP_MEMORIA")));
+		configKernel.ip_memoria = malloc(strlen(config_get_string_value(archivoConfigKernel, "IP_MEMORIA"))+1);
 		strcpy(configKernel.ip_memoria,config_get_string_value(archivoConfigKernel,"IP_MEMORIA"));
 	} else {
 		log_error(loggerKernel,"No se encontro la key IP_MEMORIA en el archivo de configuracion");

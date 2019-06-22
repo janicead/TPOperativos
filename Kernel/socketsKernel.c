@@ -20,7 +20,7 @@ void conectarmeAMP(){
 		log_info(loggerKernel,"Me conecte a la memoria con puerto %d e ip %s",configKernel.puerto_memoria,ipServidor);
 		realizarHandShake(socketKernel,KERNELOMEMORIA,"SOY KERNEL");
 		int nroMemoria = recibirHandShakeMemoria(socketKernel,KERNELOMEMORIA,loggerKernel);
-		recibirMemoriasTablaDeGossip(socketKernel,KERNELOMEMORIA,loggerKernel);
+		recibirMemoriasTablaDeGossipKernel(socketKernel,KERNELOMEMORIA,loggerKernel);
 		agregar_memoria(configKernel.puerto_memoria,ipServidor,nroMemoria);
 	}
 	free(ipServidor);
@@ -92,7 +92,7 @@ void conectarmeAMemorias(){
 		return;
 	}
 	for(int i = 0; i<cantMemorias; i++){
-		t_memoria* mem = list_get(tablaDeGossip, i);
+		t_memoria* mem = list_get(memorias, i);
 		if(!mem->conectada){
 			conectarmeAMemoriaEspecifica(mem->puerto,mem->ip);
 			mem->conectada = true;

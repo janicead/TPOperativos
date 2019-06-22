@@ -191,7 +191,7 @@ void empaquetarEnviarMensaje(int socketReceptor, int unID, int longitudDatos, ch
 		perror("fallo en send(), al enviar el paqueteListo");
 		exit(0);
 	}
-
+	freePackage(package);
 	free(paqueteListo);
 
 }

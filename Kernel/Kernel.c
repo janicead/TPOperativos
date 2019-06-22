@@ -39,18 +39,13 @@ int main(void) {
 	iniciar();
 	crear_hilos_iniciales();
 	//iniciarValoresParaTest();
-	//conectarAMemoria();
 	//pruebaParser();
 
-	//CONEXION A MEMORIAS
-	pthread_t recibirMemoriasYConectarme;
-	tablaDeGossip =  list_create();
-	memoriasALasQueMeConecte =  list_create();
-
+    pthread_t recibirMemoriasYConectarme;
 	conectarmeAMP();
 	pthread_create(&recibirMemoriasYConectarme, NULL, (void*)recibirMemorias, NULL);
-	pthread_join(recibirMemoriasYConectarme,NULL);
-	//pthread_join(consola,NULL);
+	pthread_detach(recibirMemoriasYConectarme);
+	pthread_join(consola,NULL);
 	exit_gracefully(EXIT_SUCCESS);
 }
 
