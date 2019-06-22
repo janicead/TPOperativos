@@ -19,7 +19,7 @@ void realizarGossip(){
 	       elapsedsec = diff / CLOCKS_PER_SEC;
 
 	       if (elapsedsec >= sec) {
-	    	   pthread_create(&clienteMemoria, NULL, hacermeClienteDeMisServers, NULL);
+	    	   pthread_create(&clienteMemoria, NULL, (void*)hacermeClienteDeMisServers, NULL);
 
 	    	   if(kernel!=0){
 	    	   char* memoriasEnTablaDeGossip = memoriasTablaDeGossip();
@@ -66,8 +66,8 @@ void serCliente(char* ip , int puerto){
 	int cliente;
 	char* ipServidor = quitarComillas(ip);
 	struct sockaddr_in dirServidorMemoria;
-	struct sockaddr_in dirCliente;
-	unsigned int tamanioDireccion;
+	//struct sockaddr_in dirCliente;
+	//unsigned int tamanioDireccion;
 	dirServidorMemoria.sin_family = AF_INET;
 	dirServidorMemoria.sin_addr.s_addr = inet_addr(ipServidor);
 	dirServidorMemoria.sin_port = htons(puerto); //puerto al que va a escuchar

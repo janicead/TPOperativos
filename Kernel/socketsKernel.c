@@ -1,48 +1,40 @@
 #include "socketsKernel.h"
+
 void definirValorMP(){
 	memoria= 0;
 }
-void conectarmeAMP(){
 
-	int cliente;
+void conectarmeAMP(){
 	char* ipServidor = quitarComillas(configKernel.ip_memoria);
 	struct sockaddr_in dirServidorMemoria;
-	struct sockaddr_in dirCliente;
-	unsigned int tamanioDireccion;
 	dirServidorMemoria.sin_family = AF_INET;
 	dirServidorMemoria.sin_addr.s_addr = inet_addr(ipServidor);
 	dirServidorMemoria.sin_port = htons(configKernel.puerto_memoria); //puerto al que va a escuchar
-	cliente = socket(AF_INET,SOCK_STREAM,0);
+	socketKernel = socket(AF_INET,SOCK_STREAM,0);
 
-	if (connect (cliente, (void*)&dirServidorMemoria, sizeof(dirServidorMemoria))!=0){
-
+	if (connect (socketKernel, (void*)&dirServidorMemoria, sizeof(dirServidorMemoria))!=0){
 		log_info(loggerKernel,"La memoria con puerto %d e ip %s no se encuentra activa",configKernel.puerto_memoria,ipServidor);
 	}
 	else {
-		memoria = cliente;
+		memoria = socketKernel;
 		log_info(loggerKernel,"Me conecte a la memoria con puerto %d e ip %s",configKernel.puerto_memoria,ipServidor);
-		realizarHandShake(cliente,KERNELOMEMORIA,"SOY KERNEL");
-		int nroMemoria = recibirHandShakeMemoria(cliente,KERNELOMEMORIA,loggerKernel);
-		recibirMemoriasTablaDeGossip(cliente,KERNELOMEMORIA,loggerKernel);
-		agregarATablaDeGossipKernel(configKernel.puerto_memoria,ipServidor,nroMemoria);
-		agregarAMemoriasConectadasAKernel(configKernel.puerto_memoria,ipServidor,nroMemoria);
-		mostrarmeMemoriasTablaGossip();
-		char* rsta= opSELECT(cliente, "TABLA12", 12);
-		printf("La respuesta es %s\n", rsta);
+		realizarHandShake(socketKernel,KERNELOMEMORIA,"SOY KERNEL");
+		int nroMemoria = recibirHandShakeMemoria(socketKernel,KERNELOMEMORIA,loggerKernel);
+		recibirMemoriasTablaDeGossip(socketKernel,KERNELOMEMORIA,loggerKernel);
+		agregar_memoria(configKernel.puerto_memoria,ipServidor,nroMemoria);
 	}
 	free(ipServidor);
-
 }
+
 void recibirMemorias(){
 	while(1){
 		if(memoria!=0){
 			recibirMemoriasTablaDeGossipKernel(memoria,KERNELOMEMORIA,loggerKernel);
-			mostrarmeMemoriasTablaGossip();
 			conectarmeAMemorias();
 		}
 	}
-
 }
+
 void recibirMemoriasTablaDeGossipKernel(int emisor,t_identidad identidad, t_log* logger){
 	t_PaqueteDeDatos* paquete=recibirPaquete(emisor);
 	if(paquete->ID==identidad){
@@ -57,23 +49,23 @@ void recibirMemoriasTablaDeGossipKernel(int emisor,t_identidad identidad, t_log*
 			free(punteroHandShake->mensaje);
 			free(punteroHandShake);
 		}
-		else if(identidad == KERNELOMEMORIA && verificado ==NULL){
+		else if(identidad == KERNELOMEMORIA && verificado == 0){
 			log_info(logger,"Esta memoria no posee seeds");
 			free(punteroHandShake->mensaje);
 			free(punteroHandShake);
-
 		}
 	}
 	else{
-			log_error(logger,"ID incorrecto");
+		log_error(logger,"ID incorrecto");
 	}
 
 	free(paquete->Datos);
 	free(paquete);
 }
+
 int verificarMensajeMemoriasTablaGossipKernel(char* mensaje, t_log* logger){
 	char** memorias= string_split(mensaje, " ");
-	int cantElementos = tamanioArray(memorias);
+	int cantElementos = tamanioArray((void**)memorias);
 	int cantMemorias = cantElementos /3;
 
 	int i = 0;
@@ -81,108 +73,46 @@ int verificarMensajeMemoriasTablaGossipKernel(char* mensaje, t_log* logger){
 	if(cantMemorias == 0){
 		free(memorias);
 		return 0;
-	} else{
-		while(j<cantMemorias){
-			agregarATablaDeGossipKernel(atoi(memorias[i+1]), memorias[i],atoi(memorias[i+2]));
-			i= i+3;
-			j++;
-
-		}
-	hacerFreeArray(memorias);
-	free(memorias);
-	return cantMemorias;
-
-	}
-
-}
-void agregarATablaDeGossipKernel(int puerto, char* ipServidor, int memoria){
-	t_memoriaTablaDeGossip * memoriaConectada = malloc (sizeof(t_memoriaTablaDeGossip));
-	memoriaConectada->puerto = puerto;
-	memoriaConectada->ip = (char*) malloc((strlen(ipServidor)+1)*sizeof(char));
-	memoriaConectada->numeroDeMemoria = memoria;
-	strcpy(memoriaConectada->ip,ipServidor);
-	if(revisarQueNoEsteEnLaLista(memoria)==1){
-		list_add(tablaDeGossip, (void *)memoriaConectada);
 	}
 	else{
-		free(memoriaConectada->ip);
-		free(memoriaConectada);
+		while(j<cantMemorias){
+			agregar_memoria(atoi(memorias[i+1]), memorias[i],atoi(memorias[i+2]));
+			i= i+3;
+			j++;
+		}
+		hacerFreeArray((void**)memorias);
+		free(memorias);
+		return cantMemorias;
 	}
-
 }
 
 void conectarmeAMemorias(){
-	int cantMemoriasTablaGossip= cantMemoriasTablaDeGossip();
-	int cantidadMemoriasConectadas = cantMemoriasConectadas();
-	if(cantMemoriasTablaGossip==0){
-
+	int cantMemorias= list_size(memorias);
+	if(cantMemorias==0){
 		return;
 	}
-	for(int i = 0; i<cantMemoriasTablaGossip; i++){
-		void * elemento = list_get(tablaDeGossip, i);
-		t_memoriaTablaDeGossip *memoriaTablaGossip =(t_memoriaTablaDeGossip*)elemento;
-		int nroMemoriaTablaGossip = memoriaTablaGossip->numeroDeMemoria;
-		if(revisarQueNoEsteEnListaMemoriasConectadas(nroMemoriaTablaGossip)==1){
-			conectarmeAMemoriaEspecifica(memoriaTablaGossip->puerto,memoriaTablaGossip->ip,loggerKernel);
-			agregarAMemoriasConectadasAKernel(memoriaTablaGossip->puerto,memoriaTablaGossip->ip, memoriaTablaGossip->numeroDeMemoria);
+	for(int i = 0; i<cantMemorias; i++){
+		t_memoria* mem = list_get(tablaDeGossip, i);
+		if(!mem->conectada){
+			conectarmeAMemoriaEspecifica(mem->puerto,mem->ip);
+			mem->conectada = true;
 		}
 	}
 }
 
-
-void conectarmeAMemoriaEspecifica(int puerto,char* ipServidor, t_log* logger){
-
-	int cliente;
+void conectarmeAMemoriaEspecifica(int puerto,char* ipServidor){
 	char* ip = quitarComillas(ipServidor);
 	struct sockaddr_in dirServidorMemoria;
-	struct sockaddr_in dirCliente;
-	unsigned int tamanioDireccion;
 	dirServidorMemoria.sin_family = AF_INET;
 	dirServidorMemoria.sin_addr.s_addr = inet_addr(ip);
 	dirServidorMemoria.sin_port = htons(puerto); //puerto al que va a escuchar
-	cliente = socket(AF_INET,SOCK_STREAM,0);
-	if (connect (cliente, (void*)&dirServidorMemoria, sizeof(dirServidorMemoria))!=0){
-		log_info(logger,"La memoria con puerto %d e ip %s no se encuentra activa",puerto,ip);
+	if (connect (socketKernel, (void*)&dirServidorMemoria, sizeof(dirServidorMemoria))!=0){
+		log_info(loggerKernel,"La memoria con puerto %d e ip %s no se encuentra activa",puerto,ip);
 	}
 	else {
-		realizarHandShake(cliente,KERNELOMEMORIA,"SOY KERNEL");
-		recibirHandShakeMemoria(cliente,KERNELOMEMORIA,loggerKernel);
+		realizarHandShake(socketKernel,KERNELOMEMORIA,"SOY KERNEL");
+		recibirHandShakeMemoria(socketKernel,KERNELOMEMORIA,loggerKernel);
 	}
 	free(ip);
-
 }
 
-
-void agregarAMemoriasConectadasAKernel(int puerto, char* ipServidor, int memoria){
-	t_memoriaTablaDeGossip * memoriaConectada = malloc (sizeof(t_memoriaTablaDeGossip));
-	memoriaConectada->puerto = puerto;
-	memoriaConectada->ip = (char*) malloc((strlen(ipServidor)+1)*sizeof(char));
-	memoriaConectada->numeroDeMemoria = memoria;
-	strcpy(memoriaConectada->ip,ipServidor);
-	if(revisarQueNoEsteEnListaMemoriasConectadas(memoria)!=0){
-		list_add(memoriasALasQueMeConecte , (void *)memoriaConectada);
-	}
-	else{
-		free(memoriaConectada->ip);
-		free(memoriaConectada);
-	}
-}
-int cantMemoriasConectadas(){
-	return  list_size(memoriasALasQueMeConecte);
-}
-
-int revisarQueNoEsteEnListaMemoriasConectadas(int nroMemoria){
-	int cantMemoriasALasQueMeConecte = cantMemoriasConectadas();
-	if(cantMemoriasALasQueMeConecte==0){
-		return 2;
-	}
-	for(int i = 0 ; i<cantMemoriasALasQueMeConecte;i ++){
-
-		void * elemento = list_get(memoriasALasQueMeConecte, i);
-		t_memoriaTablaDeGossip *memoriaTablaGossip =(t_memoriaTablaDeGossip*)elemento;
-		if(nroMemoria ==memoriaTablaGossip->numeroDeMemoria ){
-			return 0;
-		}
-	}
-	return 1;
-}

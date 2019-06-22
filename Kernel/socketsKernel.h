@@ -9,20 +9,21 @@
 #include <netdb.h> // Para getaddrinfo
 #include <unistd.h> // Para close
 #include <bibliotecaFunciones/sockets.h>
-
+#include <bibliotecaFunciones/usoVariado.h>
 #include "configKernel.h"
 
 t_list * memoriasALasQueMeConecte;
-int memoria;
+int memoria,socketKernel;
+
+
 void definirValorMP();
 void conectarmeAMP();
 void recibirMemorias();
 void recibirMemoriasTablaDeGossipKernel(int emisor,t_identidad identidad, t_log* logger);
 int verificarMensajeMemoriasTablaGossipKernel(char* mensaje, t_log* logger);
-void agregarATablaDeGossipKernel(int puerto, char* ipServidor, int memoria);
 void conectarmeAMemorias();
-void conectarmeAMemoriaEspecifica(int puerto,char* ip, t_log* logger);
+void conectarmeAMemoriaEspecifica(int puerto,char* ip);
 void agregarAMemoriasConectadasAKernel(int puerto, char* ip, int memoria);
 int cantMemoriasConectadas();
-int revisarQueNoEsteEnListaMemoriasConectadas(int nroMemoria);
+
 #endif /* SRC_SOCKETSKERNEL_H_ */

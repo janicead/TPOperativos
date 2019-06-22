@@ -8,7 +8,7 @@ void pruebaParser(){
 	return;
 }
 
-void iniciarValoresParaTest(){
+/*void iniciarValoresParaTest(){
 	t_tabla* tabla = (t_tabla*) malloc(sizeof(t_tabla));
 	tabla->consistencia = "SC";
 	tabla->nombre_tabla = "prueba";
@@ -33,7 +33,7 @@ void iniciarValoresParaTest(){
 	list_add(eventual_consistency,obtener_memoria_por_id(1));
 	list_add(eventual_consistency,obtener_memoria_por_id(2));
 	list_add(eventual_consistency,obtener_memoria_por_id(3));
-}
+}*/
 
 int main(void) {
 	iniciar();
@@ -48,7 +48,7 @@ int main(void) {
 	memoriasALasQueMeConecte =  list_create();
 
 	conectarmeAMP();
-	pthread_create(&recibirMemoriasYConectarme, NULL, recibirMemorias, NULL);
+	pthread_create(&recibirMemoriasYConectarme, NULL, (void*)recibirMemorias, NULL);
 	pthread_join(recibirMemoriasYConectarme,NULL);
 	//pthread_join(consola,NULL);
 	exit_gracefully(EXIT_SUCCESS);
@@ -62,7 +62,6 @@ void iniciar(){
 	crear_colas();
 	crear_listas();
 	verificarArchivoConfigKernel();
-	puertoMemoria = int_to_string(configKernel.puerto_memoria);
 	return;
 }
 
@@ -73,13 +72,4 @@ void crear_hilos_iniciales(){
 	pthread_create(&config_observer,NULL,observer_config,NULL);
 	pthread_detach(config_observer);
 	return;
-}
-
-void conectarAMemoria(){
-	//char * buffer[1024];
-	//int socketMemoria = conectarAlServidor(configKernel.ip_memoria,puertoMemoria, loggerKernel);
-	//send(socketMemoria,"Hola Memoria",strlen("Hola Memoria"),0);
-	//int bytes = recv(socketMemoria,buffer,1024,0);
-	//buffer[bytes] = '\0';
-	//printf("%s%",buffer);
 }

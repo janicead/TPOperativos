@@ -102,11 +102,14 @@ typedef struct{
 typedef struct{
 	int id_mem;
 	int socket_mem;
+	int puerto;
+	char* ip;
 	bool valida;
+	bool conectada;
 }t_memoria;
 
 char* puertoMemoria;
-int idLCB, idMEM, cambioMultiProcesamiento;
+int idLCB;
 
 //VARIABLES DE CONFIGURACIÓN
 t_log* loggerKernel;
@@ -159,7 +162,7 @@ t_LQL_operacion* obtener_op_actual(t_lcb* lcb);
 
 //FUNCIONES DE MANEJO DE LAS TABLAS Y MEMORIAS
 void agregar_tabla(t_tabla* tabla);
-void agregar_memoria(int socket);
+void agregar_memoria(int puerto, char* ip, int nro_memoria);
 
 //FUNCIONES DE LIBERAR MEMORIA
 void destruir_operacion(t_LQL_operacion* op);

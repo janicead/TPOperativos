@@ -426,7 +426,6 @@ int verificarMensajeMemoriasTablaGossip(char* mensaje, t_log* logger){
 	return cantMemorias;
 
 	}
-
 }
 
 void recibirMemoriasTablaDeGossip(int emisor,t_identidad identidad, t_log* logger){
@@ -447,17 +446,14 @@ void recibirMemoriasTablaDeGossip(int emisor,t_identidad identidad, t_log* logge
 			log_info(logger,"Esta memoria no posee seeds");
 			free(punteroHandShake->mensaje);
 			free(punteroHandShake);
-
 		}
 	}
 	else{
-			log_error(logger,"ID incorrecto");
+		log_error(logger,"ID incorrecto");
 	}
-
 	free(paquete->Datos);
 	free(paquete);
 }
-
 
 char* memoriasTablaDeGossip(){
 

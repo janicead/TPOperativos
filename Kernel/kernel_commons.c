@@ -19,7 +19,6 @@ void exit_gracefully(int exitInfo){
 
 void inicializarIds(){
 	idLCB = 0;
-	idMEM = 0;
 	return;
 }
 
@@ -52,13 +51,24 @@ void iniciar_semaforos(){
 	return;
 }
 
-void agregar_memoria(int socket){
+void agregar_memoria(int puerto, char* ip, int nro_memoria){
+	bool sameID(t_memoria* mem){
+		return mem->id_mem == nro_memoria;
+	}
+
 	t_memoria* memoria = (t_memoria*)malloc(sizeof(t_memoria));
-	memoria->id_mem = idMEM;
-	idMEM++;
-	memoria->socket_mem = socket;
+	memoria->id_mem = nro_memoria;
+	memoria->puerto = puerto;
+	memoria->ip = (char*) malloc((strlen(ip)+1)*sizeof(char));
+	strcpy(memoria->ip,ip);
+	memoria->conectada = false;
 	pthread_mutex_lock(&memorias_sem);
-	list_add(memorias,memoria);
+	if(!list_any_satisfy(memorias,(void*) sameID)){
+		list_add(memorias,memoria);
+	}
+	else{
+		free_memoria(memoria);
+	}
 	pthread_mutex_unlock(&memorias_sem);
 	return;
 }
@@ -177,6 +187,7 @@ void free_tabla(t_tabla* tabla){
 }
 
 void free_memoria(t_memoria* memoria){
+	free(memoria->ip);
 	free(memoria);
 	return;
 }
