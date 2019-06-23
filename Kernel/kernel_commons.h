@@ -165,6 +165,8 @@ t_LQL_operacion* obtener_op_actual(t_lcb* lcb);
 //FUNCIONES DE MANEJO DE LAS TABLAS Y MEMORIAS
 void agregar_tabla(t_tabla* tabla);
 void agregar_memoria(int puerto, char* ip, int nro_memoria);
+void agregar_socket_mem(int nro_memoria, int socket);
+bool existe_memoria(int id_memoria);
 
 //FUNCIONES DE LIBERAR MEMORIA
 void destruir_operacion(t_LQL_operacion* op);

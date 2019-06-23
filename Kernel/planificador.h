@@ -4,6 +4,7 @@
 #include "configKernel.h"
 #include "kernel_commons.h"
 #include "parser.h"
+#include "socketsKernel.h"
 #include <commons/collections/list.h>
 #include <stdbool.h>
 

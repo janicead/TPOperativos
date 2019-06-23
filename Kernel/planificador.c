@@ -105,8 +105,8 @@ void lql_select(t_LQL_operacion* operacion){
 		operacion->success = false;
 		return;
 	}
-	puts("SELECT OK");
-	//enviar paquete a la memoria seleccinada con los datos
+	char* resp = opSELECT(memoria->socket_mem,operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key);
+	log_info(loggerKernel,resp);
 	return;
 }
 
@@ -207,6 +207,11 @@ void lql_journal(t_list* list_mem){
 }
 
 void lql_add(t_LQL_operacion* op){
+	if(!existe_memoria(op->argumentos.ADD.nro_memoria)){
+		log_error(loggerKernel,"La memoria %d no existe o no es conocida por el Kernel",op->argumentos.ADD.nro_memoria);
+		op->success = false;
+		return;
+	}
 	if(string_equals_ignore_case(op->argumentos.ADD.criterio,"SC")){
 		pthread_mutex_lock(&strong_consistency_sem);
 		if(strong_consistency == NULL){

@@ -73,6 +73,24 @@ void agregar_memoria(int puerto, char* ip, int nro_memoria){
 	return;
 }
 
+void agregar_socket_mem(int nro_memoria, int socket){
+	bool sameID(t_memoria* mem){
+		return mem->id_mem == nro_memoria;
+	}
+	pthread_mutex_lock(&memorias_sem);
+	t_memoria* memoria = list_find(memorias,(void*)sameID);
+	memoria->socket_mem = socket;
+	pthread_mutex_unlock(&memorias_sem);
+}
+
+bool existe_memoria(int id_memoria){
+	bool sameID(t_memoria* mem){
+			return mem->id_mem == id_memoria;
+		}
+
+	return list_any_satisfy(memorias, (void*) sameID);
+}
+
 t_lcb* crear_lcb(){
 	t_lcb* new_lcb = (t_lcb*)malloc(sizeof(t_lcb));
 	new_lcb->id_lcb = idLCB;

@@ -35,6 +35,7 @@ void realizarMultiplexacion(int socketEscuchando);
 void hacermeClienteDeMisServers();
 int aceptarConexiones(int socket, t_log* logger);
 void exitGracefully(int return_nr, t_log* logger, int servidorEscucha);
+void gestionarPaquetes(t_PaqueteDeDatos* package, int socketEmisor);
 
 
 

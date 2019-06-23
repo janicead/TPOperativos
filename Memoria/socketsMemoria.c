@@ -152,11 +152,12 @@ void realizarMultiplexacion(int socketEscuchando){
 		for(i = 0; i <= fdmax; i++) {
 		    if (FD_ISSET(i, &copy)) { // ¡¡tenemos datos!!
 		    	if (i == servidorEscuchaMemoria) {
-		                        // gestionar nuevas conexiones
+					// gestionar nuevas conexiones
 		    		addrlen = sizeof(clienteMemoria);
 		            	if ((newfd = accept(servidorEscuchaMemoria, (struct sockaddr *)&clienteMemoria,&addrlen)) == -1) {
 		            		perror("accept");
-		                } else {
+		                }
+		            	else{
 		                    FD_SET(newfd, &master); // añadir al conjunto maestro
 		                    if (newfd > fdmax) {    // actualizar el máximo
 		                    	fdmax = newfd;
@@ -207,39 +208,35 @@ void realizarMultiplexacion(int socketEscuchando){
 		                    	free(soyMemoria);
 		                    	free(memoriasTablaGossip);
 		                    }
-
 		                }
-		    	} else {
+		    	}
+		    	else {
 		            // gestionar datos de un cliente
 		    		if ((nbytes = recv(i, buf, sizeof(buf), 0)) <= 0) {
 		                // error o conexión cerrada por el cliente
-		    			if (nbytes == 0) {
+		    			if(nbytes == 0){
 		                    // conexión cerrada
 		    				printf("El socket %d se desconecto\n", i);
-		                } else {
+		                }
+		    			else {
 		                    perror("recv");
 		                }
 		                    close(i); // bye!
 		                    FD_CLR(i, &master); // eliminar del conjunto maestro
-		                } else {
-		                            // tenemos datos de algún cliente
-		                    for(j = 0; j <= fdmax; j++) {
-		                                // ¡enviar a todo el mundo!
-		                    	if (FD_ISSET(j, &master)) {
-		                                    // excepto al listener y a nosotros mismos
-		                    		if (j != servidorEscuchaMemoria && j != i) {
-		                                        if (send(j, buf, nbytes, 0) == -1) {
-		                                            perror("send");
-		                                        }
-		                                    }
-		                                }
-		                            }
-		                        }
-		                    }
 		                }
-		            }
-		        }
-
+		    		else{
+						// tenemos datos de algún cliente
+						for(j = 0; j <= fdmax; j++) {
+							if (FD_ISSET(j, &master)) {
+								t_PaqueteDeDatos* package = recibirPaquete(j);
+								gestionarPaquetes(package,j);
+							}
+						}
+		    		}
+				}
+			}
+		}
+	}
 }
 
 void hacermeClienteDeMisServers(){
@@ -276,6 +273,19 @@ int aceptarConexiones(int socket, t_log* logger){
 
 
 	return skUnaConexion;
+}
+
+void gestionarPaquetes(t_PaqueteDeDatos* package, int socketEmisor){
+	log_info(loggerMemoria,"ID: %d",package->ID);
+	//ID -> 13 = SELECT
+	if(package->ID == 13){
+		t_SELECT* select = deserializarT_SELECT(package->Datos);
+		log_info(loggerMemoria,"SELECT %s %d",select->nombreTabla,select->KEY);
+		char* Respuesta = string_from_format("SElECT OK");
+		empaquetarEnviarMensaje(socketEmisor,14,strlen(Respuesta),Respuesta);
+		free(Respuesta);
+		freeT_SELECT(select); //HAY Q LIBERAR EL PAYLOAD SEGUN EL PROTOCOLO, particularmente en cada caso.
+	}
 }
 
 void exitGracefully(int return_nr, t_log* logger, int servidorEscucha)
