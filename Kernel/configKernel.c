@@ -5,7 +5,7 @@ int leerConfigKernel(){
 	log_info(loggerKernel, "Leyendo archivo de configuracion");
 
 	if (config_has_property(archivoConfigKernel, "IP_MEMORIA")) {
-		configKernel.ip_memoria = malloc(strlen(config_get_string_value(archivoConfigKernel, "IP_MEMORIA"))+1);
+		configKernel.ip_memoria = malloc(1+strlen(config_get_string_value(archivoConfigKernel, "IP_MEMORIA")));
 		strcpy(configKernel.ip_memoria,config_get_string_value(archivoConfigKernel,"IP_MEMORIA"));
 	} else {
 		log_error(loggerKernel,"No se encontro la key IP_MEMORIA en el archivo de configuracion");
@@ -114,38 +114,11 @@ void* observer_config(){
 	while(1){
 		read(file_descriptor,buffer,buffer_size);
 		pthread_mutex_lock(&config_sem);
-		actualizarArchivoConfig();
+		verificarArchivoConfigKernel();
 		pthread_mutex_unlock(&config_sem);
 	}
 
 	inotify_rm_watch(file_descriptor,file_observer);
 	close(file_descriptor);
 	return NULL;
-}
-
-void actualizarArchivoConfig(){
-	archivoConfigKernel = config_create(PATH_KERNEL_CONFIG);
-	if(config_has_property(archivoConfigKernel, "QUANTUM")) {
-		configKernel.quantum = config_get_int_value(archivoConfigKernel,"QUANTUM");
-	}
-	else{
-		log_error(loggerKernel,"No se encontro la key QUANTUM en el archivo de configuracion");
-		return;
-	}
-	if(config_has_property(archivoConfigKernel, "METADATA_REFRESH")) {
-			configKernel.metadata_refresh = config_get_int_value(archivoConfigKernel,"METADATA_REFRESH");
-		}
-	else{
-		log_error(loggerKernel,"No se encontro la key METADATA_REFRESH en el archivo de configuracion");
-		return;
-	}
-	if(config_has_property(archivoConfigKernel, "SLEEP_EJECUCION")) {
-		configKernel.sleep_execution = config_get_int_value(archivoConfigKernel,"SLEEP_EJECUCION");
-	}
-	else{
-		log_error(loggerKernel,"No se encontro la key SLEEP_EJECUCION en el archivo de configuracion");
-		return;
-	}
-	config_destroy(archivoConfigKernel);
-	mostrarDatosArchivoConfigKernel();
 }

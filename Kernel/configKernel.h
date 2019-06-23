@@ -33,6 +33,5 @@ void verificarArchivoConfigKernel();
 void mostrarDatosArchivoConfigKernel();
 void* observer_config();
 void actualizar_multiprocesamiento();
-void actualizarArchivoConfig();
 
 #endif /* CONFIGKERNEL_H_ */

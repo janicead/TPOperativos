@@ -11,7 +11,6 @@
 #include <commons/collections/list.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include "lfsProtocolos.h"
 
 
 

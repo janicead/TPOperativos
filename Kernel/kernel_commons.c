@@ -19,6 +19,7 @@ void exit_gracefully(int exitInfo){
 
 void inicializarIds(){
 	idLCB = 0;
+	idMEM = 0;
 	return;
 }
 
@@ -51,44 +52,15 @@ void iniciar_semaforos(){
 	return;
 }
 
-void agregar_memoria(int puerto, char* ip, int nro_memoria){
-	bool sameID(t_memoria* mem){
-		return mem->id_mem == nro_memoria;
-	}
-
+void agregar_memoria(int socket){
 	t_memoria* memoria = (t_memoria*)malloc(sizeof(t_memoria));
-	memoria->id_mem = nro_memoria;
-	memoria->puerto = puerto;
-	memoria->ip = (char*) malloc((strlen(ip)+1)*sizeof(char));
-	strcpy(memoria->ip,ip);
-	memoria->conectada = false;
+	memoria->id_mem = idMEM;
+	idMEM++;
+	memoria->socket_mem = socket;
 	pthread_mutex_lock(&memorias_sem);
-	if(!list_any_satisfy(memorias,(void*) sameID)){
-		list_add(memorias,memoria);
-	}
-	else{
-		free_memoria(memoria);
-	}
+	list_add(memorias,memoria);
 	pthread_mutex_unlock(&memorias_sem);
 	return;
-}
-
-void agregar_socket_mem(int nro_memoria, int socket){
-	bool sameID(t_memoria* mem){
-		return mem->id_mem == nro_memoria;
-	}
-	pthread_mutex_lock(&memorias_sem);
-	t_memoria* memoria = list_find(memorias,(void*)sameID);
-	memoria->socket_mem = socket;
-	pthread_mutex_unlock(&memorias_sem);
-}
-
-bool existe_memoria(int id_memoria){
-	bool sameID(t_memoria* mem){
-			return mem->id_mem == id_memoria;
-		}
-
-	return list_any_satisfy(memorias, (void*) sameID);
 }
 
 t_lcb* crear_lcb(){
@@ -97,7 +69,6 @@ t_lcb* crear_lcb(){
 	idLCB++;
 	new_lcb->estado = NEW;
 	new_lcb->program_counter = 0;
-	new_lcb->abortar = false;
 	new_lcb->operaciones = list_create();
 	return new_lcb;
 }
@@ -115,7 +86,6 @@ void pasar_lcb_a_ready(t_lcb* lcb){
 	queue_push(queue_ready,lcb);
 	pthread_mutex_unlock(&queue_ready_sem);
 	sem_post(&execute_sem);
-	log_info(loggerKernel,"lcb %d agregado a la cola de ready", lcb->id_lcb);
 	return;
 }
 
@@ -124,7 +94,6 @@ void pasar_lcb_a_exit(t_lcb* lcb){
 	pthread_mutex_lock(&queue_exit_sem);
 	queue_push(queue_exit,lcb);
 	pthread_mutex_unlock(&queue_exit_sem);
-	log_info(loggerKernel,"lcb %d agregado a la cola de exit", lcb->id_lcb);
 	return;
 }
 
@@ -208,7 +177,6 @@ void free_tabla(t_tabla* tabla){
 }
 
 void free_memoria(t_memoria* memoria){
-	free(memoria->ip);
 	free(memoria);
 	return;
 }

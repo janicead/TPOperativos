@@ -69,7 +69,6 @@ typedef struct {
 		} ADD;
 	} argumentos;
 	char** _raw; //Para uso de la liberación
-	bool success;
 } t_LQL_operacion;
 
 typedef enum{
@@ -93,7 +92,6 @@ typedef struct{
 	t_list* operaciones;
 	int program_counter;
 	t_estado estado;
-	bool abortar;
 }t_lcb;
 
 typedef struct{
@@ -104,14 +102,11 @@ typedef struct{
 typedef struct{
 	int id_mem;
 	int socket_mem;
-	int puerto;
-	char* ip;
 	bool valida;
-	bool conectada;
 }t_memoria;
 
 char* puertoMemoria;
-int idLCB;
+int idLCB, idMEM, cambioMultiProcesamiento;
 
 //VARIABLES DE CONFIGURACIÓN
 t_log* loggerKernel;
@@ -164,9 +159,7 @@ t_LQL_operacion* obtener_op_actual(t_lcb* lcb);
 
 //FUNCIONES DE MANEJO DE LAS TABLAS Y MEMORIAS
 void agregar_tabla(t_tabla* tabla);
-void agregar_memoria(int puerto, char* ip, int nro_memoria);
-void agregar_socket_mem(int nro_memoria, int socket);
-bool existe_memoria(int id_memoria);
+void agregar_memoria(int socket);
 
 //FUNCIONES DE LIBERAR MEMORIA
 void destruir_operacion(t_LQL_operacion* op);

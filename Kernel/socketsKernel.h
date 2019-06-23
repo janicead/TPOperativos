@@ -17,10 +17,12 @@ int memoria;
 void definirValorMP();
 void conectarmeAMP();
 void recibirMemorias();
-void recibirMemoriasTablaDeGossipKernel(int emisor,t_identidad identidad);
-int verificarMensajeMemoriasTablaGossipKernel(char* mensaje);
+void recibirMemoriasTablaDeGossipKernel(int emisor,t_identidad identidad, t_log* logger);
+int verificarMensajeMemoriasTablaGossipKernel(char* mensaje, t_log* logger);
 void agregarATablaDeGossipKernel(int puerto, char* ipServidor, int memoria);
 void conectarmeAMemorias();
-int conectarmeAMemoriaEspecifica(int puerto,char* ip);
+void conectarmeAMemoriaEspecifica(int puerto,char* ip, t_log* logger);
 void agregarAMemoriasConectadasAKernel(int puerto, char* ip, int memoria);
+int cantMemoriasConectadas();
+int revisarQueNoEsteEnListaMemoriasConectadas(int nroMemoria);
 #endif /* SRC_SOCKETSKERNEL_H_ */

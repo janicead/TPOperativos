@@ -1,9 +1,10 @@
 #include "Kernel.h"
 
 void pruebaParser(){
-	/*crear_lql_run("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba.lql");
-	crear_lql_run("/home/utnso/workspace/tp-2019-1c-BEFGN/pruebaFalla.lql");
-	crear_lql_run("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba2.lql");*/
+	FILE* script = abrirArchivo("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba.lql");
+	FILE* script2 = abrirArchivo("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba2.lql");
+	lql_run(script2);
+	lql_run(script);
 	return;
 }
 
@@ -20,10 +21,10 @@ void iniciarValoresParaTest(){
 	tabla3->consistencia = "EC";
 	tabla3->nombre_tabla = "Hash";
 	agregar_tabla(tabla3);
-	/*agregar_memoria(5,"1",0);
-	agregar_memoria(6,"2",1);
-	agregar_memoria(7,"3",2);
-	agregar_memoria(8,"4",3);
+	agregar_memoria(5);
+	agregar_memoria(6);
+	agregar_memoria(7);
+	agregar_memoria(8);
 	strong_consistency = obtener_memoria_por_id(0);
 	strong_consistency->valida = true;
 	list_add(strong_hash_consistency,obtener_memoria_por_id(1));
@@ -31,18 +32,23 @@ void iniciarValoresParaTest(){
 	list_add(strong_hash_consistency,obtener_memoria_por_id(3));
 	list_add(eventual_consistency,obtener_memoria_por_id(1));
 	list_add(eventual_consistency,obtener_memoria_por_id(2));
-	list_add(eventual_consistency,obtener_memoria_por_id(3));*/
+	list_add(eventual_consistency,obtener_memoria_por_id(3));
 }
 
 int main(void) {
 	iniciar();
 	crear_hilos_iniciales();
-	iniciarValoresParaTest();
+	//iniciarValoresParaTest();
+	//conectarAMemoria();
 	//pruebaParser();
-	tablaDeGossip = list_create();
-    pthread_t recibirMemoriasYConectarme;
+
+	//CONEXION A MEMORIAS
+	pthread_t recibirMemoriasYConectarme;
+	tablaDeGossip =  list_create();
+	memoriasALasQueMeConecte =  list_create();
+
 	conectarmeAMP();
-	pthread_create(&recibirMemoriasYConectarme, NULL, (void*)recibirMemorias, NULL);
+	pthread_create(&recibirMemoriasYConectarme, NULL,(void*) recibirMemorias, NULL);
 	pthread_detach(recibirMemoriasYConectarme);
 	pthread_join(consola,NULL);
 	exit_gracefully(EXIT_SUCCESS);
@@ -56,6 +62,7 @@ void iniciar(){
 	crear_colas();
 	crear_listas();
 	verificarArchivoConfigKernel();
+	//puertoMemoria = int_to_string(configKernel.puerto_memoria);
 	return;
 }
 
@@ -66,4 +73,13 @@ void crear_hilos_iniciales(){
 	pthread_create(&config_observer,NULL,observer_config,NULL);
 	pthread_detach(config_observer);
 	return;
+}
+
+void conectarAMemoria(){
+	//char * buffer[1024];
+	//int socketMemoria = conectarAlServidor(configKernel.ip_memoria,puertoMemoria, loggerKernel);
+	//send(socketMemoria,"Hola Memoria",strlen("Hola Memoria"),0);
+	//int bytes = recv(socketMemoria,buffer,1024,0);
+	//buffer[bytes] = '\0';
+	//printf("%s%",buffer);
 }

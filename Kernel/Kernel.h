@@ -14,6 +14,9 @@
 #include "kernel_commons.h"
 #include "socketsKernel.h"
 
+
+char* ipMemoria;
+
 void iniciar();
 void conectarAMemoria();
 void crear_hilos_iniciales();

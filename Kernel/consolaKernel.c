@@ -172,7 +172,6 @@ void crear_lql_select(char* nombre_tabla, int key){
 	op->keyword = SELECT;
 	op->argumentos.SELECT.key = key;
 	op->argumentos.SELECT.nombre_tabla = nombre_tabla;
-	op->success = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
@@ -186,7 +185,6 @@ void crear_lql_insert(char* nombre_tabla, int key, char* value){
 	op->argumentos.INSERT.key = key;
 	op->argumentos.INSERT.nombre_tabla = nombre_tabla;
 	op->argumentos.INSERT.valor = value;
-	op->success = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
@@ -201,7 +199,6 @@ void crear_lql_create(char* nombre_tabla, int compactation_time, int cant_partic
 	op->argumentos.CREATE.compactation_time = compactation_time;
 	op->argumentos.CREATE.numero_particiones = cant_particiones;
 	op->argumentos.CREATE.tipo_consistencia = consistencia;
-	op->success = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
@@ -213,7 +210,6 @@ void crear_lql_describe(char* nombre_tabla){
 	op->_raw = NULL;
 	op->keyword = DESCRIBE;
 	op->argumentos.DESCRIBE.nombre_tabla = nombre_tabla;
-	op->success = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
@@ -225,7 +221,6 @@ void crear_lql_drop(char* nombre_tabla){
 	op->_raw = NULL;
 	op->keyword = DROP;
 	op->argumentos.DROP.nombre_tabla = nombre_tabla;
-	op->success = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
@@ -236,7 +231,6 @@ void crear_lql_journal(){
 	t_LQL_operacion* op = (t_LQL_operacion*) malloc(sizeof(t_LQL_operacion));
 	op->_raw = NULL;
 	op->keyword = JOURNAL;
-	op->success = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
@@ -249,7 +243,6 @@ void crear_lql_add(char* criterio, int nro_memoria){
 	op->keyword = ADD;
 	op->argumentos.ADD.criterio = criterio;
 	op->argumentos.ADD.nro_memoria = nro_memoria;
-	op->success = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
@@ -261,7 +254,6 @@ void crear_lql_run(char* path){
 	op->_raw = NULL;
 	op->keyword = RUN;
 	op->argumentos.RUN.path = path;
-	op->success = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
@@ -272,7 +264,6 @@ void crear_lql_metrics(){
 	t_LQL_operacion* op = (t_LQL_operacion*) malloc(sizeof(t_LQL_operacion));
 	op->_raw = NULL;
 	op->keyword = METRICS;
-	op->success = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;

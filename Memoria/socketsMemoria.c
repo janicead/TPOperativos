@@ -19,7 +19,7 @@ void realizarGossip(){
 	       elapsedsec = diff / CLOCKS_PER_SEC;
 
 	       if (elapsedsec >= sec) {
-	    	   pthread_create(&clienteMemoria, NULL, (void*)hacermeClienteDeMisServers, NULL);
+	    	   pthread_create(&clienteMemoria, NULL, hacermeClienteDeMisServers, NULL);
 
 	    	   if(kernel!=0){
 	    	   char* memoriasEnTablaDeGossip = memoriasTablaDeGossip();
@@ -32,6 +32,8 @@ void realizarGossip(){
 	   }
 	}
 }
+
+
 
 
 void iniciarEscuchaMemoria(){
@@ -66,8 +68,8 @@ void serCliente(char* ip , int puerto){
 	int cliente;
 	char* ipServidor = quitarComillas(ip);
 	struct sockaddr_in dirServidorMemoria;
-	//struct sockaddr_in dirCliente;
-	//unsigned int tamanioDireccion;
+	struct sockaddr_in dirCliente;
+	unsigned int tamanioDireccion;
 	dirServidorMemoria.sin_family = AF_INET;
 	dirServidorMemoria.sin_addr.s_addr = inet_addr(ipServidor);
 	dirServidorMemoria.sin_port = htons(puerto); //puerto al que va a escuchar
@@ -98,7 +100,6 @@ void serCliente(char* ip , int puerto){
 	free(numeroMemoria);
 	}
 	free(ipServidor);
-	close(cliente);
 }
 void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger){
 
@@ -152,18 +153,17 @@ void realizarMultiplexacion(int socketEscuchando){
 		for(i = 0; i <= fdmax; i++) {
 		    if (FD_ISSET(i, &copy)) { // ¡¡tenemos datos!!
 		    	if (i == servidorEscuchaMemoria) {
-					// gestionar nuevas conexiones
+		                        // gestionar nuevas conexiones
 		    		addrlen = sizeof(clienteMemoria);
 		            	if ((newfd = accept(servidorEscuchaMemoria, (struct sockaddr *)&clienteMemoria,&addrlen)) == -1) {
 		            		perror("accept");
-		                }
-		            	else{
+		                } else {
 		                    FD_SET(newfd, &master); // añadir al conjunto maestro
 		                    if (newfd > fdmax) {    // actualizar el máximo
 		                    	fdmax = newfd;
 		                    }
 		                    int valor = recibirHandShakeMemoria(newfd,KERNELOMEMORIA, loggerMemoria);
-		                    if(valor!=0 && valor!=1313){
+		                    if(valor!=0){
 		                    	int numMemoria = configMemoria.numeroDeMemoria;
 		                    	char* soyMemoria = string_new();
 		                    	string_append(&soyMemoria, "SOY MEMORIA ");
@@ -175,26 +175,10 @@ void realizarMultiplexacion(int socketEscuchando){
 		                    	recibirMemoriasTablaDeGossip(newfd,KERNELOMEMORIA,loggerMemoria);
 		                    	mostrarmeMemoriasTablaGossip();
 		                    	enviarMemoriasTablaGossip(newfd,KERNELOMEMORIA,memoriasTablaGossip);
-		                    	/////////////////////////////////////////////////////////
-		                    	//aca se supone que le respondo al SELECT
-		                    	/*t_PaqueteDeDatos* paquete = recibirPaquete(newfd);
-		                    	printf("HOLA HOLA");
-		                    			t_SELECT* SELECT=deserializarT_SELECT(paquete->Datos);
-		                    			char* nombreTabla= malloc(sizeof(SELECT->nombreTabla));
-		                    			strcpy(nombreTabla,SELECT->nombreTabla);
-		                    			uint16_t k = (uint16_t) SELECT->KEY;
-		                    			char* verificado = SELECTMemoria(nombreTabla,k,0);
-		                    			empaquetarEnviarMensaje(newfd,13,sizeof(verificado),verificado);
-
-
-		                    		free(paquete->Datos);
-		                    		free(paquete);*/
-		                    	////////////////////////////////////////////////////////
-
 		                    	free(soyMemoria);
 		                    	free(memoriasTablaGossip);
 		                    }
-		                    else {
+		                    else{
 		                    	int numMemoria = configMemoria.numeroDeMemoria;
 		                    	char* soyMemoria = string_new();
 		                    	string_append(&soyMemoria, "SOY MEMORIA ");
@@ -208,35 +192,40 @@ void realizarMultiplexacion(int socketEscuchando){
 		                    	free(soyMemoria);
 		                    	free(memoriasTablaGossip);
 		                    }
+
+
 		                }
-		    	}
-		    	else {
+		    	} else {
 		            // gestionar datos de un cliente
 		    		if ((nbytes = recv(i, buf, sizeof(buf), 0)) <= 0) {
 		                // error o conexión cerrada por el cliente
-		    			if(nbytes == 0){
+		    			if (nbytes == 0) {
 		                    // conexión cerrada
 		    				printf("El socket %d se desconecto\n", i);
-		                }
-		    			else {
+		                } else {
 		                    perror("recv");
 		                }
 		                    close(i); // bye!
 		                    FD_CLR(i, &master); // eliminar del conjunto maestro
+		                } else {
+		                            // tenemos datos de algún cliente
+		                    for(j = 0; j <= fdmax; j++) {
+		                                // ¡enviar a todo el mundo!
+		                    	if (FD_ISSET(j, &master)) {
+		                                    // excepto al listener y a nosotros mismos
+		                    		if (j != servidorEscuchaMemoria && j != i) {
+		                                        if (send(j, buf, nbytes, 0) == -1) {
+		                                            perror("send");
+		                                        }
+		                                    }
+		                                }
+		                            }
+		                        }
+		                    }
 		                }
-		    		else{
-						// tenemos datos de algún cliente
-						for(j = 0; j <= fdmax; j++) {
-							if (FD_ISSET(j, &master)) {
-								t_PaqueteDeDatos* package = recibirPaquete(j);
-								gestionarPaquetes(package,j);
-							}
-						}
-		    		}
-				}
-			}
-		}
-	}
+		            }
+		        }
+
 }
 
 void hacermeClienteDeMisServers(){
@@ -275,19 +264,6 @@ int aceptarConexiones(int socket, t_log* logger){
 	return skUnaConexion;
 }
 
-void gestionarPaquetes(t_PaqueteDeDatos* package, int socketEmisor){
-	log_info(loggerMemoria,"ID: %d",package->ID);
-	//ID -> 13 = SELECT
-	if(package->ID == 13){
-		t_SELECT* select = deserializarT_SELECT(package->Datos);
-		log_info(loggerMemoria,"SELECT %s %d",select->nombreTabla,select->KEY);
-		char* Respuesta = string_from_format("SElECT OK");
-		empaquetarEnviarMensaje(socketEmisor,14,strlen(Respuesta),Respuesta);
-		free(Respuesta);
-		freeT_SELECT(select); //HAY Q LIBERAR EL PAYLOAD SEGUN EL PROTOCOLO, particularmente en cada caso.
-	}
-}
-
 void exitGracefully(int return_nr, t_log* logger, int servidorEscucha)
 {
 	config_destroy(archivoConfigMemoria);
@@ -296,8 +272,5 @@ void exitGracefully(int return_nr, t_log* logger, int servidorEscucha)
 	close(servidorEscucha);
 	exit(return_nr);
 }
-
-
-
 
 
