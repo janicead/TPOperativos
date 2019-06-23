@@ -20,7 +20,7 @@ void conectarmeAMP(){
 		log_info(loggerKernel,"Me conecte a la memoria con puerto %d e ip %s",configKernel.puerto_memoria,ipServidor);
 		realizarHandShake(socketKernel,KERNELOMEMORIA,"SOY KERNEL");
 		int nroMemoria = recibirHandShakeMemoria(socketKernel,KERNELOMEMORIA,loggerKernel);
-		recibirMemoriasTablaDeGossipKernel(socketKernel,KERNELOMEMORIA,loggerKernel);
+		recibirMemoriasTablaDeGossip(socketKernel,KERNELOMEMORIA,loggerKernel);
 		agregar_memoria(configKernel.puerto_memoria,ipServidor,nroMemoria);
 	}
 	free(ipServidor);
@@ -29,41 +29,41 @@ void conectarmeAMP(){
 void recibirMemorias(){
 	while(1){
 		if(memoria!=0){
-			recibirMemoriasTablaDeGossipKernel(memoria,KERNELOMEMORIA,loggerKernel);
+			recibirMemoriasTablaDeGossipKernel(memoria,KERNELOMEMORIA);
 			conectarmeAMemorias();
 		}
 	}
 }
 
-void recibirMemoriasTablaDeGossipKernel(int emisor,t_identidad identidad, t_log* logger){
+void recibirMemoriasTablaDeGossipKernel(int emisor,t_identidad identidad){
 	t_PaqueteDeDatos* paquete=recibirPaquete(emisor);
 	if(paquete->ID==identidad){
 		t_handShake* punteroHandShake;
 		punteroHandShake=deserializarHandShake(paquete->Datos);
-		int verificado = verificarMensajeMemoriasTablaGossipKernel(punteroHandShake->mensaje,logger);
+		int verificado = verificarMensajeMemoriasTablaGossipKernel(punteroHandShake->mensaje);
 		if(identidad==KERNELOMEMORIA && verificado!=0){
 			char* soyMemoria = string_new();
 			string_append(&soyMemoria, "Recibi las memorias conectadas correctamente");
-			log_info(logger,soyMemoria);
+			log_info(loggerKernel,soyMemoria);
 			free(soyMemoria);
 			free(punteroHandShake->mensaje);
 			free(punteroHandShake);
 		}
-		else if(identidad == KERNELOMEMORIA && verificado == 0){
-			log_info(logger,"Esta memoria no posee seeds");
+		else if(identidad == KERNELOMEMORIA && verificado != NULL){
+			log_info(loggerKernel,"Esta memoria no posee seeds");
 			free(punteroHandShake->mensaje);
 			free(punteroHandShake);
 		}
 	}
 	else{
-		log_error(logger,"ID incorrecto");
+		log_error(loggerKernel,"ID incorrecto");
 	}
 
 	free(paquete->Datos);
 	free(paquete);
 }
 
-int verificarMensajeMemoriasTablaGossipKernel(char* mensaje, t_log* logger){
+int verificarMensajeMemoriasTablaGossipKernel(char* mensaje){
 	char** memorias= string_split(mensaje, " ");
 	int cantElementos = tamanioArray((void**)memorias);
 	int cantMemorias = cantElementos /3;
@@ -87,16 +87,20 @@ int verificarMensajeMemoriasTablaGossipKernel(char* mensaje, t_log* logger){
 }
 
 void conectarmeAMemorias(){
+	pthread_mutex_lock(&memorias_sem);
 	int cantMemorias= list_size(memorias);
+	pthread_mutex_unlock(&memorias_sem);
 	if(cantMemorias==0){
 		return;
 	}
 	for(int i = 0; i<cantMemorias; i++){
+		pthread_mutex_lock(&memorias_sem);
 		t_memoria* mem = list_get(memorias, i);
 		if(!mem->conectada){
 			conectarmeAMemoriaEspecifica(mem->puerto,mem->ip);
 			mem->conectada = true;
 		}
+		pthread_mutex_unlock(&memorias_sem);
 	}
 }
 

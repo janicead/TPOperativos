@@ -54,17 +54,21 @@ void* ejecutar(){
 					lql_add(operacion);
 					break;
 				case RUN:
-					lql_run(abrirArchivo(operacion->argumentos.RUN.path));
+					lql_run(abrirArchivo(operacion->argumentos.RUN.path), operacion);
 					break;
 				case METRICS:
 					lql_metrics();
 					break;
 			}
+			if(!operacion->success){
+				lcb->abortar = true;
+				break;
+			}
 			lcb->program_counter++;
 			quantum--;
 			usleep(sleep_time*100);
 		}
-		if(lcb->program_counter >= list_size(lcb->operaciones)){
+		if(lcb->program_counter >= list_size(lcb->operaciones) || lcb->abortar){
 			pasar_lcb_a_exit(lcb);
 		}
 		else{
@@ -91,12 +95,14 @@ void lql_select(t_LQL_operacion* operacion){
 	if(tabla == NULL){
 		log_error(loggerKernel,"La tabla de nombre:  %s no existe",operacion->argumentos.SELECT.nombre_tabla);
 		free_tabla(tabla);
+		operacion->success = false;
 		return;
 	}
 	t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia,operacion->argumentos.SELECT.key);
 	if(!memoria->valida){
 		log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,operacion->argumentos.SELECT.nombre_tabla);
 		free_memoria(memoria);
+		operacion->success = false;
 		return;
 	}
 	puts("SELECT OK");
@@ -111,12 +117,14 @@ void lql_insert(t_LQL_operacion* op){
 	if(tabla == NULL){
 		log_error(loggerKernel,"La tabla de nombre:  %s no existe",op->argumentos.INSERT.nombre_tabla);
 		free_tabla(tabla);
+		op->success = false;
 		return;
 	}
 	t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia,op->argumentos.INSERT.key);
 	if(!memoria->valida){
 		log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,op->argumentos.INSERT.nombre_tabla);
 		free_memoria(memoria);
+		op->success = false;
 		return;
 	}
 	puts("INSERT OK");
@@ -130,12 +138,14 @@ void lql_create(t_LQL_operacion* op){
 	if(tabla != NULL){
 		log_error(loggerKernel,"La tabla de nombre:  %s ya existe",op->argumentos.CREATE.nombre_tabla);
 		free_tabla(tabla);
+		op->success = false;
 		return;
 	}
 	t_memoria* memoria = obtener_memoria_consistencia(op->argumentos.CREATE.tipo_consistencia,-1);
 	if(!memoria->valida){
 		log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",op->argumentos.CREATE.tipo_consistencia,op->argumentos.CREATE.nombre_tabla);
 		free_memoria(memoria);
+		op->success = false;
 		return;
 	}
 	puts("CREATE OK");
@@ -153,12 +163,14 @@ void lql_describe(t_LQL_operacion* op){
 		if(tabla == NULL){
 			log_error(loggerKernel,"La tabla de nombre:  %s no existe",op->argumentos.DESCRIBE.nombre_tabla);
 			free_tabla(tabla);
+			op->success = false;
 			return;
 		}
 		t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia,-1);
 		if(!memoria->valida){
 			log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,op->argumentos.DESCRIBE.nombre_tabla);
 			free_memoria(memoria);
+			op->success = false;
 			return;
 		}
 		puts("DESCRIBE OK");
@@ -172,12 +184,14 @@ void lql_drop(t_LQL_operacion* op){
 	if(tabla == NULL){
 		log_error(loggerKernel,"La tabla de nombre:  %s no existe",op->argumentos.DROP.nombre_tabla);
 		free_tabla(tabla);
+		op->success = false;
 		return;
 	}
 	t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia,-1);
 	if(!memoria->valida){
 		log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,op->argumentos.DROP.nombre_tabla);
 		free_memoria(memoria);
+		op->success = false;
 		return;
 	}
 	puts("DROP OK");
@@ -240,23 +254,26 @@ void lql_add(t_LQL_operacion* op){
 	return;
 }
 
-void lql_run(FILE* archivo){
+void lql_run(FILE* archivo, t_LQL_operacion* op){
 	if(archivo == NULL){
+		op->success = false;
 		return;
 	}
 	log_info(loggerKernel,"Iniciando ejecución de archivo LQL");
 	char* linea = NULL;
 	size_t len = 0;
 	t_lcb* lcb = crear_lcb();
-	 while ((getline(&linea, &len, archivo)) != -1) {
-	        t_LQL_operacion* operacion = parse(linea);
-	        if(operacion->valido){
-	        	agregar_op_lcb(lcb,operacion);
-	        }
-	        else {
-	            log_error(loggerKernel, "La linea %s no es valida", linea);
-	            exit(EXIT_FAILURE);
-	        }
+	while ((getline(&linea, &len, archivo)) != -1) {
+		t_LQL_operacion* operacion = parse(linea);
+		if(operacion->valido){
+			operacion->success = true;
+			agregar_op_lcb(lcb,operacion);
+		}
+		else {
+			log_error(loggerKernel, "La linea %s no es valida", linea);
+			op->success = false;
+			return;
+		}
 	}
 	if(!list_is_empty(lcb->operaciones)){
 		pasar_lcb_a_ready(lcb);

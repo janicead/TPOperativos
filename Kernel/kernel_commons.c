@@ -79,6 +79,7 @@ t_lcb* crear_lcb(){
 	idLCB++;
 	new_lcb->estado = NEW;
 	new_lcb->program_counter = 0;
+	new_lcb->abortar = false;
 	new_lcb->operaciones = list_create();
 	return new_lcb;
 }
@@ -96,6 +97,7 @@ void pasar_lcb_a_ready(t_lcb* lcb){
 	queue_push(queue_ready,lcb);
 	pthread_mutex_unlock(&queue_ready_sem);
 	sem_post(&execute_sem);
+	log_info(loggerKernel,"lcb %d agregado a la cola de ready", lcb->id_lcb);
 	return;
 }
 
@@ -104,6 +106,7 @@ void pasar_lcb_a_exit(t_lcb* lcb){
 	pthread_mutex_lock(&queue_exit_sem);
 	queue_push(queue_exit,lcb);
 	pthread_mutex_unlock(&queue_exit_sem);
+	log_info(loggerKernel,"lcb %d agregado a la cola de exit", lcb->id_lcb);
 	return;
 }
 

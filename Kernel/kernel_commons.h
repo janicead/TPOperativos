@@ -69,6 +69,7 @@ typedef struct {
 		} ADD;
 	} argumentos;
 	char** _raw; //Para uso de la liberación
+	bool success;
 } t_LQL_operacion;
 
 typedef enum{
@@ -92,6 +93,7 @@ typedef struct{
 	t_list* operaciones;
 	int program_counter;
 	t_estado estado;
+	bool abortar;
 }t_lcb;
 
 typedef struct{

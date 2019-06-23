@@ -1,14 +1,13 @@
 #include "Kernel.h"
 
 void pruebaParser(){
-	FILE* script = abrirArchivo("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba.lql");
-	FILE* script2 = abrirArchivo("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba2.lql");
-	lql_run(script2);
-	lql_run(script);
+	crear_lql_run("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba.lql");
+	crear_lql_run("/home/utnso/workspace/tp-2019-1c-BEFGN/pruebaFalla.lql");
+	crear_lql_run("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba2.lql");
 	return;
 }
 
-/*void iniciarValoresParaTest(){
+void iniciarValoresParaTest(){
 	t_tabla* tabla = (t_tabla*) malloc(sizeof(t_tabla));
 	tabla->consistencia = "SC";
 	tabla->nombre_tabla = "prueba";
@@ -21,10 +20,10 @@ void pruebaParser(){
 	tabla3->consistencia = "EC";
 	tabla3->nombre_tabla = "Hash";
 	agregar_tabla(tabla3);
-	agregar_memoria(5);
-	agregar_memoria(6);
-	agregar_memoria(7);
-	agregar_memoria(8);
+	agregar_memoria(5,"1",0);
+	agregar_memoria(6,"2",1);
+	agregar_memoria(7,"3",2);
+	agregar_memoria(8,"4",3);
 	strong_consistency = obtener_memoria_por_id(0);
 	strong_consistency->valida = true;
 	list_add(strong_hash_consistency,obtener_memoria_por_id(1));
@@ -33,18 +32,18 @@ void pruebaParser(){
 	list_add(eventual_consistency,obtener_memoria_por_id(1));
 	list_add(eventual_consistency,obtener_memoria_por_id(2));
 	list_add(eventual_consistency,obtener_memoria_por_id(3));
-}*/
+}
 
 int main(void) {
 	iniciar();
 	crear_hilos_iniciales();
-	//iniciarValoresParaTest();
-	//pruebaParser();
-
-    pthread_t recibirMemoriasYConectarme;
-	conectarmeAMP();
-	pthread_create(&recibirMemoriasYConectarme, NULL, (void*)recibirMemorias, NULL);
-	pthread_detach(recibirMemoriasYConectarme);
+	iniciarValoresParaTest();
+	pruebaParser();
+	tablaDeGossip = list_create();
+    //pthread_t recibirMemoriasYConectarme;
+	//conectarmeAMP();
+	//pthread_create(&recibirMemoriasYConectarme, NULL, (void*)recibirMemorias, NULL);
+	//pthread_detach(recibirMemoriasYConectarme, NULL);
 	pthread_join(consola,NULL);
 	exit_gracefully(EXIT_SUCCESS);
 }
