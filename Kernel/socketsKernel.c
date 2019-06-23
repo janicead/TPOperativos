@@ -27,6 +27,7 @@ void conectarmeAMP(){
 		agregar_memoria(configKernel.puerto_memoria,ipServidor,nroMemoria);
 		pthread_mutex_lock(&memorias_sem);
 		t_memoria* mem = obtener_memoria_por_id(nroMemoria);
+		mem->socket_mem = cliente;
 		mem->conectada = true;
 		pthread_mutex_unlock(&memorias_sem);
 		mostrarmeMemoriasTablaGossip();
