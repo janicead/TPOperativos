@@ -19,7 +19,6 @@ void exit_gracefully(int exitInfo){
 
 void inicializarIds(){
 	idLCB = 0;
-	idMEM = 0;
 	return;
 }
 
@@ -52,15 +51,43 @@ void iniciar_semaforos(){
 	return;
 }
 
-void agregar_memoria(int socket){
+void agregar_memoria(int puerto, char* ip, int nro_memoria){
+	bool sameID(t_memoria* mem){
+		return mem->id_mem == nro_memoria;
+	}
+
 	t_memoria* memoria = (t_memoria*)malloc(sizeof(t_memoria));
-	memoria->id_mem = idMEM;
-	idMEM++;
-	memoria->socket_mem = socket;
+	memoria->id_mem = nro_memoria;
+	memoria->puerto = puerto;
+	memoria->ip = malloc(1+strlen(ip));
+	strcpy(memoria->ip,ip);
 	pthread_mutex_lock(&memorias_sem);
-	list_add(memorias,memoria);
+	if(!list_any_satisfy(memorias,(void*) sameID)){
+		list_add(memorias,memoria);
+	}
+	else{
+		free_memoria(memoria);
+	}
 	pthread_mutex_unlock(&memorias_sem);
 	return;
+}
+
+bool memoria_existente(t_list* l_memorias,int id){
+	bool same_id(t_memoria* mem){
+		return mem->id_mem == id;
+	}
+
+	return list_any_satisfy(l_memorias,(void*) same_id);
+}
+
+void agregar_socket_mem(int nro_memoria, int socket){
+	bool sameID(t_memoria* mem){
+		return mem->id_mem == nro_memoria;
+	}
+	pthread_mutex_lock(&memorias_sem);
+	t_memoria* memoria = list_find(memorias,(void*)sameID);
+	memoria->socket_mem = socket;
+	pthread_mutex_unlock(&memorias_sem);
 }
 
 t_lcb* crear_lcb(){
@@ -94,6 +121,7 @@ void pasar_lcb_a_exit(t_lcb* lcb){
 	pthread_mutex_lock(&queue_exit_sem);
 	queue_push(queue_exit,lcb);
 	pthread_mutex_unlock(&queue_exit_sem);
+	log_info(loggerKernel,"LCB %d agregado a la cola de exit.",lcb->id_lcb);
 	return;
 }
 
@@ -177,6 +205,7 @@ void free_tabla(t_tabla* tabla){
 }
 
 void free_memoria(t_memoria* memoria){
+	free(memoria->ip);
 	free(memoria);
 	return;
 }

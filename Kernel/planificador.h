@@ -23,9 +23,9 @@ void lql_insert(t_LQL_operacion* op);
 void lql_create(t_LQL_operacion* op);
 void lql_describe(t_LQL_operacion* op);
 void lql_drop(t_LQL_operacion* op);
-void lql_journal(t_list* lista_mem);
+void lql_journal(t_list* list_mem, t_LQL_operacion* op);
 void lql_add(t_LQL_operacion* op);
-void lql_run(FILE* archivo);
+void lql_run(FILE* archivo, t_LQL_operacion* op);
 void lql_metrics();
 void* timer();
 

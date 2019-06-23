@@ -1,10 +1,9 @@
 #include "Kernel.h"
 
 void pruebaParser(){
-	FILE* script = abrirArchivo("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba.lql");
-	FILE* script2 = abrirArchivo("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba2.lql");
-	lql_run(script2);
-	lql_run(script);
+	crear_lql_run("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba.lql");
+	crear_lql_run("/home/utnso/workspace/tp-2019-1c-BEFGN/falla.lql");
+	crear_lql_run("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba2.lql");
 	return;
 }
 
@@ -21,26 +20,29 @@ void iniciarValoresParaTest(){
 	tabla3->consistencia = "EC";
 	tabla3->nombre_tabla = "Hash";
 	agregar_tabla(tabla3);
-	agregar_memoria(5);
-	agregar_memoria(6);
-	agregar_memoria(7);
-	agregar_memoria(8);
-	strong_consistency = obtener_memoria_por_id(0);
-	strong_consistency->valida = true;
-	list_add(strong_hash_consistency,obtener_memoria_por_id(1));
-	list_add(strong_hash_consistency,obtener_memoria_por_id(2));
-	list_add(strong_hash_consistency,obtener_memoria_por_id(3));
-	list_add(eventual_consistency,obtener_memoria_por_id(1));
-	list_add(eventual_consistency,obtener_memoria_por_id(2));
-	list_add(eventual_consistency,obtener_memoria_por_id(3));
+	agregar_memoria(5,"1",0);
+	agregar_memoria(6,"2",1);
+	agregar_memoria(7,"3",2);
+	agregar_memoria(8,"4",3);
+	agregar_memoria(8,"4",4);
+	crear_lql_add("sc",0);
+	crear_lql_add("shc",1);
+	crear_lql_add("shc",2);
+	crear_lql_add("shc",3);
+	crear_lql_add("ec",1);
+	crear_lql_add("ec",2);
+	crear_lql_add("ec",3);
+	while(queue_is_empty(queue_ready)){
+		ejecutar();
+	}
 }
 
 int main(void) {
 	iniciar();
 	crear_hilos_iniciales();
-	//iniciarValoresParaTest();
+	iniciarValoresParaTest();
 	//conectarAMemoria();
-	//pruebaParser();
+	pruebaParser();
 
 	//CONEXION A MEMORIAS
 	pthread_t recibirMemoriasYConectarme;
