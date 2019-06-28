@@ -14,6 +14,7 @@
 #include <commons/config.h>
 #include "configMemoria.h"
 #include <bibliotecaFunciones/sockets.h>
+#include <bibliotecaFunciones/lfsSerializacion.h>
 
 fd_set master;   // conjunto maestro de descriptores de fichero
 fd_set copy;

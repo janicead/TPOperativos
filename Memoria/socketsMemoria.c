@@ -196,15 +196,31 @@ void realizarMultiplexacion(int socketEscuchando){
 
 		                }
 		    	} else {
+		    		t_PaqueteDeDatos *package;
+		    		package = (t_PaqueteDeDatos*) malloc(sizeof(t_PaqueteDeDatos));
 		            // gestionar datos de un cliente
-		    		if ((nbytes = recv(i, buf, sizeof(buf), 0)) <= 0) {
-		                // error o conexión cerrada por el cliente
-		    			if (nbytes == 0) {
+		    		if ((nbytes = recv(i, &package->ID,sizeof(uint32_t),MSG_WAITALL)) > 0) {
+		    			nbytes = recv(i, &package->longDatos,sizeof(uint32_t),MSG_WAITALL);
+		    			package->Datos = (char*) malloc(package->longDatos +1); //+1 VALGRIND
+		    			nbytes = recv(i, package->Datos, package->longDatos, MSG_WAITALL);
+		    			t_SELECT* select = deserializarT_SELECT(package->Datos);
+		    			printf("Los datos que recibi del socket %d, son %s\n", i, select->nombreTabla);
+		    			char* palabra="hola";
+		    			t_UnString* s = definirT_UnString(palabra);
+		    			char* serializados= serializarT_UnString(s);
+		    			int tamanioSerializado = s->longString+ sizeof (uint32_t);
+
+		    			empaquetarEnviarMensaje(i,14, tamanioSerializado,serializados);
+	                   // close(i); // bye!
+	                   // FD_CLR(i, &master); // eliminar del conjunto maestro
+		    		}
+		    		else if (nbytes == 0) {
 		                    // conexión cerrada
 		    				printf("El socket %d se desconecto\n", i);
-		                } else {
+		                    close(i); // bye!
+		                    FD_CLR(i, &master); // eliminar del conjunto maestro
+		                }else if(nbytes<0) {
 		                    perror("recv");
-		                }
 		                    close(i); // bye!
 		                    FD_CLR(i, &master); // eliminar del conjunto maestro
 		                } else {

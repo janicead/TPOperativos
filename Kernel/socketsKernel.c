@@ -28,6 +28,8 @@ void conectarmeAMP(){
 		agregarATablaDeGossipKernel(configKernel.puerto_memoria,ipServidor,nroMemoria);
 		agregarAMemoriasConectadasAKernel(configKernel.puerto_memoria,ipServidor,nroMemoria);
 		mostrarmeMemoriasTablaGossip();
+		char* valor = opSELECT(memoria, "TABLA1",23);
+	printf("El valor essssssssssssssssssssssssssssssssssssssssssss %s \n", valor);
 	}
 	free(ipServidor);
 }

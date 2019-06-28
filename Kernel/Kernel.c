@@ -40,9 +40,9 @@ void iniciarValoresParaTest(){
 int main(void) {
 	iniciar();
 	crear_hilos_iniciales();
-	iniciarValoresParaTest();
+	//iniciarValoresParaTest();
 	//conectarAMemoria();
-	pruebaParser();
+	//pruebaParser();
 
 	//CONEXION A MEMORIAS
 	pthread_t recibirMemoriasYConectarme;
@@ -58,8 +58,8 @@ int main(void) {
 
 void iniciar(){
 	configure_logger_kernel();
-	iniciar_semaforos();
-	inicializarIds();
+	//iniciar_semaforos();
+	//inicializarIds();
 	srandom(time(NULL));
 	crear_colas();
 	crear_listas();
