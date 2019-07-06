@@ -8,6 +8,7 @@
 #include <commons/collections/list.h>
 #include <commons/config.h>
 #include <bibliotecaFunciones/usoVariado.h>
+#include <sys/inotify.h>
 
 #define configMemoriaDir "/home/utnso/workspace/tp-2019-1c-BEFGN/Memoria/Config/memoria.conf"
 t_log *loggerMemoria;
@@ -36,6 +37,8 @@ t_ConfigMemoria leerConfigMemoria(void);
 void mostrarDatosArchivoConfig();
 void configurarLoggerMemoria();
 void exit_gracefully(int exitInfo);
+void actualizarArchivoConfig();
+void* observer_config();
 
 #endif /* CONFIGMEMORIA_H_ */
 

@@ -91,9 +91,8 @@ t_ConfigMemoria leerConfigMemoria(){
 			log_error(loggerMemoria,"No se encontro la key NUMERO_DE_MEMORIA en el archivo de configuracion");
 			exit(EXIT_FAILURE);
 		}
-
+	config_destroy(archivoConfigMemoria);
 	return configMemoria;
-
 }
 void mostrarDatosArchivoConfig(){
 	printf("\n%s %d\n","PUERTO_DE_ESCUCHA: ",configMemoria.puertoDeEscucha);
@@ -122,4 +121,47 @@ void exit_gracefully(int exitInfo){
 	config_destroy(archivoConfigMemoria);
 	log_destroy(loggerMemoria);
 	exit(exitInfo);
+}
+
+void* observer_config(){
+	int file_descriptor,file_observer;
+	int event_size = sizeof(struct inotify_event);
+	int max_cant_cambios = 1024;
+	int max_file_name_size = 24;
+	int buffer_size = max_cant_cambios* (event_size + max_file_name_size);
+	char buffer[buffer_size];
+
+	file_descriptor = inotify_init();
+	file_observer = inotify_add_watch(file_descriptor,configMemoriaDir,IN_MODIFY);
+
+	while(1){
+		read(file_descriptor,buffer,buffer_size);
+		//pthread_mutex_lock(&config_sem);
+		actualizarArchivoConfig();
+		//pthread_mutex_unlock(&config_sem);
+	}
+
+	inotify_rm_watch(file_descriptor,file_observer);
+	close(file_descriptor);
+	return NULL;
+}
+
+void actualizarArchivoConfig(){
+	archivoConfigMemoria = config_create(configMemoriaDir);
+	if(config_has_property(archivoConfigMemoria, "RETARDO_ACCESO_MEMORIA_PRINCIPAL")) {
+		configMemoria.retardoAccesoMemoriaPrincipal = config_get_int_value(archivoConfigMemoria,"RETARDO_ACCESO_MEMORIA_PRINCIPAL");
+	}
+	else{
+		log_error(loggerMemoria,"No se encontro la key QUANTUM en el archivo de configuracion");
+		return;
+	}
+	if(config_has_property(archivoConfigMemoria, "RETARDO_ACCESO_FILE_SYSTEM")) {
+		configMemoria.retardoAccesoFileSystem = config_get_int_value(archivoConfigMemoria,"RETARDO_ACCESO_FILE_SYSTEM");
+	}
+	else{
+		log_error(loggerMemoria,"No se encontro la key RETARDO_ACCESO_FILE_SYSTEM en el archivo de configuracion");
+		return;
+	}
+	config_destroy(archivoConfigMemoria);
+	mostrarDatosArchivoConfig();
 }

@@ -2,7 +2,7 @@
 
 int main(void) {
 
-	pthread_t multiplexacionMemoria/*, clienteMemoria, gossip*/;
+	pthread_t multiplexacionMemoria, config_observer/*, clienteMemoria, gossip*/;
 
 	configurarLoggerMemoria();
 	configMemoria =leerConfigMemoria();
@@ -20,6 +20,8 @@ int main(void) {
 	//pthread_create(&multiplexacionMemoria, NULL, (void*)realizarMultiplexacion, NULL);
 	//pthread_create(&clienteMemoria, NULL, hacermeClienteDeMisServers, NULL);
 	//pthread_join(gossip, NULL);
+	pthread_create(&config_observer,NULL,observer_config,NULL);
+	pthread_detach(config_observer);
 	pthread_join(multiplexacionMemoria, NULL);
 	//pthread_join(clienteMemoria, NULL);
 	//pthread_join(gossip, NULL);
