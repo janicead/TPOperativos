@@ -1,5 +1,149 @@
 #include "socketsMemoria.h"
 
+void enviarRespuesta(int socketReceptor, int protocoloID, char *respuesta){
+	char* stringSerializado;
+	t_UnString *unString = definirT_UnString(respuesta);
+
+	stringSerializado = serializarT_UnString(unString);
+	int tamanioStructSerializado = sizeof(uint32_t) + unString->longString;
+	empaquetarEnviarMensaje(socketReceptor,protocoloID,tamanioStructSerializado,stringSerializado);
+
+	free(stringSerializado);
+	freeT_UnString(unString);
+}
+
+void realizarMultiplexacion(int socketEscuchando){
+	fd_set readSet;
+	fd_set tempReadSet;
+	int maximoFD;
+	int resultado;
+
+	int fd;
+	int nuevaConexion;
+	t_PaqueteDeDatos *package;
+
+	FD_ZERO(&readSet);
+	FD_ZERO(&tempReadSet);
+
+	FD_SET(socketEscuchando,&readSet);
+	maximoFD = socketEscuchando;
+	int i = 0;
+	while(1){
+		FD_ZERO(&tempReadSet);
+		tempReadSet = readSet;
+		resultado = select(maximoFD + 1, &tempReadSet, NULL, NULL, NULL);
+		printf("%d",resultado);
+
+		if(resultado == -1){
+			printf("Fallo en select().\n");
+			exitGracefully(EXIT_FAILURE,loggerMemoria,socketEscuchando);
+		}
+		//VERIFICO SI HAY NUEVA CONEXION
+		if (FD_ISSET(socketEscuchando, &tempReadSet)){
+			nuevaConexion = aceptarConexiones(socketEscuchando, loggerMemoria);
+			int numMemoria = configMemoria.numeroDeMemoria;
+			char* soyMemoria = string_new();
+			string_append(&soyMemoria, "SOY MEMORIA ");
+			char* numeroMemoria[1000];
+			kernel = nuevaConexion;
+			sprintf(numeroMemoria, "%d", numMemoria);
+			string_append(&soyMemoria, numeroMemoria);
+			realizarHandShake(nuevaConexion,KERNELOMEMORIA,soyMemoria);
+			FD_SET(nuevaConexion,&readSet);
+			maximoFD = (nuevaConexion > maximoFD)?nuevaConexion:maximoFD;
+			FD_CLR(socketEscuchando,&tempReadSet);
+		}
+		//BUSCO EN EL CONJUNTO, si hay datos para leer
+		for(fd = 0; fd <= maximoFD; fd++){
+			if (FD_ISSET(fd, &tempReadSet)){ //HAY UN PAQUETE PARA RECIBIR
+				package = recibirPaquete(fd);
+				printf("\npackage->ID: %d\n",package->ID);
+				gestionarPaquetes(package, fd);
+			}
+			FD_CLR(fd,&tempReadSet);
+		}
+		i++;
+	}
+}
+
+void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
+	if(packageRecibido->ID == 13){ //13: SELECT
+		t_SELECT *unSELECT;
+		int id_respuesta_select = 14;//14: RESPUESTA DE UN PROTOCOLO = 13
+		unSELECT = deserializarT_SELECT(packageRecibido->Datos);
+		log_info(loggerMemoria,"Query recibido: SELECT [%s] [%d]",unSELECT->nombreTabla,unSELECT->KEY);
+
+		char* Respuesta = string_from_format("SELECT OK");
+		enviarRespuesta(socketEmisor,id_respuesta_select,Respuesta);
+
+		free(Respuesta);
+		freeT_SELECT(unSELECT);
+	}
+
+	if(packageRecibido->ID == 15){ //15: INSERT
+		t_INSERT *unINSERT;
+		int id_respuesta_insert = 16; //16: RESPUESTA DE UN PROTOCOLO = 15
+		unINSERT = deserializarT_INSERT(packageRecibido->Datos);
+		log_info(loggerMemoria,"Query recibido: INSERT [%s] [%d] [%s] [%d]",unINSERT->nombreTabla,unINSERT->KEY,unINSERT->Value,unINSERT->timeStamp);
+
+		char* Respuesta = string_from_format("INSERT OK"); //
+		enviarRespuesta(socketEmisor,id_respuesta_insert,Respuesta);
+
+		free(Respuesta);
+		freeT_INSERT(unINSERT);
+	}
+
+	if(packageRecibido->ID == 17){ //17: CREATE
+		t_CREATE *unCREATE;
+		int id_respuesta_create = 18;//18: RESPUESTA DE UN PROTOCOLO = 17
+
+		unCREATE = deserializarT_CREATE(packageRecibido->Datos);
+		log_info(loggerMemoria,"Query recibido: CREATE [%s] [%s] [%d] [%d]",unCREATE->nombreTabla,unCREATE->tipoConsistencia,unCREATE->nParticiones,unCREATE->tiempoCompactacion);
+
+		char* Respuesta = string_from_format("CREATE OK");
+		enviarRespuesta(socketEmisor,id_respuesta_create,Respuesta);
+
+		free(Respuesta);
+		freeT_CREATE(unCREATE);
+	}
+
+	if(packageRecibido->ID == 19){ //19: DESCRIBE
+		t_DESCRIBE *unDESCRIBE;
+		char* Respuesta;
+		int id_respuesta_describe = 20;//20: RESPUESTA DE UN PROTOCOLO = 19
+
+		unDESCRIBE = deserializarT_DESCRIBE(packageRecibido->Datos);
+		log_info(loggerMemoria,"Query recibido: DESCRIBE [%s]",unDESCRIBE->nombreTabla);
+
+		if(string_is_empty(unDESCRIBE->nombreTabla)){
+			Respuesta = string_from_format("DESCRIBE TOTAL OK");
+			enviarRespuesta(socketEmisor,id_respuesta_describe, Respuesta);
+		}
+		else{
+			Respuesta = string_from_format("DESCRIBE OK");
+			enviarRespuesta(socketEmisor,id_respuesta_describe,Respuesta);
+		}
+		free(Respuesta);
+		freeT_DESCRIBE(unDESCRIBE);
+	}
+
+	if(packageRecibido->ID == 21){ //11:  DROP
+		t_DROP *unDROP;
+		int id_respuesta_drop = 22;//22: RESPUESTA DE UN PROTOCOLO = 21
+
+		unDROP = deserializarT_DROP(packageRecibido->Datos);
+		log_info(loggerMemoria, "Query recibido: DESCRIBE [%s]",unDROP->nombreTabla);
+
+		char* Respuesta = string_from_format("DROP OK");
+		enviarRespuesta(socketEmisor,id_respuesta_drop,Respuesta);
+
+
+		free(Respuesta);
+		freeT_DROP(unDROP);
+	}
+	freePackage(packageRecibido);
+}
+
 void definirValorKernel(){
 	kernel= 0;
 }
@@ -33,8 +177,39 @@ void realizarGossip(){
 	}
 }
 
+void iniciarEscucha(){
+	struct sockaddr_in dirServidor;
 
+	int skEnUso;
 
+	dirServidor.sin_family = AF_INET;
+	dirServidor.sin_port = htons(configMemoria.puertoDeEscucha); //serverPort
+	dirServidor.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	//printf("IP server: %d\n",dirServidor.sin_addr.s_addr);
+
+	log_info(loggerMemoria, "Asignado un socket al proceso LFS");
+	servidorEscuchaMemoria = socket(AF_INET, SOCK_STREAM, 0);
+
+	skEnUso = 1;
+	setsockopt(servidorEscuchaMemoria,SOL_SOCKET,SO_REUSEADDR,&skEnUso,sizeof(skEnUso));
+
+	if(bind(servidorEscuchaMemoria,(void*) &dirServidor,sizeof(dirServidor)) != 0)
+	{
+		log_error(loggerMemoria, "Fallo del bind()");
+		exit(0);
+	}
+
+	if(listen(servidorEscuchaMemoria,30)==0)
+	{
+		log_info(loggerMemoria, "Esperando conexiones, listen()....");
+	}
+	else
+	{
+		log_error(loggerMemoria,"fallo al establecer escucha, listen()");
+		exit(0);
+	}
+}
 
 void iniciarEscuchaMemoria(){
 	int yes=1;
@@ -42,7 +217,7 @@ void iniciarEscuchaMemoria(){
         perror("socket");
         exit(1);
     }
-    if (setsockopt(servidorEscuchaMemoria, SOL_SOCKET, SO_REUSEADDR, &yes,sizeof(int)) == -1) {
+    if (setsockopt(servidorEscuchaMemoria, SOL_SOCKET, SO_REUSEADDR, &yes,sizeof(yes)) == -1) {
         perror("setsockopt");
         exit(1);
     }
@@ -58,12 +233,13 @@ void iniciarEscuchaMemoria(){
         exit(1);
     }
     // escuchar
-    if (listen(servidorEscuchaMemoria, 10) == -1) {
+    if (listen(servidorEscuchaMemoria, 30) == -1) {
         perror("listen");
         exit(1);
     }
     free(ipDeEscucha);
 }
+
 void serCliente(char* ip , int puerto){
 	int cliente;
 	char* ipServidor = quitarComillas(ip);
@@ -101,6 +277,7 @@ void serCliente(char* ip , int puerto){
 	}
 	free(ipServidor);
 }
+
 void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger){
 
 	int cliente;
@@ -128,8 +305,7 @@ void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger){
 
 }
 
-
-void realizarMultiplexacion(int socketEscuchando){
+/*void realizarMultiplexacion(int socketEscuchando){
 	int fdmax;        // número máximo de descriptores de fichero
 	int newfd;        // descriptor de socket de nueva conexión aceptada
 	char buf[256];    // buffer para datos del cliente
@@ -242,7 +418,7 @@ void realizarMultiplexacion(int socketEscuchando){
 		            }
 		        }
 
-}
+}*/
 
 void hacermeClienteDeMisServers(){
 	char** ipDeSeeds = configMemoria.ipDeSeeds;
@@ -255,9 +431,7 @@ void hacermeClienteDeMisServers(){
 			serCliente(ipDeSeeds[i], puertosDeSeeds[i]);
 		}
 	}
-
 }
-
 
 int aceptarConexiones(int socket, t_log* logger){
 	struct sockaddr_in dirCliente;
@@ -275,8 +449,6 @@ int aceptarConexiones(int socket, t_log* logger){
 	}
 
 	log_info(logger, "Acepte una conexion en socket: %d",skUnaConexion);
-
-
 	return skUnaConexion;
 }
 

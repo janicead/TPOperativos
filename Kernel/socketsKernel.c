@@ -1,10 +1,18 @@
 #include "socketsKernel.h"
 
+void conectarAMemoria(char* ip, int puerto){
+	int socketServer = conectarAlServidor(ip,puerto,loggerKernel);
+	realizarHandShake(socketServer,KERNELOMEMORIA,"SOY KERNEL");
+	int nroMemoria = recibirHandShakeMemoria(socketServer,KERNELOMEMORIA,loggerKernel);
+	agregar_memoria(puerto, ip, nroMemoria);
+	agregar_socket_mem(nroMemoria,socketServer);
+}
+
 void definirValorMP(){
 	memoria= 0;
 }
 
-void conectarmeAMP(){
+/*void conectarmeAMP(){
 	int cliente;
 	char* ipServidor = quitarComillas(configKernel.ip_memoria);
 	struct sockaddr_in dirServidorMemoria;
@@ -28,8 +36,6 @@ void conectarmeAMP(){
 		agregarATablaDeGossipKernel(configKernel.puerto_memoria,ipServidor,nroMemoria);
 		agregarAMemoriasConectadasAKernel(configKernel.puerto_memoria,ipServidor,nroMemoria);
 		mostrarmeMemoriasTablaGossip();
-		char* valor = opSELECT(memoria, "TABLA1",23);
-	printf("El valor essssssssssssssssssssssssssssssssssssssssssss %s \n", valor);
 	}
 	free(ipServidor);
 }
@@ -181,4 +187,4 @@ int revisarQueNoEsteEnListaMemoriasConectadas(int nroMemoria){
 		}
 	}
 	return 1;
-}
+}*/

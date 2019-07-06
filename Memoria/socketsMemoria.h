@@ -36,7 +36,9 @@ int aceptarConexiones(int socket, t_log* logger);
 void exitGracefully(int return_nr, t_log* logger, int servidorEscucha);
 
 
-
-
+//AGREGAS POR ERIC
+void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor);
+void enviarRespuesta(int socketReceptor, int protocoloID, char *respuesta);
+void iniciarEscucha();
 
 #endif /* SRC_SOCKETSMEMORIA_H_ */

@@ -107,9 +107,10 @@ void lql_select(t_LQL_operacion* operacion){
 		operacion->success = false;
 		return;
 	}
-	puts("SELECT OK");
-	//enviar paquete a la memoria seleccinada con los datos
+	char* respuesta = opSELECT(memoria->socket_mem,operacion->argumentos.SELECT.nombre_tabla, operacion->argumentos.SELECT.key);
+	puts(respuesta);
 	operacion->success = true;
+	free(respuesta);
 	return;
 }
 
@@ -130,8 +131,11 @@ void lql_insert(t_LQL_operacion* op){
 		op->success = false;
 		return;
 	}
-	puts("INSERT OK");
+	char* resp = opINSERT(memoria->socket_mem, op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key,
+			op->argumentos.INSERT.valor,-1);
+	puts(resp);
 	op->success = true;
+	free(resp);
 	return;
 }
 
@@ -143,14 +147,20 @@ void lql_create(t_LQL_operacion* op){
 		op->success = false;
 		return;
 	}
-	puts("CREATE OK");
+	char* resp = opCREATE(memoria->socket_mem, op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
+			op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time);
+	puts(resp);
 	op->success = true;
+	free(resp);
 	return;
 }
 
 void lql_describe(t_LQL_operacion* op){
 	if(string_is_empty(op->argumentos.DESCRIBE.nombre_tabla)){
-		puts("DESCRIBE TOTAL OK");
+		t_memoria* mem = random_memory(memorias);
+		char* resp = opDESCRIBE(mem->socket_mem, "");
+		puts(resp);
+		free(resp);
 		op->success = true;
 	}
 	else{
@@ -170,7 +180,9 @@ void lql_describe(t_LQL_operacion* op){
 			op->success = false;
 			return;
 		}
-		puts("DESCRIBE OK");
+		char* resp = opDESCRIBE(memoria->socket_mem,op->argumentos.DESCRIBE.nombre_tabla);
+		puts(resp);
+		free(resp);
 		op->success = true;
 	}
 }
@@ -192,7 +204,9 @@ void lql_drop(t_LQL_operacion* op){
 		op->success = false;
 		return;
 	}
-	puts("DROP OK");
+	char* resp = opDROP(memoria->socket_mem, op->argumentos.DROP.nombre_tabla);
+	puts(resp);
+	free(resp);
 	op->success = true;
 	return;
 }
@@ -341,7 +355,7 @@ t_memoria* obtener_memoria_consistencia(char* consistencia, int key){
 				mem = hash_memory(key);
 			}
 			else{
-				mem = list_get(strong_hash_consistency,0);
+				mem = random_memory(strong_hash_consistency);
 			}
 			mem->valida = true;
 			pthread_mutex_unlock(&strong_hash_consistency_sem);
@@ -357,7 +371,7 @@ t_memoria* obtener_memoria_consistencia(char* consistencia, int key){
 	else if(string_equals_ignore_case("EC",consistencia)){
 		pthread_mutex_lock(&eventual_consistency_sem);
 		if(!list_is_empty(eventual_consistency)){
-			mem = random_memory();
+			mem = random_memory(eventual_consistency);
 			mem->valida = true;
 			pthread_mutex_unlock(&eventual_consistency_sem);
 			return mem;
@@ -387,8 +401,8 @@ t_memoria* hash_memory(int key){
 	return list_get(strong_hash_consistency,index);
 }
 
-t_memoria* random_memory(){
-	int index = random() % list_size(eventual_consistency);
-	return list_get(eventual_consistency,index);
+t_memoria* random_memory(t_list* lista){
+	int index = random() % list_size(lista);
+	return list_get(lista,index);
 }
 

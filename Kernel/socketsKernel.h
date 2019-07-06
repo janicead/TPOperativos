@@ -25,4 +25,9 @@ void conectarmeAMemoriaEspecifica(int puerto,char* ip, t_log* logger);
 void agregarAMemoriasConectadasAKernel(int puerto, char* ip, int memoria);
 int cantMemoriasConectadas();
 int revisarQueNoEsteEnListaMemoriasConectadas(int nroMemoria);
+
+
+//AGREGADAS POR ERIC
+void conectarAMemoria(char* ip, int puerto);
+
 #endif /* SRC_SOCKETSKERNEL_H_ */

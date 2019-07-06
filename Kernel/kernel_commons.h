@@ -18,6 +18,8 @@
 #include <netdb.h> // Para getaddrinfo
 #include <unistd.h> // Para close
 #include <bibliotecaFunciones/sockets.h>
+#include <bibliotecaFunciones/lfsProtocolos.h>
+#include <bibliotecaFunciones/usoVariado.h>
 
 
 

@@ -9,8 +9,8 @@ void pruebaParser(){
 
 void iniciarValoresParaTest(){
 	t_tabla* tabla = (t_tabla*) malloc(sizeof(t_tabla));
-	tabla->consistencia = "SC";
-	tabla->nombre_tabla = "prueba";
+	tabla->consistencia = "SHC";
+	tabla->nombre_tabla = "hash";
 	agregar_tabla(tabla);
 	t_tabla* tabla2 = (t_tabla*) malloc(sizeof(t_tabla));
 	tabla2->consistencia = "SC";
@@ -18,9 +18,9 @@ void iniciarValoresParaTest(){
 	agregar_tabla(tabla2);
 	t_tabla* tabla3 = (t_tabla*) malloc(sizeof(t_tabla));
 	tabla3->consistencia = "EC";
-	tabla3->nombre_tabla = "Hash";
+	tabla3->nombre_tabla = "random";
 	agregar_tabla(tabla3);
-	agregar_memoria(5,"1",0);
+	/*agregar_memoria(5,"1",0);
 	agregar_memoria(6,"2",1);
 	agregar_memoria(7,"3",2);
 	agregar_memoria(8,"4",3);
@@ -34,24 +34,24 @@ void iniciarValoresParaTest(){
 	crear_lql_add("ec",3);
 	while(queue_is_empty(queue_ready)){
 		ejecutar();
-	}
+	}*/
 }
 
 int main(void) {
 	iniciar();
 	crear_hilos_iniciales();
-	//iniciarValoresParaTest();
-	//conectarAMemoria();
+	iniciarValoresParaTest();
+	//conectarAMemoria("127.0.0.6",35136);   NO ANDA :(
 	//pruebaParser();
 
 	//CONEXION A MEMORIAS
-	pthread_t recibirMemoriasYConectarme;
+	/*pthread_t recibirMemoriasYConectarme;
 	tablaDeGossip =  list_create();
-	memoriasALasQueMeConecte =  list_create();
+	memoriasALasQueMeConecte =  list_create();*/
 
-	conectarmeAMP();
+	/*conectarmeAMP();
 	pthread_create(&recibirMemoriasYConectarme, NULL,(void*) recibirMemorias, NULL);
-	pthread_detach(recibirMemoriasYConectarme);
+	pthread_detach(recibirMemoriasYConectarme);*/
 	pthread_join(consola,NULL);
 	exit_gracefully(EXIT_SUCCESS);
 }
@@ -64,7 +64,11 @@ void iniciar(){
 	crear_colas();
 	crear_listas();
 	verificarArchivoConfigKernel();
-	//puertoMemoria = int_to_string(configKernel.puerto_memoria);
+	conectarAMemoria(configKernel.ip_memoria,configKernel.puerto_memoria);
+	t_memoria* mem = list_get(memorias,0);
+	char* resp = opDESCRIBE(mem->socket_mem,"");
+	puts(resp);
+	free(resp);
 	return;
 }
 
@@ -75,13 +79,4 @@ void crear_hilos_iniciales(){
 	pthread_create(&config_observer,NULL,observer_config,NULL);
 	pthread_detach(config_observer);
 	return;
-}
-
-void conectarAMemoria(){
-	//char * buffer[1024];
-	//int socketMemoria = conectarAlServidor(configKernel.ip_memoria,puertoMemoria, loggerKernel);
-	//send(socketMemoria,"Hola Memoria",strlen("Hola Memoria"),0);
-	//int bytes = recv(socketMemoria,buffer,1024,0);
-	//buffer[bytes] = '\0';
-	//printf("%s%",buffer);
 }

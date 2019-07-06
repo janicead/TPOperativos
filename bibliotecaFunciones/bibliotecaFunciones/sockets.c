@@ -71,6 +71,7 @@ int conectarAlServidor( char* ip, int puerto, t_log* logger){
 		log_error(logger,"No se pudo realizar la conexion\n" );
 		return 1;
 	}
+	free(ipSinComillas);
 	return cliente;
 }
 void emitirMensaje(int cliente) {
@@ -166,7 +167,6 @@ void empaquetarEnviarMensaje(int socketReceptor, int unID, int longitudDatos, ch
 	t_PaqueteDeDatos *package;
 	char * paqueteListo;
 	int offset;
-
 	package = (t_PaqueteDeDatos *) malloc(sizeof(t_PaqueteDeDatos));
 	definirHeader(package, unID,longitudDatos);
 	package->Datos = datos;
@@ -191,7 +191,6 @@ void empaquetarEnviarMensaje(int socketReceptor, int unID, int longitudDatos, ch
 		perror("fallo en send(), al enviar el paqueteListo");
 		exit(0);
 	}
-
 	free(paqueteListo);
 
 }
