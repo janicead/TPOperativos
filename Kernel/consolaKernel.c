@@ -155,8 +155,7 @@ void* setConsole(){
 }
 
 char** obtenerParametros(char* linea, int indice){
-	char** parametros = string_n_split(linea,indice," ");
-	return parametros;
+	return string_n_split(linea,indice," ");
 }
 
 void freeParametros(char** parametros){

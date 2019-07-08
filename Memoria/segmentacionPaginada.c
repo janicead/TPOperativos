@@ -203,11 +203,8 @@ void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco, unsigne
 	registro->value= value;
 	registro->timestamp= timestamp;
 	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro, &registro->key, sizeof(uint16_t));
-	puts("hola1");
 	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro+sizeof(uint16_t), &registro->timestamp, sizeof(unsigned long int));
-	puts("hola2");
 	memcpy(memoriaPrincipal+nroMarco*tamanioUnRegistro+sizeof(uint16_t)+ sizeof(unsigned long int), registro->value, tamanioDadoPorLFS);
-	puts("hola3");
 	cantMarcosIngresados++;
 	settearMarcoEnMP(nroMarco, 1);
 	free(registro);

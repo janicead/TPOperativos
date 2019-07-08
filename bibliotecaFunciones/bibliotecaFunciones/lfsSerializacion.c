@@ -189,14 +189,11 @@ t_INSERT *deserializarT_INSERT(char *t_INSERTSerializado)
 	offset += sizeof(uint32_t);
 	memcpy(&structDeserializado->longValue, t_INSERTSerializado + offset, sizeof(uint32_t));
 
-
-
 	structDeserializado->nombreTabla = (char *) malloc(structDeserializado->longNombre +1);
 	offset += sizeof(structDeserializado->longValue); // = OFFSET += SIZEOF(uint32_t);
 	memcpy(structDeserializado->nombreTabla, t_INSERTSerializado + offset, structDeserializado->longNombre);//ojo Q ACA NO VA EL "&"
 
 	structDeserializado->nombreTabla[structDeserializado->longNombre] = '\0'; //ES NECESARIO? -> SI
-
 
 	structDeserializado->Value = (char *) malloc(structDeserializado->longValue +1);
 	offset += structDeserializado->longNombre;

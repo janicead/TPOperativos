@@ -128,6 +128,8 @@ void realizarHandShake(int servidor, t_identidad identidad, char*mensaje){
 	handShakeSerializado=serializarHandShake(punteroHandShake);
 	empaquetarEnviarMensaje(servidor,punteroHandShake->identidad,sizeHandshakeAEnviar,handShakeSerializado);
 	freeHandShake(punteroHandShake);
+	free(handShakeSerializado);
+
 	return;
 }
 
@@ -192,6 +194,7 @@ void empaquetarEnviarMensaje(int socketReceptor, int unID, int longitudDatos, ch
 		exit(0);
 	}
 	free(paqueteListo);
+	free(package);
 
 }
 void definirHeader(t_PaqueteDeDatos *unPackage,int unID, int unaLongitudData)
