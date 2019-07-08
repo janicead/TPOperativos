@@ -12,13 +12,15 @@ t_ConfigMemoria leerConfigMemoria(){
 		exit(EXIT_FAILURE);
 	}
 	if (config_has_property(archivoConfigMemoria, "IP_DE_ESCUCHA")) {
-		configMemoria.ipDeEscucha = config_get_string_value(archivoConfigMemoria,"IP_DE_ESCUCHA");
+		configMemoria.ipDeEscucha = malloc(1+strlen(config_get_string_value(archivoConfigMemoria, "IP_DE_ESCUCHA")));
+		strcpy(configMemoria.ipDeEscucha,config_get_string_value(archivoConfigMemoria,"IP_DE_ESCUCHA"));
 	} else {
 		log_error(loggerMemoria,"No se encontro la key IP_DE_ESCUCHA en el archivo de configuracion");
 		exit(EXIT_FAILURE);
 	}
 	if (config_has_property(archivoConfigMemoria, "IP_DEL_FILE_SYSTEM")) {
-		configMemoria.ipDelFileSystem = config_get_string_value(archivoConfigMemoria,"IP_DEL_FILE_SYSTEM");
+		configMemoria.ipDelFileSystem = malloc(1+strlen(config_get_string_value(archivoConfigMemoria, "IP_DEL_FILE_SYSTEM")));
+		strcpy(configMemoria.ipDelFileSystem,config_get_string_value(archivoConfigMemoria,"IP_DEL_FILE_SYSTEM"));
 	} else {
 		log_error(loggerMemoria,"No se encontro la key IP_DEL_FILE_SYSTEM en el archivo de configuracion");
 		exit(EXIT_FAILURE);

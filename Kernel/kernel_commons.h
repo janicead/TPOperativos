@@ -49,6 +49,7 @@ typedef struct {
 			char* nombre_tabla;
 			int key;
 			char* valor;
+			unsigned long int timestamp;
 		} INSERT;
 		struct {
 			char* nombre_tabla;

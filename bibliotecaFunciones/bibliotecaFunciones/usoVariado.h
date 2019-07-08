@@ -41,6 +41,6 @@ void hacerFreeArray(void**);
 int tamanioArray(void** array);
 long int cantLugaresEnArchivo(FILE* archivo);
 char* int_to_string(int numero);
-
+unsigned long int obtenerTimeStamp();
 
 #endif /* BIBLIOTECAFUNCIONES_USOVARIADO_H_ */

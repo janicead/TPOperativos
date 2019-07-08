@@ -131,8 +131,8 @@ void lql_insert(t_LQL_operacion* op){
 		op->success = false;
 		return;
 	}
-	char* resp = opINSERT(memoria->socket_mem, op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key,
-			op->argumentos.INSERT.valor,-1);
+	unsigned long int timestamp = obtenerTimeStamp();
+	char* resp = opINSERT(memoria->socket_mem, op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key,op->argumentos.INSERT.valor,timestamp);
 	puts(resp);
 	op->success = true;
 	free(resp);
@@ -205,7 +205,15 @@ void lql_drop(t_LQL_operacion* op){
 		return;
 	}
 	char* resp = opDROP(memoria->socket_mem, op->argumentos.DROP.nombre_tabla);
+	char** valor =string_split(resp, " ");
+	if(!strcasecmp(valor[0],"ERROR")){
+		log_error(loggerKernel, "No se pudo borrar la tabla %s ya que no existe", op->argumentos.DROP.nombre_tabla);
+	}
+	else{
+		log_info(loggerKernel, "Se borro la tabla %s correctamente", op->argumentos.DROP.nombre_tabla);
+	}
 	puts(resp);
+	freeParametros(valor);
 	free(resp);
 	op->success = true;
 	return;
@@ -213,10 +221,20 @@ void lql_drop(t_LQL_operacion* op){
 
 void lql_journal(t_list* list_mem, t_LQL_operacion* op){
 	for(int i = 0; i < list_size(list_mem); i++){
-		//t_memoria* mem = list_get(list_mem,i);
-		puts("JOURNAL OK");
+		t_memoria* memoria = list_get(list_mem,i);
+		/*char* resp = opJOURNAL(memoria->socket_mem);
+		char** valor =string_split(resp, " ");
+		if(!strcasecmp(valor[0],"ERROR")){
+			log_error(loggerKernel, "Hubo un problema al realizar el JOURNAL de la memoria numero %d", memoria->id_mem);
+		}
+		else{
+			log_info(loggerKernel, "Se hizo JOURNAL de la memoria numero %d",memoria->id_mem);
+		}
+		freeParametros(valor);
+		free(resp);*/
 	}
 	op->success = true;
+
 	return;
 }
 

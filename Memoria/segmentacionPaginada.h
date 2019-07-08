@@ -64,7 +64,6 @@ int tamanioMaxMemoria;
 void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS);
 int tamanioLista(t_list * lista);
 char* recibirRespuestaSELECTMemoriaLfs();
-int obtenerTimeStamp();
 void mostrarDatosMarcos();
 //-------------------------------------BORRADO------------------------------------------------------------------//
 void destructor2(t_pagina * pagina);
@@ -87,8 +86,8 @@ t_registro* buscarEnMemoriaPrincipal( int nroMarco);
 int buscarEspacioLibreEnMP();
 void settearMarcoEnMP(int nroMarco, int nroDeseado);
 void actualizarMemoriaPrincipal(int nroMarco, unsigned long int timeStamp, char* value);
-void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco);
-int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value);
+void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco, unsigned long int timestamp);
+int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long int timestamp);
 void mostrarElementosMemoriaPrincipal();
 void quitarEspaciosGuardadosEnMemoria(t_list* lista);
 void borrarTodaMemoria();
@@ -100,7 +99,10 @@ char* convertirAStringListaJournal();
 void iniciarJournal();
 //---------------------------------------REQUESTS--------------------------------------------------------//
 char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado);
-void INSERTMemoria(char * nombreTabla, uint16_t key, char* value, int timeStamp);
-void DROPMemoria(char* nombreTabla);
+char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long int timeStamp);
+char* DROPMemoria(char* nombreTabla);
 void JOURNALMemoria();
+char* DESCRIBETodasLasTablasMemoria();
+char* DESCRIBEMemoria( char* nombreTabla);
+char* CREATEMemoria(char* nombreTabla, char* tipoConsistencia, int nroParticiones, int compactionTime);
 #endif /* SEGMENTACIONPAGINADA_H_ */

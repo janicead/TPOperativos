@@ -66,7 +66,9 @@ void* crearConsolaMemoria(){
 					break;
 				case CMD_INSERT:
 					printf("");
-					int timestamp = atoi(operacion[4]);
+					//int timestamp = atoi(operacion[4]);
+					char *ptr;
+				   unsigned long int timestamp = strtoul(operacion[4], &ptr, 10);
 					if (pasarAUint16(operacion[2], key)){
 						char* value = quitarEspacioFalso(operacion[3]);
 						INSERTMemoria(operacion[1], *key, value, timestamp);
@@ -78,6 +80,9 @@ void* crearConsolaMemoria(){
 					break;
 				case CMD_CREATE:
 					printf("COMANDO CREATE\n");
+					int nroParticiones = atoi(operacion[3]);
+					int compactionTime = atoi(operacion[4]);
+					CREATEMemoria(operacion[1], operacion[2], nroParticiones, compactionTime);
 					break;
 				case CMD_DESCRIBE:
 					printf("COMANDO DESCRIBE\n");

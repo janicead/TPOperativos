@@ -72,11 +72,10 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		int id_respuesta_select = 14;//14: RESPUESTA DE UN PROTOCOLO = 13
 		unSELECT = deserializarT_SELECT(packageRecibido->Datos);
 		log_info(loggerMemoria,"Query recibido: SELECT [%s] [%d]",unSELECT->nombreTabla,unSELECT->KEY);
-
-		char* Respuesta = string_from_format("SELECT OK");
+		uint16_t key = (uint16_t) unSELECT->KEY;
+		char* Respuesta = SELECTMemoria(unSELECT->nombreTabla,key,0);
 		enviarRespuesta(socketEmisor,id_respuesta_select,Respuesta);
 
-		free(Respuesta);
 		freeT_SELECT(unSELECT);
 	}
 
@@ -86,10 +85,11 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		unINSERT = deserializarT_INSERT(packageRecibido->Datos);
 		log_info(loggerMemoria,"Query recibido: INSERT [%s] [%d] [%s] [%d]",unINSERT->nombreTabla,unINSERT->KEY,unINSERT->Value,unINSERT->timeStamp);
 
-		char* Respuesta = string_from_format("INSERT OK"); //
-		enviarRespuesta(socketEmisor,id_respuesta_insert,Respuesta);
+		uint16_t key = (uint16_t) unINSERT->KEY;
 
-		free(Respuesta);
+		char* respuesta = INSERTMemoria(unINSERT->nombreTabla,key, unINSERT->Value, (unsigned long int)unINSERT->timeStamp);
+		enviarRespuesta(socketEmisor,id_respuesta_insert,respuesta);
+
 		freeT_INSERT(unINSERT);
 	}
 
@@ -116,14 +116,13 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		log_info(loggerMemoria,"Query recibido: DESCRIBE [%s]",unDESCRIBE->nombreTabla);
 
 		if(string_is_empty(unDESCRIBE->nombreTabla)){
-			Respuesta = string_from_format("DESCRIBE TOTAL OK");
-			enviarRespuesta(socketEmisor,id_respuesta_describe, Respuesta);
+			char* respuesta = DESCRIBETodasLasTablasMemoria();
+			enviarRespuesta(socketEmisor,id_respuesta_describe, respuesta);
 		}
 		else{
-			Respuesta = string_from_format("DESCRIBE OK");
-			enviarRespuesta(socketEmisor,id_respuesta_describe,Respuesta);
+			char* respuesta = DESCRIBEMemoria(unDESCRIBE->nombreTabla);
+			enviarRespuesta(socketEmisor,id_respuesta_describe,respuesta);
 		}
-		free(Respuesta);
 		freeT_DESCRIBE(unDESCRIBE);
 	}
 
@@ -134,12 +133,20 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		unDROP = deserializarT_DROP(packageRecibido->Datos);
 		log_info(loggerMemoria, "Query recibido: DESCRIBE [%s]",unDROP->nombreTabla);
 
-		char* Respuesta = string_from_format("DROP OK");
-		enviarRespuesta(socketEmisor,id_respuesta_drop,Respuesta);
+		char* respuesta = DROPMemoria(unDROP->nombreTabla);
+		enviarRespuesta(socketEmisor,id_respuesta_drop,respuesta);
 
-
-		free(Respuesta);
 		freeT_DROP(unDROP);
+	}
+	if(packageRecibido->ID == 23){ // JOURNAL
+
+		int id_respuesta_journal = 24;//23: RESPUESTA DE UN PROTOCOLO = 24
+
+		log_info(loggerMemoria, "Query recibido: JOURNAL [%s]",packageRecibido->Datos);
+
+		//char* respuesta = DROPMemoria(unDROP->nombreTabla);
+		enviarRespuesta(socketEmisor,id_respuesta_journal,"Todo ok");
+
 	}
 	freePackage(packageRecibido);
 }

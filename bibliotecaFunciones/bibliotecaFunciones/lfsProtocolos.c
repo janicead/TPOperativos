@@ -190,4 +190,6 @@ char *opDROP(int socketReceptor, char* unNombreTabla)
 
 	return respuesta;
 }
+char* opJOURNAL(int socketReceptor){
 
+}

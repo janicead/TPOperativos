@@ -28,6 +28,7 @@ char *opINSERT(int socketReceptor, char* unNombreTabla, int unaKey, char* unValu
 char *opCREATE(int socketReceptor, char* unNombreTabla, char* unaConsistencia, int unNParticiones, int unTiempoCompactacion);
 char *opDESCRIBE(int socketReceptor, char* unNombreTabla);
 char *opDROP(int socketReceptor, char* unNombreTabla);
+char* opJOURNAL(int socketReceptor);
 //######################################
 
 //######################################

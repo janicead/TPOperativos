@@ -3,7 +3,7 @@
 //----------------------------------------GENERALES-------------------------------------------//
 
 void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS){
-	tamanioMaxMemoria = 52; //de archivo de config
+	tamanioMaxMemoria = 52; //de archivo de config //antes 52
 	tamanioDadoPorLFS= tamanioValueDadoXLFS;
 	tamanioUnRegistro = tamanioValueDadoXLFS + sizeof(unsigned long int) + sizeof(uint16_t); //6+ tamanioValueDado
 	obtenerValue = sizeof(unsigned long int) + sizeof(uint16_t);
@@ -11,6 +11,7 @@ void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS){
 	log_info(loggerMemoria,"El tamanio de un resgistro es de %d\n", tamanioUnRegistro);
 	cantMaxMarcos = tamanioMaxMemoria/ tamanioUnRegistro;
 	cantMarcosIngresados= 0;
+	log_info(loggerMemoria,"Cant max de marcos posibles %d\n", cantMaxMarcos);
 	marcosOcupados=(int*)calloc(cantMaxMarcos,sizeof(int));
 	tablaDeSegmentos= list_create();
 
@@ -22,10 +23,6 @@ int tamanioLista(t_list * lista){
 
 char* recibirRespuestaSELECTMemoriaLfs(){
 	return "Hola Soy Lissandra";
-}
-
-int obtenerTimeStamp(){
-	return time(NULL);
 }
 
 void mostrarDatosMarcos(){
@@ -200,23 +197,26 @@ void actualizarMemoriaPrincipal(int nroMarco, unsigned long int timeStamp, char*
 	free(registro);
 }
 
-void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco){
+void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco, unsigned long int timestamp){
 	t_registro * registro = malloc(sizeof(t_registro));
 	registro->key = key;
 	registro->value= value;
-	registro->timestamp= obtenerTimeStamp();
+	registro->timestamp= timestamp;
 	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro, &registro->key, sizeof(uint16_t));
+	puts("hola1");
 	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro+sizeof(uint16_t), &registro->timestamp, sizeof(unsigned long int));
+	puts("hola2");
 	memcpy(memoriaPrincipal+nroMarco*tamanioUnRegistro+sizeof(uint16_t)+ sizeof(unsigned long int), registro->value, tamanioDadoPorLFS);
+	puts("hola3");
 	cantMarcosIngresados++;
 	settearMarcoEnMP(nroMarco, 1);
 	free(registro);
 }
 
-int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value){
+int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long int timestamp){
 	int nroMarco = buscarEspacioLibreEnMP();
 	if(nroMarco!=cantMaxMarcos){
-		guardarEnMPLugarEspecifico(key, value, nroMarco);
+		guardarEnMPLugarEspecifico(key, value, nroMarco, timestamp);
 			return nroMarco;
 	}
 	else{
@@ -231,7 +231,7 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value){
 			}
 			log_info(loggerMemoria,"La PAGINA que voy a reemplazar es la nro %d del SEGMENTO '%s' \n", lru->numeroPag, lru->nombreTabla);
 			settearMarcoEnMP(pagina->numeroMarco, 0);
-			guardarEnMPLugarEspecifico(key, value, pagina->numeroMarco);
+			guardarEnMPLugarEspecifico(key, value, pagina->numeroMarco, timestamp);
 			free(lru);
 			int nroMarco = pagina->numeroMarco;
 			free(pagina);
@@ -243,7 +243,7 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value){
 			iniciarJournal();// se inicia journal, osea que queda vacia la memoria entonces tiene si o si espacio
 			//luego de realizar journal, se terminaria guardando el dato :D
 			nroMarco = buscarEspacioLibreEnMP();
-			guardarEnMPLugarEspecifico(key, value, nroMarco);
+			guardarEnMPLugarEspecifico(key, value, nroMarco, timestamp);
 			free(lru);
 			return 0;
 		}
@@ -401,6 +401,7 @@ void iniciarJournal(){
 	}
 	list_clean(tablaDeSegmentos);
 	borrarTodaMemoria();
+	cantMarcosIngresados=0;
 	//empaquetarEnviarMensaje(socketLFS,22,strlen(msjEnviado),msjEnviado);
 	free(elementoEnviar);
 }
@@ -418,15 +419,23 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		char* value = buscarTablaPaginas(segmento->tablaPaginas, key);// aca tenemos que buscar en la tabla de paginas especifica de este segmento y meternos 1 x 1 en sus paginas para ver si en la memoria Principal esta el key
 		if(value!= NULL){ //lo encontro en tabla de paginas, lo busca en memoria principal y devuelve lo que vale
 			log_info(loggerMemoria,"Esta en la tabla de PAGINAS");
+			mostrarDatosMarcos();
+			mostrarElementosTablaSegmentos();
+			mostrarElementosMemoriaPrincipal();
+
 			return value;
 		}
 		else{ //no lo encontro en tabla de paginas
 			//tengo que consultarle a LFS PERO solo guardo en tabla de paginas
 			//consultaSELECTMemoriaLfs();// esto va a mandarle SELECT nombreTabla key con SOCKETS
 			log_info(loggerMemoria,"No esta en la tabla de PAGINAS");
-			int nroMarco = guardarEnMemoria(nombreTabla, key, value);
 			char* value = recibirRespuestaSELECTMemoriaLfs(); //con SOCKETS
+			unsigned long int t = obtenerTimeStamp();
+			int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
 			guardarEnTablaDePaginas(segmento, nroMarco, key, flagModificado);
+			mostrarDatosMarcos();
+			mostrarElementosTablaSegmentos();
+			mostrarElementosMemoriaPrincipal();
 			return value;
 		}
 	}
@@ -437,14 +446,18 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		char* value = recibirRespuestaSELECTMemoriaLfs();
 		t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
 		segmento->tablaPaginas= list_create();
-		int nroMarco = guardarEnMemoria(nombreTabla, key, value);
+		unsigned long int t = obtenerTimeStamp();
+		int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
 		guardarEnTablaDePaginas(segmento, nroMarco, key, flagModificado);
 		log_info(loggerMemoria,"Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
+		mostrarDatosMarcos();
+		mostrarElementosTablaSegmentos();
+		mostrarElementosMemoriaPrincipal();
 		return value;
 	}
 }
 
-void INSERTMemoria(char * nombreTabla, uint16_t key, char* value, int timeStamp){
+char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long int timeStamp){
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
 	if(ubicacionSegmento!=(cantSegmentos+1)){ //esta en tabla de SEGMENTOS
@@ -455,26 +468,32 @@ void INSERTMemoria(char * nombreTabla, uint16_t key, char* value, int timeStamp)
 		if(valor!= 0){ //lo encontro en tabla de paginas
 			//tengo que verificar los timestamps entre ambos a ver cual se queda en memoria principal
 			log_info(loggerMemoria,"Esta en la tabla de PAGINAS");
+			return "INFO: Se ha actualizado el value de la tabla";
 		}
 		else{ //no lo encontro en tabla de paginas
 			log_info(loggerMemoria,"No esta en la tabla de PAGINAS");
-			int indice = guardarEnMemoria(nombreTabla, key, value);
+			int indice = guardarEnMemoria(nombreTabla, key, value, timeStamp);
+			if(tamanioLista(tablaDeSegmentos)==0){
+				segmento = guardarEnTablaDeSegmentos(nombreTabla);
+			}
 			guardarEnTablaDePaginas(segmento, indice, key, 1);
 			log_info(loggerMemoria,"Se guardo en la tabla de PAGINAS y en la MEMORIA");
+			return "INFO: Se guardo correctamente";
 		}
 	}
 	else{ // no esta en tabla de SEGMENTOS
 		log_info(loggerMemoria,"No se encontro en la tabla de SEGMENTOS");
-		int indice = guardarEnMemoria(nombreTabla, key, value);
+		int indice = guardarEnMemoria(nombreTabla, key, value, timeStamp);
 		t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
 		segmento->tablaPaginas= list_create();
 		guardarEnTablaDePaginas(segmento, indice, key, 1);
 		log_info(loggerMemoria, "Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
+		return "INFO: Se guardo correctamente";
 	}
 
 }
 
-void DROPMemoria(char* nombreTabla){
+char* DROPMemoria(char* nombreTabla){
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 		int cantSegmentos = tamanioLista(tablaDeSegmentos);
 		if(ubicacionSegmento!=(cantSegmentos+1)){
@@ -486,14 +505,33 @@ void DROPMemoria(char* nombreTabla){
 			list_remove(tablaDeSegmentos, ubicacionSegmento);
 			free(segmento->nombreTabla);
 			free(segmento);
-			//aca tengo que avisarle al FS que se borro esta tabla
 		}
 		else{
 			log_info(loggerMemoria,"Dicha tabla no se encuentra en la tabla de SEGMENTOS");
-			//aca tengo que avisarle al FS que borre la tabla
 		}
+		int existe = 1; // esto es para q quede lindo despues se modifica de acuerdo a la rsta del lfs
+		//aca tengo que avisarle al FS que borre la tabla
+		if(existe == 1){
+			return  "INFO: Se borro correctamente la tabla";
+		}
+		else{ // si la encuentra, la borra y sino tiro mensaje de error de que no existe
+			return "ERROR: Dicha tabla no se encuentra en la tabla de SEGMENTOS";
+		}
+
 }
 void JOURNALMemoria(){
 	iniciarJournal();
+}
+char* DESCRIBETodasLasTablasMemoria(){
+	//aca le mando a lfs para q me de metadata de todas las tablas
+	return "DESCRIBE TOTAL OK";
+}
+char* DESCRIBEMemoria( char* nombreTabla){
+	 //aca tengo q mandarle mensaje a LFS para q me de la metada de esa tabla
+	return "DESCRIBE OK";
+}
+
+char* CREATEMemoria(char* nombreTabla, char* tipoConsistencia, int nroParticiones, int compactionTime){
+	 return "CREATE OK";
 }
 

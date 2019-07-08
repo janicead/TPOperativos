@@ -20,6 +20,7 @@ void iniciarValoresParaTest(){
 	tabla3->consistencia = "EC";
 	tabla3->nombre_tabla = "random";
 	agregar_tabla(tabla3);
+	crear_lql_add("sc",1);
 	/*agregar_memoria(5,"1",0);
 	agregar_memoria(6,"2",1);
 	agregar_memoria(7,"3",2);
@@ -64,6 +65,7 @@ void iniciar(){
 	crear_colas();
 	crear_listas();
 	verificarArchivoConfigKernel();
+
 	conectarAMemoria(configKernel.ip_memoria,configKernel.puerto_memoria);
 	t_memoria* mem = list_get(memorias,0);
 	char* resp = opDESCRIBE(mem->socket_mem,"");
