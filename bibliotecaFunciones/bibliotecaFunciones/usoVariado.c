@@ -19,10 +19,11 @@ void printearArrayDeChars(char** arrayDeChars){
 	}
 
 }
-void printearArrayDeInts(int* arrayDeInts){
+void printearArrayDeInts(int arrayDeInts[]){
 	int tamanioIpSeeds = tamanioArray(arrayDeInts);
 	for (int i =0; i<tamanioIpSeeds; i++){
-		printf("%d\n", arrayDeInts[i]);
+		int a = *(arrayDeInts[i]);
+		printf("%d\n", a);
 	}
 }
 void hacerFreeArray(void** array){

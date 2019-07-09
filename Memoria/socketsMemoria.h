@@ -13,12 +13,14 @@
 #include <commons/collections/queue.h>
 #include <commons/config.h>
 #include "configMemoria.h"
+#include "segmentacionPaginada.h"
 #include <bibliotecaFunciones/sockets.h>
 #include <bibliotecaFunciones/lfsSerializacion.h>
 
 fd_set master;   // conjunto maestro de descriptores de fichero
 fd_set copy;
-struct sockaddr_in servidorMemoria;     // dirección del servidor
+struct sockaddr_in servidorMemoria;
+pthread_t clienteM;
 struct sockaddr_in clienteMemoria; // dirección del cliente
 int servidorEscuchaMemoria;
        // para setsockopt() SO_REUSEADDR, más abajo

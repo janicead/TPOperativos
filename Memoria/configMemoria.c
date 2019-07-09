@@ -40,7 +40,7 @@ t_ConfigMemoria leerConfigMemoria(){
 	if (config_has_property(archivoConfigMemoria, "PUERTOS_DE_SEEDS")) {
 		char** arrayPuertos= config_get_array_value(archivoConfigMemoria,"PUERTOS_DE_SEEDS");
 
-		int cantPuertosSeeds = tamanioArray(arrayPuertos);
+		int cantPuertosSeeds = tamanioArray((void**)arrayPuertos);
 		char* ar [cantPuertosSeeds+1];
 		int j =0;
 		while(j<cantPuertosSeeds && arrayPuertos[j]!=NULL){
@@ -51,7 +51,7 @@ t_ConfigMemoria leerConfigMemoria(){
 			int a = atoi(ar[i]);
 			configMemoria.puertosDeSeeds[i]= a;
 		}
-		hacerFreeArray(arrayPuertos);
+		hacerFreeArray((void**)arrayPuertos);
 		free(arrayPuertos);
 	} else {
 		log_error(loggerMemoria,"No se encontro la key PUERTOS_DE_SEEDS en el archivo de configuracion");

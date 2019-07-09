@@ -17,7 +17,7 @@ void* crearConsolaMemoria(){
 
 		if(string_equals_ignore_case(operacion[0],"INSERT")){
 
-			int tamanio = tamanioArray(operacion);
+			int tamanio = tamanioArray((void**)operacion);
 			char*lineadup = string_new();
 			if(tamanio<5){
 				linea = strdup(operacion[0]);
@@ -34,10 +34,10 @@ void* crearConsolaMemoria(){
 			string_append(&stringFinal, value);
 			string_append(&stringFinal," ");
 			string_append(&stringFinal, operacion[tamanio-1]);
-			hacerFreeArray(operacion);
+			hacerFreeArray((void**)operacion);
 			free(operacion);
 			operacion= string_split(stringFinal, " ");
-			int tamanio2 = tamanioArray(operacion);
+			int tamanio2 = tamanioArray((void**)operacion);
 
 			for(int i = 0; i <tamanio2; i++){
 				string_append(&lineadup, operacion[i]);
@@ -65,11 +65,9 @@ void* crearConsolaMemoria(){
 					mostrarDatosMarcos();
 					break;
 				case CMD_INSERT:
-					printf("");
-					//int timestamp = atoi(operacion[4]);
-					char *ptr;
-				   unsigned long int timestamp = strtoul(operacion[4], &ptr, 10);
 					if (pasarAUint16(operacion[2], key)){
+						char *ptr;
+						unsigned long int timestamp = strtoul(operacion[4], &ptr, 10);
 						char* value = quitarEspacioFalso(operacion[3]);
 						INSERTMemoria(operacion[1], *key, value, timestamp);
 						free(value);
@@ -101,7 +99,7 @@ void* crearConsolaMemoria(){
 		}
 
 		free(linea);
-		hacerFreeArray(operacion);
+		hacerFreeArray((void**)operacion);
 		free(operacion);
 		free(key);
 	}
@@ -124,7 +122,7 @@ int buscarFinalValue(char** value){
 	ptr[0] = c;
 	ptr[1] = '\0';
 
-	int cantElementos= tamanioArray(value);
+	int cantElementos= tamanioArray((void**)value);
 	for(int i = 4; i< cantElementos; i++){
 		if(string_ends_with(value[i], ptr)){
 			free(ptr);
@@ -148,10 +146,10 @@ char* armarValue(char** value){
 char* quitarEspacioFalso(char* value){
 	char* operacionFinal = string_new();
 	char** valuearray = string_split(value, ";");
-	int tamanio = tamanioArray(valuearray);
+	int tamanio = tamanioArray((void**)valuearray);
 	if(tamanio== 0){
 		free(operacionFinal);
-		hacerFreeArray(valuearray);
+		hacerFreeArray((void**)valuearray);
 		free(valuearray);
 		return quitarComillas(value);
 	}else {
@@ -161,13 +159,13 @@ char* quitarEspacioFalso(char* value){
 		string_append(&operacionFinal, " ");}
 
 	}
-	hacerFreeArray(valuearray);
+	hacerFreeArray((void**)valuearray);
 	free(valuearray);
 	char** a = string_split(operacionFinal, "\"");
 	free(operacionFinal);
 	char* v =malloc(tamanioDadoPorLFS);
 	strcpy(v, a[0]);
-	hacerFreeArray(a);
+	hacerFreeArray((void**)a);
 	free(a);
 	return v;
 	}

@@ -44,7 +44,7 @@ void realizarMultiplexacion(int socketEscuchando){
 			int numMemoria = configMemoria.numeroDeMemoria;
 			char* soyMemoria = string_new();
 			string_append(&soyMemoria, "SOY MEMORIA ");
-			char* numeroMemoria[1000];
+			char* numeroMemoria = malloc(sizeof(1000));
 			kernel = nuevaConexion;
 			sprintf(numeroMemoria, "%d", numMemoria);
 			string_append(&soyMemoria, numeroMemoria);
@@ -109,7 +109,7 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 
 	if(packageRecibido->ID == 19){ //19: DESCRIBE
 		t_DESCRIBE *unDESCRIBE;
-		char* Respuesta;
+
 		int id_respuesta_describe = 20;//20: RESPUESTA DE UN PROTOCOLO = 19
 
 		unDESCRIBE = deserializarT_DESCRIBE(packageRecibido->Datos);
@@ -170,7 +170,7 @@ void realizarGossip(){
 	       elapsedsec = diff / CLOCKS_PER_SEC;
 
 	       if (elapsedsec >= sec) {
-	    	   pthread_create(&clienteMemoria, NULL, hacermeClienteDeMisServers, NULL);
+	    	   pthread_create(&clienteM, NULL,(void*) hacermeClienteDeMisServers, NULL);
 
 	    	   if(kernel!=0){
 	    	   char* memoriasEnTablaDeGossip = memoriasTablaDeGossip();
@@ -248,15 +248,14 @@ void iniciarEscuchaMemoria(){
 }
 
 void serCliente(char* ip , int puerto){
-	int cliente;
 	char* ipServidor = quitarComillas(ip);
 	struct sockaddr_in dirServidorMemoria;
-	struct sockaddr_in dirCliente;
-	unsigned int tamanioDireccion;
+	//struct sockaddr_in dirCliente;
+	//unsigned int tamanioDireccion;
 	dirServidorMemoria.sin_family = AF_INET;
 	dirServidorMemoria.sin_addr.s_addr = inet_addr(ipServidor);
 	dirServidorMemoria.sin_port = htons(puerto); //puerto al que va a escuchar
-	cliente = socket(AF_INET,SOCK_STREAM,0);
+	int cliente = socket(AF_INET,SOCK_STREAM,0);
 	if (connect (cliente, (void*)&dirServidorMemoria, sizeof(dirServidorMemoria))!=0){
 		log_info(loggerMemoria,"La memoria con puerto %d e ip %s no se encuentra activa",puerto,ipServidor);
 
@@ -271,7 +270,7 @@ void serCliente(char* ip , int puerto){
 		realizarHandShake(cliente,KERNELOMEMORIA,soyMemoria);
 		int nroMemoria = recibirHandShakeMemoria(cliente,KERNELOMEMORIA,loggerMemoria);
 
-		if(nroMemoria!= NULL){
+		if(nroMemoria!= -1){
 			char* memoriasDondeEstoyConectado = memoriasTablaDeGossip();
 			enviarMemoriasTablaGossip(cliente,KERNELOMEMORIA,memoriasDondeEstoyConectado);
 			agregarATablaDeGossip(puerto, ip, nroMemoria);
@@ -289,8 +288,6 @@ void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger){
 
 	int cliente;
 	struct sockaddr_in dirServidorMemoria;
-	struct sockaddr_in dirCliente;
-	unsigned int tamanioDireccion;
 	dirServidorMemoria.sin_family = AF_INET;
 	dirServidorMemoria.sin_addr.s_addr = inet_addr(ip);
 	dirServidorMemoria.sin_port = htons(puerto); //puerto al que va a escuchar
@@ -307,7 +304,7 @@ void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger){
 		string_append(&soyMemoria, numeroMemoria);
 
 		realizarHandShake(cliente,KERNELOMEMORIA,soyMemoria);
-		int nroMemoria = recibirHandShakeMemoria(cliente,KERNELOMEMORIA,loggerMemoria);
+		recibirHandShakeMemoria(cliente,KERNELOMEMORIA,loggerMemoria);
 	}
 
 }
@@ -428,14 +425,12 @@ void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger){
 }*/
 
 void hacermeClienteDeMisServers(){
-	char** ipDeSeeds = configMemoria.ipDeSeeds;
-	int* puertosDeSeeds = configMemoria.puertosDeSeeds;
-	int cantidadSeeds = tamanioArray(ipDeSeeds);
+	int cantidadSeeds = tamanioArray((void**)configMemoria.puertosDeSeeds);
 	if(cantidadSeeds ==0){
 	 log_info(loggerMemoria, "No tengo que conectarme a ninguna memoria");
 	}else{
 		for(int i = 0; i< cantidadSeeds; i++){
-			serCliente(ipDeSeeds[i], puertosDeSeeds[i]);
+			serCliente(configMemoria.ipDeSeeds[i], (configMemoria.puertosDeSeeds[i]));
 		}
 	}
 }

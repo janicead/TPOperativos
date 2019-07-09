@@ -70,11 +70,11 @@ void iniciar(){
 	int t = tamanioArray(configKernel.puertosDeSeeds);
 	printf("El tamano es %d\n", t);
 	conectarAMemoria(configKernel.ip_memoria,configKernel.puerto_memoria);
-	for(int i= 0; i< t; i ++){
+	/*for(int i= 0; i< t; i ++){
 		printf("Ip de seeds %d es %s\n", i, configKernel.ipDeSeeds[i]);
 		printf("Ip de seeds %d es %d\n", i, configKernel.puertosDeSeeds[i]);
 		conectarAMemoria(configKernel.ipDeSeeds[i],configKernel.puertosDeSeeds[i]);
-	}
+	}*/
 	t_memoria* mem = list_get(memorias,0);
 	char* resp = opDESCRIBE(mem->socket_mem,"");
 	puts(resp);

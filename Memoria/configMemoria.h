@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <commons/log.h>
 #include <commons/collections/list.h>
 #include <commons/config.h>
@@ -21,7 +22,7 @@ typedef struct
 	char *ipDelFileSystem;
 	int puertoDelFileSystem;
 	char **ipDeSeeds;
-	int *puertosDeSeeds[150];
+	int puertosDeSeeds[150];
 	int retardoAccesoMemoriaPrincipal;
 	int retardoAccesoFileSystem;
 	int tamanioMemoria;

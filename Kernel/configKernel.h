@@ -12,6 +12,7 @@
 #include "planificador.h"
 
 
+
 #define PATH_KERNEL_CONFIG "/home/utnso/workspace/tp-2019-1c-BEFGN/Kernel/Config/kernel.config"
 
 
@@ -24,7 +25,7 @@ typedef struct
 	int metadata_refresh;
 	int sleep_execution;
 	char **ipDeSeeds;
-	int *puertosDeSeeds[150];
+	int puertosDeSeeds[150];
 
 }t_ConfigKernel;
 

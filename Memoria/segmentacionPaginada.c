@@ -66,7 +66,6 @@ int buscarTablaSegmentos(char* nombreTabla){
 }
 
 t_segmento* guardarEnTablaDeSegmentos(char* nombreTabla){
-	int cantPaginasGuardadas;
 	t_segmento* segmento = malloc(sizeof(t_segmento));
 	segmento->nombreTabla = strdup(nombreTabla);
 	segmento->tablaPaginas= list_create();
@@ -149,11 +148,6 @@ int buscarEnTablaPaginasINSERT(t_list* tabla, uint16_t key,int timeStamp , char*
 
 void destructorPaginas(void* elemento){
 	t_pagina* pagina = (t_pagina*)elemento;
-	pagina->contadorVecesSolicitado=NULL;
-	pagina->flagModificado=NULL;
-	pagina->numeroMarco= NULL;
-	pagina->key= NULL;
-	pagina->numeroPag= NULL;
 	free(pagina);
 }
 
@@ -248,8 +242,8 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 }
 
 void mostrarElementosMemoriaPrincipal(){
-	 uint16_t *key = 0;
-	 unsigned long int* eltimestamp =0;
+	 uint16_t key = 0;
+	 unsigned long int eltimestamp =0;
 	 char* elvalue = malloc(tamanioDadoPorLFS);
 	 puts("----------------------MOSTRANDO DATOS MEMORIA----------------------");
 	 int copiarDesde = 0;
@@ -264,7 +258,7 @@ void mostrarElementosMemoriaPrincipal(){
 		 memcpy(&eltimestamp, memoriaPrincipal+tamanioUnRegistro * i+ copiarDesde, sizeof(unsigned long int));
 		 copiarDesde += sizeof(unsigned long int);
 		 memcpy(elvalue, memoriaPrincipal + tamanioUnRegistro * i+ copiarDesde,tamanioDadoPorLFS);
-		 printf("LA KEY ES %d\n",key);
+		 printf("LA KEY ES %u\n",(unsigned int)key);
 		 printf("EL TIMESTAMP ES %lu\n",eltimestamp);
 		 printf("EL VALUE ES '%s'\n",elvalue);
 		 puts("--------------------------------------------");
@@ -292,7 +286,7 @@ void borrarTodaMemoria(){
 
 t_LRU * LRU (){
 	int cantVecesSolicitadaMinimo = 0;
-	int paginaMenosCantVecesSolicitada = cantMaxMarcos;
+	//int paginaMenosCantVecesSolicitada = cantMaxMarcos;
 	int esElPrimerElemento = 0;
 	t_LRU * lru = malloc (sizeof(t_LRU));
 	lru->numeroPag= cantMaxMarcos;
@@ -313,7 +307,7 @@ t_LRU * LRU (){
 			if(esElPrimerElemento == 0 && pagina->flagModificado == 0){
 
 				cantVecesSolicitadaMinimo = pagina->contadorVecesSolicitado;
-				paginaMenosCantVecesSolicitada = pagina->numeroPag;
+				//paginaMenosCantVecesSolicitada = pagina->numeroPag;
 				esElPrimerElemento = 1;
 				lru->numeroPag= pagina->numeroPag;
 				lru->tablaPaginas= segmento->tablaPaginas;
@@ -322,7 +316,7 @@ t_LRU * LRU (){
 			} else if(pagina->flagModificado==0 && (pagina->contadorVecesSolicitado)<cantVecesSolicitadaMinimo){
 
 				cantVecesSolicitadaMinimo = pagina->contadorVecesSolicitado;
-				paginaMenosCantVecesSolicitada = pagina->numeroPag;
+				//paginaMenosCantVecesSolicitada = pagina->numeroPag;
 				lru->numeroPag= pagina->numeroPag;
 				lru->tablaPaginas= segmento->tablaPaginas;
 				lru->nombreTabla= segmento->nombreTabla;
@@ -341,7 +335,7 @@ void mostrarElementosListaJournal(){
 	for(int i = 0 ; i<tamanioTP; i++){
 		void* elemento = list_get(listaJournal, i);
 		t_JOURNAL* journal = (t_JOURNAL*) elemento;
-		printf("NOMBRE TABLA es '%s', su KEY es %d, su TIMESTAMP %d y su VALUE es %s\n", journal->nombreTabla, journal->registro->key, journal->registro->timestamp, journal->registro->value);
+		printf("NOMBRE TABLA es '%s', su KEY es %u, su TIMESTAMP %lu y su VALUE es %s\n", journal->nombreTabla, (unsigned int)journal->registro->key, journal->registro->timestamp, journal->registro->value);
 	}
 }
 

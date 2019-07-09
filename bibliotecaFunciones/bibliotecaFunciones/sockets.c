@@ -278,14 +278,14 @@ int recibirHandShakeMemoria(int emisor,t_identidad identidad, t_log* logger){
 			free(paquete->Datos);
 			free(paquete);
 			free(verificado);
-			return NULL;
+			return -1;
 		}
 	}
 	else{
 		log_error(logger,"ID incorrecto");
 		free(paquete->Datos);
 		free(paquete);
-		return NULL;
+		return -1;
 	}
 }
 

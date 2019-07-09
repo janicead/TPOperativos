@@ -34,7 +34,7 @@ typedef struct{
 
 int pasarMilisegundosASegundos(int milisegundos);
 void printearArrayDeChars(char** arrayDeChars);
-void printearArrayDeInts(int* arrayDeInts);
+void printearArrayDeInts(int arrayDeInts[150]);
 /* NO CUENTA EL ELEMENTO = NULL */
 int longitudArrayDePunteros(char **unArrayDePunteros);
 void hacerFreeArray(void**);
