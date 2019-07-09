@@ -169,7 +169,11 @@ void consolaAPI()
 	    if(linea)
 	    	add_history(linea);
 
-	    operacion = string_split(linea," ");
+	    //operacion = string_split(linea," ");
+	    operacion = splitDeOperaciones(linea);
+	   //char **operacion2 = splitDeOperaciones(linea);
+	   //log_info(logger,"\n>INSERT2 [%s][%s][%s][%s]",operacion2[1],operacion2[2],operacion2[3],operacion2[4]);
+
 	    free(linea); //ES NECESARIO
 	    cantArgumentos = longitudArrayDePunteros(operacion) - 1; //XQ LA OPERACION CUENTA
 	    string_to_upper(operacion[0]);
@@ -189,50 +193,79 @@ void consolaAPI()
 	    {
 	    	if(cantArgumentos == 2)
 	    	{
-	    		log_info(logger,"Operacion SELECT");
-	    		printf("Parametros: [%s][%s]\n",operacion[1],operacion[2]);
+	    		log_info(logger,"\n>SELECT [%s][%s]\n",operacion[1],operacion[2]);
+
+	    		t_SELECT *unSELECT = definirT_SELECT(operacion[1],atoi(operacion[2]));
 	    		//IMPRIMO POR PANTALLA EL RESULTADO DE LA OPERACION
+	    		char *respuesta = realizarSELECT(unSELECT);
+
+	    		printf("Respuesta: %s\n",respuesta);
+	    		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
+	    		free(respuesta);
+	    		freeT_SELECT(unSELECT);
 	    	}
 	    	else
-	    		printf("Falta, o hay exceso, de parametros de SELECT\n");
+	    	{
+	    		printf("\nFalta, o hay exceso, de parametros de SELECT\n");
+	    		printf("SELECT [NOMBRE_TABLA] [KEY]\n\n");
+	    	}
 
 	    }
 	    else if(!strcmp(operacion[0], "INSERT")) //###
 	    {
 	    	if(cantArgumentos == 3)
 	    	{
-	    		log_info(logger,"Operacion INSERT");
-	    		printf("Parametros: [%s][%s][%s]\n",operacion[1],operacion[2],operacion[3]);
-
-	    		//definir t_INSERT, y luego el parametro timestamp = 0
+	    		log_info(logger,"\n>INSERT [%s][%s][%s]",operacion[1],operacion[2],operacion[3]);
 	    		//IMPRIMO POR PANTALLA EL RESULTADO DE LA OPERACION
+	    		t_INSERT *unINSERT = definirT_INSERT(operacion[1],atoi(operacion[2]),operacion[3],0);
+	    		printf("\ntamanioLISTA: %d  (before memtable)\n",list_size(memTable)); ///
+	    		char* respuesta = realizarINSERT(unINSERT);  ///TESTEAR
+	    		printf("tamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
+	    		printf("Respuesta: %s\n",respuesta);
+	    		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
+	    		free(respuesta);
+	    		freeT_INSERT(unINSERT);
 	    	}
 	    	else if(cantArgumentos == 4)
 	    	{
-	    		log_info(logger,"Operacion INSERT");
-	    		printf("Parametros: [%s][%s][%s][%s]\n",operacion[1],operacion[2],operacion[3],operacion[4]);
+	    		log_info(logger,"\n>INSERT [%s][%s][%s][%s]",operacion[1],operacion[2],operacion[3],operacion[4]);
 	    		//IMPRIMO POR PANTALLA EL RESULTADO DE LA OPERACION
+	    		t_INSERT *unINSERT = definirT_INSERT(operacion[1],atoi(operacion[2]),operacion[3],atoi(operacion[4]));
+	    		printf("\ntamanioLISTA: %d  (before memtable)\n",list_size(memTable)); ///
+	    		char* respuesta = realizarINSERT(unINSERT);  ///TESTEAR
+	    		printf("tamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
+	    		printf("Respuesta: %s\n",respuesta);
+	    		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
+	    		free(respuesta);
+	    		freeT_INSERT(unINSERT);
 	    	}
 	    	else
-	    		printf("Falta, o hay exceso, de paramentros de INSERT\n");
+	    	{
+	    		printf("\nFalta, o hay exceso, de paramentros de INSERT\n");
+	    		printf("INSERT [NOMBRE_TABLA] [KEY] “[VALUE]” (Timestamp)\n\n");
+	    	}
 
 	    }
 	    else if(!strcmp(operacion[0], "CREATE")) //###
 	    {
 	    	if(cantArgumentos == 4)
 	    	{
-	    		log_info(logger,"Operacion CREATE");
-	    		printf("Parametros: [%s][%s][%s][%s]\n",operacion[1],operacion[2],operacion[3],operacion[4]);
-	    		//IMPRIMO POR PANTALLA EL RESULTADO DE LA OPERACION
-	    		/*
+	    		log_info(logger,"\n>CREATE [%s][%s][%s][%s]\n",operacion[1],operacion[2],operacion[3],operacion[4]);
+
 	    		t_CREATE *unCREATE = definirT_CREATE(operacion[1],operacion[2],atoi(operacion[3]),atoi(operacion[4]));
 	    		char *respuesta = realizarCREATE(unCREATE);
 	    		printf("Respuesta: %s\n",respuesta);
+	    		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
 	    		free(respuesta);
-	    		*/
+	    		freeT_CREATE(unCREATE);
+	    		mostrarBitsDeBloques(8);///
+
 	    	}
 	    	else
-	    		printf("Falta, o hay exceso, de parametros de CREATE\n");
+	    	{
+	    		printf("\nFalta, o hay exceso, de parametros de CREATE\n");
+	    		printf("CREATE [NOMBRE_TABLA] [TIPO_CONSISTENCIA] [NUMERO_PARTICIONES] [COMPACTION_TIME]\n\n");
+	    	}
 	    }
 	    else if(!strcmp(operacion[0], "DESCRIBE")) //###
 	    {
@@ -250,7 +283,10 @@ void consolaAPI()
 	    		//IMPRIMO POR PANTALLA EL RESULTADO DE LA OPERACION (TABLA ESPECIFICA)
 	    	}
 	    	else
-	    		printf("Exceso de parametros de DESCRIBE\n");
+	    	{
+	    		printf("\nExceso de parametros de DESCRIBE\n");
+	    		printf("DESCRIBE (NOMBRE_TABLA)\n\n");
+	    	}
 	    }
 	    else if(!strcmp(operacion[0], "DROP")) //###
 	    {
@@ -260,11 +296,22 @@ void consolaAPI()
 	    		printf("[%s]\n",operacion[1]);
 	    	}
 	    	else
-	    		printf("Falta, o hay exceso, de parametros de DROP\n");
+	    	{
+	    		printf("\nFalta, o hay exceso, de parametros de DROP\n");
+	    		printf("DROP [NOMBRE_TABLA]\n\n");
+	    	}
 	    }
 	    else
 	    {
 	    	log_info(logger,"Operacion no valida por la API");
+	    	//realizarDUMP(); ///
+	    	/*t_list *unArchivoComoLista;
+	    	unArchivoComoLista = obtenerArchivoComoLista("t4/dump0.tmp");
+	    	printf("\nlist_size(unArchivoComoLista): %d\n",list_size(unArchivoComoLista));
+	    	*/
+
+
+
 	    }
 
 	    //freeArrayDePunteros(operacion);
@@ -386,15 +433,16 @@ void realizarProtocoloDelPackage(t_PaqueteDeDatos *packageRecibido, int socketEm
 		t_SELECT *unSELECT;
 
 		unSELECT = deserializarT_SELECT(packageRecibido->Datos);
-		printf("Query recibido: SELECT [%s] [%d]",unSELECT->nombreTabla,unSELECT->KEY);
+		log_info(logger,"\nQuery recibido: SELECT [%s] [%d]",unSELECT->nombreTabla,unSELECT->KEY);
 
+		char *respuesta = realizarSELECT(unSELECT);
 
-		//char *Respuesta = realizarSELECT(unSELECT->nombreTabla,unSELECT->KEY);
-		char* Respuesta = string_from_format("asd123QWE");
-		enviarRespuesta(socketEmisor,14,Respuesta); //14: RESPUESTA DE UN PROTOCOLO = 13
+		//printf("Respuesta: %s\n",respuesta); ///
+		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
 
+		enviarRespuesta(socketEmisor,14,respuesta); //14: RESPUESTA DE UN PROTOCOLO = 13
 
-		free(Respuesta);
+		free(respuesta);
 		freeT_SELECT(unSELECT); //HAY Q LIBERAR EL PAYLOAD SEGUN EL PROTOCOLO, particularmente en cada caso.
 	}
 
@@ -403,15 +451,17 @@ void realizarProtocoloDelPackage(t_PaqueteDeDatos *packageRecibido, int socketEm
 		t_INSERT *unINSERT;
 
 		unINSERT = deserializarT_INSERT(packageRecibido->Datos);
-		printf("Query recibido: INSERT [%s] [%d] [%s] [%d]",unINSERT->nombreTabla,unINSERT->KEY,unINSERT->Value,unINSERT->timeStamp);
+		log_info(logger,"\nQuery recibido: INSERT [%s] [%d] [%s] [%d]",unINSERT->nombreTabla,unINSERT->KEY,unINSERT->Value,unINSERT->timeStamp);
 
+		printf("\ntamanioLISTA: %d  (before memtable)\n",list_size(memTable)); ///
+		char* respuesta = realizarINSERT(unINSERT);  ///TESTEAR
+		printf("tamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
+		//printf("Respuesta: %s\n",respuesta); ///
+		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
 
-		char* Respuesta = string_from_format("insert123"); //
-		//char* Respuesta = realizarINSERT(unINSERT,socketEmisor);  ///TESTEAR
-		enviarRespuesta(socketEmisor,16,Respuesta); //16: RESPUESTA DE UN PROTOCOLO = 15
+		enviarRespuesta(socketEmisor,16,respuesta); //16: RESPUESTA DE UN PROTOCOLO = 15
 
-
-		free(Respuesta);
+		free(respuesta);
 		freeT_INSERT(unINSERT); //HAY Q LIBERAR EL PAYLOAD SEGUN EL PROTOCOLO, particularmente en cada caso.
 	}
 
@@ -420,15 +470,17 @@ void realizarProtocoloDelPackage(t_PaqueteDeDatos *packageRecibido, int socketEm
 		t_CREATE *unCREATE;
 
 		unCREATE = deserializarT_CREATE(packageRecibido->Datos);
-		printf("Query recibido: CREATE [%s] [%s] [%d] [%d]",unCREATE->nombreTabla,unCREATE->tipoConsistencia,unCREATE->nParticiones,unCREATE->tiempoCompactacion);
+		log_info(logger,"Query recibido: CREATE [%s] [%s] [%d] [%d]",unCREATE->nombreTabla,unCREATE->tipoConsistencia,unCREATE->nParticiones,unCREATE->tiempoCompactacion);
 
+		char *respuesta = realizarCREATE(unCREATE);
+		printf("Respuesta: %s\n",respuesta);
+		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
 
-		//char *Respuesta = realizarCREATE(unCREATE);
-		char* Respuesta = string_from_format("TABLA_CREADA");
-		enviarRespuesta(socketEmisor,18,Respuesta); //18: RESPUESTA DE UN PROTOCOLO = 17
+		mostrarBitsDeBloques(8);///
 
+		enviarRespuesta(socketEmisor,18,respuesta); //18: RESPUESTA DE UN PROTOCOLO = 17
 
-		free(Respuesta);
+		free(respuesta);
 		freeT_CREATE(unCREATE); //HAY Q LIBERAR EL PAYLOAD SEGUN EL PROTOCOLO, particularmente en cada caso.
 	}
 
@@ -469,9 +521,113 @@ void realizarProtocoloDelPackage(t_PaqueteDeDatos *packageRecibido, int socketEm
 	freePackage(packageRecibido);
 
 }
+//###########################################################
+char *realizarSELECT(t_SELECT *unSELECT)
+{
+	char *respuesta = existeTablaEnFS(unSELECT->nombreTabla);
+
+	if(strcmp(respuesta,"YA_EXISTE_TABLA") == 0)
+	{
+		t_list *listaRegistrosDeKEY = list_create();
+		t_list *listaAUX;
+		t_list *listaRegistrosFiltrados;
+
+		t_MetadataTabla *unMetadataTabla = obtenerMetadataTabla(unSELECT->nombreTabla);
+		//printf("\n[%s]\n%d\n%d\n",unMetadataTabla->Consistency,unMetadataTabla->Partitions,unMetadataTabla->Compaction_Time); ///
+
+		int indexBIN = numeroDeParticion(unMetadataTabla->Partitions,unSELECT->KEY);
+		//printf("indexBIN: %d\n",indexBIN);
+		char *unNombreTablaArchivo = string_from_format("%s/%d.bin",unSELECT->nombreTabla,indexBIN);
+
+		listaAUX = obtenerArchivoComoLista(unNombreTablaArchivo);
+		free(unNombreTablaArchivo);
+printf("\nlist_size(listaAUX): %d\n",list_size(listaAUX));
+		if(list_size(listaAUX) != 0)
+		{
+			bool conLaMismaKEY(void *elemento)
+			{
+				return (((t_Registro*)elemento)->KEY == unSELECT->KEY);
+			}
+			listaRegistrosFiltrados = list_filter(listaAUX,conLaMismaKEY);
+			//freeListaDeRegistros(listaAUX); //NO TENGO IDEA XQ NO LO TENGO Q HACER
+			//ver si filter referencia o copia
+
+			list_add_all(listaRegistrosDeKEY,listaRegistrosFiltrados);
+			//VERIFICAR SI LUEGO listaRegistrosFiltrados ESTA VACIO O HAY Q LIBERAR
+		}
+
+		//--------------------------------------------------------
+		t_Tabla *tablaEncontrada = existeEnMemtable(unSELECT->nombreTabla);
+
+		if(tablaEncontrada!= NULL)
+		{
+			int topeTEMPs = list_size(tablaEncontrada->temporales);
+			int i;
+			t_ArchivoTemp *unArchivoTemp;
+
+			for(i=0; i < topeTEMPs ;i++)
+			{
+				unArchivoTemp = list_get(tablaEncontrada->temporales,i);
+
+
+				unNombreTablaArchivo = string_from_format("%s/%s",unSELECT->nombreTabla,unArchivoTemp->nombre);
+
+				listaAUX = obtenerArchivoComoLista(unNombreTablaArchivo);
+				free(unNombreTablaArchivo);
+
+				bool conLaMismaKEY(void *elemento)
+				{
+					return (((t_Registro*)elemento)->KEY == unSELECT->KEY);
+				}
+				listaRegistrosFiltrados = list_filter(listaAUX,conLaMismaKEY);
+				//freeListaDeRegistros(listaAUX);
+
+				list_add_all(listaRegistrosDeKEY,listaRegistrosFiltrados);
+				//VERIFICAR SI LUEGO listaRegistrosFiltrados ESTA VACIO O HAY Q LIBERAR
+			}
+			//-----------------------------------------------------
+			bool conLaMismaKEY(void *elemento)
+			{
+				return (((t_Registro*)elemento)->KEY == unSELECT->KEY);
+			}
+			listaRegistrosFiltrados = list_filter(tablaEncontrada->registros,conLaMismaKEY);
+			//freeListaDeRegistros(listaAUX);
+
+			list_add_all(listaRegistrosDeKEY,listaRegistrosFiltrados);
+			//
+		}
+
+		free(respuesta);
+		printf("list_size(listaRegistrosDeKEY): %d\n",list_size(listaRegistrosDeKEY));
+		if (list_size(listaRegistrosDeKEY) == 0)
+		{
+			respuesta = string_from_format("NO_EXISTE_VALUE");
+		}
+		else
+		{
+			bool deMayorAMenorTIMESTAMP(void *elemento1,void *elemento2)
+			{
+				return (((t_Registro*)elemento1)->TIMESTAMP > ((t_Registro*)elemento2)->TIMESTAMP);
+			}
+
+			list_sort(listaRegistrosDeKEY,deMayorAMenorTIMESTAMP);
+
+			t_Registro *elRegistro = list_get(listaRegistrosDeKEY,0);
+			//free(respuesta);
+			respuesta = string_from_format("%s",elRegistro->VALUE);
+			//NO SE HACE FREE DE elRegistro XQ TIENE Q SEGUIR
+			//freeListaDeRegistros(listaRegistrosDeKEY);
+		}
+		//freeListaDeRegistros(listaRegistrosDeKEY);
+		//AL PARECER SON REFERENCIAS DE LOS REGISTROS
+
+	}
+
+	return respuesta;
+}
 
 //SE VA A TENER Q USAR MUTEX
-char *realizarINSERT(t_INSERT *unINSERT, int socketMemoria)
+char *realizarINSERT(t_INSERT *unINSERT)
 {
 	//char* respuesta = string_from_format("insert123");
 
@@ -482,44 +638,43 @@ char *realizarINSERT(t_INSERT *unINSERT, int socketMemoria)
 		t_Tabla *tablaEncontrada = existeEnMemtable(unINSERT->nombreTabla);
 
 		if(tablaEncontrada!= NULL)
-		{
+		{	//YA HAY REGISTROS DE LA TABLA EN MEMTABLE
 			t_Registro *nuevoRegistro = malloc(sizeof(t_Registro));
 
 			if(unINSERT->timeStamp == 0)
 				//nuevoRegistro.TIMESTAMP = 0.000001 * (unsigned)time(NULL);
-				nuevoRegistro->TIMESTAMP = (unsigned)time(NULL);
+				nuevoRegistro->TIMESTAMP = (unsigned long int)time(NULL);
 			else
-				nuevoRegistro->TIMESTAMP = unINSERT->timeStamp;
-
+				nuevoRegistro->TIMESTAMP = (unsigned long int)unINSERT->timeStamp;
+			//printf("\nTimestamp generado: %lu",nuevoRegistro->TIMESTAMP); ///
 			nuevoRegistro->KEY = unINSERT->KEY;
 			nuevoRegistro->VALUE = string_from_format("%s",unINSERT->Value);
 
+			printf("\n510 tamanioLISTA: %d  (before REGISTROS)\n",list_size(tablaEncontrada->registros)); ///
 			list_add(tablaEncontrada->registros,nuevoRegistro);
+			printf("512 tamanioLISTA: %d  (after REGISTROS)\n",list_size(tablaEncontrada->registros)); ///
 
 			respuesta = string_from_format("SUCCESSFUL_INSERT");
 		}
 		else
 		{
-			t_Tabla *nuevaTabla = malloc(sizeof(t_Tabla));
-
-			nuevaTabla->nombreTabla = string_from_format("%s",unINSERT->nombreTabla);
-			nuevaTabla->registros = list_create();
-			nuevaTabla->temporales = list_create();
-
-			list_add(memTable,nuevaTabla);
+			t_Tabla *nuevaTabla = crearTablaEnMEMTABLE(unINSERT->nombreTabla);
 
 			t_Registro *nuevoRegistro = malloc(sizeof(t_Registro));
 
 			if(unINSERT->timeStamp == 0)
 				//nuevoRegistro.TIMESTAMP = 0.000001 * (unsigned)time(NULL);
-				nuevoRegistro->TIMESTAMP = (unsigned)time(NULL);
+				nuevoRegistro->TIMESTAMP = (unsigned long int)time(NULL);
 			else
-				nuevoRegistro->TIMESTAMP = unINSERT->timeStamp;
+				nuevoRegistro->TIMESTAMP = (unsigned long int)unINSERT->timeStamp;
 
+			//printf("\nTimestamp generado: %lu",nuevoRegistro->TIMESTAMP); ///
 			nuevoRegistro->KEY = unINSERT->KEY;
 			nuevoRegistro->VALUE = string_from_format("%s",unINSERT->Value);
 
+			printf("\n539 tamanioLISTA: %d  (before REGISTROS)\n",list_size(nuevaTabla->registros)); ///
 			list_add(nuevaTabla->registros,nuevoRegistro);
+			printf("541 tamanioLISTA: %d  (before REGISTROS)\n",list_size(nuevaTabla->registros)); ///
 
 			respuesta = string_from_format("SUCCESSFUL_INSERT");
 		}
@@ -528,11 +683,27 @@ char *realizarINSERT(t_INSERT *unINSERT, int socketMemoria)
 	return respuesta;
 }
 
+t_Tabla *crearTablaEnMEMTABLE(char *nombreTabla)
+{
+	t_Tabla *nuevaTabla = malloc(sizeof(t_Tabla));
+
+	nuevaTabla->nombreTabla = string_from_format("%s",nombreTabla);
+	nuevaTabla->registros = list_create();
+	nuevaTabla->temporales = list_create();
+
+	//CREARIA EL HILO COMPACTADOR Y GUARDO EL hiloID en nuevaTabla->hiloIDCompactador
+
+	list_add(memTable,nuevaTabla);
+
+	return nuevaTabla;
+}
+
+
 t_Tabla *existeEnMemtable(char *nombreTabla)
 {
-	bool existeTabla(void * element)
+	bool existeTabla(void * elemento)
 	{
-		return (strcmp(((t_Tabla*)element)->nombreTabla,nombreTabla) == 0);
+		return (strcmp(((t_Tabla*)elemento)->nombreTabla,nombreTabla) == 0);
 	}
 
 	t_Tabla *unaTabla = (t_Tabla *)list_find(memTable,existeTabla);
@@ -593,14 +764,14 @@ int aceptarConexiones(int socketLFS)
 
 	return skUnaConexion;
 }
-
+/*
 void enviarRespuesta(int socketReceptor, int protocoloID, char *respuesta)
 {
 	char* stringSerializado;
 	t_UnString *unString = definirT_UnString(respuesta);
 
 
-	printf("\nRespuesta definida:\n	longString: %d\n	String: %s\n",unString->longString,unString->String);///
+	//printf("\nRespuesta definida:\n	longString: %d\n	String: %s\n",unString->longString,unString->String);///
 
 	stringSerializado = serializarT_UnString(unString);
 
@@ -616,8 +787,8 @@ void enviarRespuesta(int socketReceptor, int protocoloID, char *respuesta)
 	free(stringSerializado);
 	freeT_UnString(unString);
 
-	printf("-----------------------------------------------\n");
-}
+	//printf("-----------------------------------------------\n"); ///
+}*/
 
 void *asignadorLISSANDRA(void *arg)
 {
@@ -688,3 +859,59 @@ void destruirListasGenerales(void)
 
 	//eliminarListaMemTable();
 }
+
+void freeT_Registro(t_Registro *unRegistro)
+{
+	free(unRegistro->VALUE);
+	free(unRegistro);
+}
+
+void freeT_ArchivoTemp(t_ArchivoTemp *unArchivoTemp)
+{
+	free(unArchivoTemp->nombre);
+	free(unArchivoTemp);
+}
+
+//####################################
+//compactador.c
+/*
+char *getNombreArchivoTEMP(t_Tabla *unaTabla)
+{
+	int numeroDUMP = cuantosArchivosTempHayEn(unaTabla->temporales);
+
+	printf("nombre del archivo TMP: dump%d.tmp\n",numeroDUMP);///
+	return string_from_format("dump%d.tmp",numeroDUMP);
+}*/
+/*
+void persistirRegistrarDUMP(t_Tabla *unaTabla,char *laTablaDUMPEADA)
+{
+	if (strcmp(laTablaDUMPEADA,"sinRegistros") != 0)
+	{
+		int cantBytesParaGuardar = strlen(laTablaDUMPEADA);
+		if(hayEspacioDisponible(cantBytesParaGuardar))
+		{
+			char *nombreArchivoTEMP = getNombreArchivoTEMP(unaTabla);
+			//char *nombreAbsoluto = string_from_format("%s%s%s%s",configLFS.puntoMontaje,dirTables,nombreArchivoTEMP);
+			char *unPath = string_from_format("%s/%s",unaTabla->nombreTabla,nombreArchivoTEMP);
+
+			crearArchivoEnFS(unPath);
+
+			char *r = guardarDatosEnArchivoEnFS(unPath,laTablaDUMPEADA);
+			free(unPath);
+			free(r);
+			agregarArchivoTempALista(unaTabla->temporales,nombreArchivoTEMP,0);
+			char *unBuffer = string_from_format("Tabla %s DUMPeada en %s",unaTabla->nombreTabla,nombreArchivoTEMP);
+			log_info(logger,unBuffer);
+
+			free(unBuffer);
+			free(nombreArchivoTEMP);
+		}
+		else
+		{
+			char *unBuffer = string_from_format("No se puede realizar DUMP con la tabla %s: Espacio insuficiente",unaTabla->nombreTabla);
+			log_info(logger,unBuffer);
+
+			free(unBuffer);
+		}
+	}
+}*/

@@ -26,9 +26,11 @@
 
 #include <bibliotecaFunciones/lfsSerializacion.h>
 #include <bibliotecaFunciones/sockets.h>
+#include <bibliotecaFunciones/lfsVarios.h>
 
 #include "varios.h"
 #include "fs.h"
+//#include "compactador.h"
 
 #define maximoDeConexiones 20
 
@@ -61,16 +63,25 @@ typedef struct
 	char *nombreTabla;
 	t_list *registros;
 	t_list *temporales; //NOMBRES DE ARCHIVOS .tmp .tmpc
+	pthread_t hiloIDCompactador; //o un bool SW de un break en el hilo
 }t_Tabla;
 
 t_list* memTable;
 
 typedef struct
 {
-	int TIMESTAMP;
+	unsigned long int TIMESTAMP;
 	uint16_t KEY;
-	char *VALUE;   //char VALUE[configLFS.tamanioValue +1];  //EL COLPILADOR NO TE DEJA  :/
+	char *VALUE;   //char VALUE[configLFS.tamanioValue +1];  //EL COMPILADOR NO TE DEJA  :/
 }t_Registro;
+
+typedef struct
+{
+	char *nombre;
+	int tipo; //0: .temp  1: .tempc
+}t_ArchivoTemp;
+
+void freeT_Registro(t_Registro *unRegistro);
 //##########################
 //##########################
 
@@ -78,7 +89,7 @@ typedef struct
 t_ConfigLFS configLFS;
 t_log *logger;
 
-
+#include "compactador.h"
 
 
 //PROTOTIPOS DE FUNCIONES
@@ -92,17 +103,24 @@ int aceptarConexiones(int);
 void realizarMultiplexacion(int);
 void realizarProtocoloDelPackage(t_PaqueteDeDatos *, int);
 void realizarHandshakeAMemoria(t_log *,int , t_PaqueteDeDatos *,char*);
-void enviarRespuesta(int socketReceptor, int protocoloID, char *respuesta);
+//void enviarRespuesta(int socketReceptor, int protocoloID, char *respuesta);
 
 void *asignadorLISSANDRA(void *arg);
 void *receptorDePackages(void *unSocketCliente);
 void *connection_handler(void *socket_desc);
 
 //###### SEGUN PROTOCOLO #############
-char *realizarINSERT(t_INSERT *unINSERT, int socketMemoria);
+char *realizarSELECT(t_SELECT *unSELECT);
+char *realizarINSERT(t_INSERT *unINSERT);
+t_Tabla *crearTablaEnMEMTABLE(char *nombreTabla);
 t_Tabla *existeEnMemtable(char *nombreTabla);
 char *realizarCREATE(t_CREATE *unCREATE);
 
+//####################################
+//####################################
+//compactador.h  NO ME RECONCE t_Tabla  SI ESTA AHI,  NI IDEA
+//char *getNombreArchivoTEMP(t_Tabla *unaTabla);
+//void persistirRegistrarDUMP(t_Tabla *unaTabla,char *laTablaDUMPEADA);
 //####################################
 
 void consolaAPI(void);

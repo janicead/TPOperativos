@@ -561,6 +561,7 @@ void obtenerBitArrayPersistido()
 	char *nombreAbsoluto;
 	FILE *archivoBitArray;
 	int tamanioArchivoAMapear;
+	int fueCreadoBitMap = 0;
 
 	//t_bitarray *bitsDeBloques; //LO TENGO DECLARADO YA GLOBALMENTE
 
@@ -579,11 +580,34 @@ void obtenerBitArrayPersistido()
 	{
 		printf("No exite el archivo Bitmap.bin, fopen()\n");
 		//exit(EXIT_FAILURE);
-		free(nombreAbsoluto);
-		exitLFS(1); //exitGracefully(EXIT_FAILURE);
+		//free(nombreAbsoluto);
+		//exitLFS(1); //exitGracefully(EXIT_FAILURE);
+
+		//int fdArchivoBitArray = open(nombreAbsoluto,O_CREAT , S_IROTH +S_IWOTH+S_IXOTH); //S_IROTH | S_IRGRP | S_IWGRP);
+		//close(fdArchivoBitArray);
+
+		//archivoBitArray = fopen(nombreAbsoluto,"w");
+		//fclose(archivoBitArray);
+
+		tamanioArchivoAMapear = metadata.cantidadBloques / 8;
+		if (metadata.cantidadBloques % 8 !=0)
+			tamanioArchivoAMapear++;
+		fueCreadoBitMap = 1;
+
+		char *unaLinea = string_new();
+		int i;
+		for(i=0; i < tamanioArchivoAMapear ;i++)
+		{
+			string_append(&unaLinea, "\n");
+		}
+
+		escribirLineaEn(nombreAbsoluto,unaLinea);
+
+		printf("\nTamanio del archivo: %d (bytes)\n",tamanioArchivoAMapear); ///
 	}
 
-	int fd = open(nombreAbsoluto, O_RDWR,S_IRWXO);
+	//int fd = open(nombreAbsoluto, O_RDWR,S_IRWXO);
+	int fd = open(nombreAbsoluto, O_RDWR);
 	if (fd == -1)
 	{
 		perror("Error al abrir bitmap.bin, open()");
@@ -598,6 +622,7 @@ void obtenerBitArrayPersistido()
 	//printf("EXISTE_ARCHIVO (bitmap.bin)\n");
 	//char *array = (char *) mmap(0,tamanioArchivoAMapear,PROT_READ | PROT_WRITE,MAP_PRIVATE,(int) fd,(off_t) 0);
     void *starting_addr = malloc(tamanioArchivoAMapear);
+
 	char *arrayMap = mmap(starting_addr, tamanioArchivoAMapear, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, fd, 0);
 
 	if (arrayMap == MAP_FAILED)
@@ -607,16 +632,24 @@ void obtenerBitArrayPersistido()
 		close(fd);
 		free(starting_addr);
 		free(nombreAbsoluto);
-		exitGracefully(EXIT_FAILURE);
+		exitLFS(EXIT_FAILURE);
 	}
 	//bitsDeBloques = (t_bitarray *) mmap(0, tamanioArchivoAMapear, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
 	//printf("\n%s",arrayMap);
-
 	bitsDeBloques = bitarray_create_with_mode(arrayMap,tamanioArchivoAMapear,MSB_FIRST); //LSB_FIRST //MSB_FIRST
 
 	//printf("\nBITARRAY: %sJ\ncant: %d\n",arrayMap,(int) bitarray_get_max_bit(bitsDeBloques));
 	//printf("\nBITARRAY: %s\nSize: %d\n",bitsDeBloques->bitarray,bitsDeBloques->size);
+	if(fueCreadoBitMap)
+	{
+		int i;
+
+		for(i=0;i < metadata.cantidadBloques;i++)
+		{
+			setBitDeBloque(i,0);
+		}
+	}
 	log_info(logger, "Leyendo archivo Bitmap.bin...");
 
 	mostrarBitsDeBloques(8);///
@@ -633,6 +666,7 @@ void obtenerBitArrayPersistido()
 
 }//Debug Rulz~
 
+/*
 void mostrarBitsDeBloques(int nBloquesPorLinea)
 {
 	int i,j;
@@ -650,6 +684,20 @@ void mostrarBitsDeBloques(int nBloquesPorLinea)
 	printf("\n");
 	//printf("\nPRIMER LIBRE: %d\n",getPrimerBloqueLibre());
 	//printf("%d bytes se puede guardar: %d (bool)\n",2951,hayEspacioDisponible(2951));
+}*/
+
+void mostrarBitsDeBloques(int nBloquesPorLinea)
+{
+	int i;
+
+	printf("\nBITMAP.BIN DE BLOQUES\n");
+	for(i=0;i < metadata.cantidadBloques;i++)
+	{
+		printf("[%d]",bitarray_test_bit(bitsDeBloques,i));
+		if ((i + 1) % nBloquesPorLinea == 0)
+			printf("\n");
+	}
+	printf("\n\n");
 }
 void setBitDeBloque(int indexBloque,int nuevoValor)
 {
@@ -757,7 +805,7 @@ t_MetadataUnArchivo *leerMetadataDeArchivo(char *unNombreAbsoluto,int showLoLeid
 	metadataUnArchivo = config_create(unNombreAbsoluto);
 	//free(unNombreAbsoluto);
 
-	log_info(logger, "Leyendo un archivo Metadata..."); ///
+	//log_info(logger, "Leyendo un archivo Metadata..."); ///
 
 
 	if (config_has_property(metadataUnArchivo, "TAMANIO")) {
@@ -948,6 +996,8 @@ char *obtenerDatosDeArchivoEnFS(char *unPath)
 
 		char *nombreAmsoluto = string_from_format("%s%s%s",configLFS.puntoMontaje,dirTables,unPath);
 		char *buffer = getTodoElArchivoBufferDe(nombreAmsoluto);
+		printf("\nnombreAmsoluto: %s",nombreAmsoluto); ///
+		free(nombreAmsoluto);
 
 		return buffer;
 	}
@@ -1025,7 +1075,7 @@ t_MetadataTabla *obtenerMetadataTabla(char *unNombreTabla)
 {
 	t_MetadataTabla *unMetadataTabla = malloc(sizeof(t_MetadataTabla));
 	char *unNombreAbsoluto = string_from_format("%s%s%s/Metadata",configLFS.puntoMontaje,dirTables,unNombreTabla);
-	printf("\n[%s]\n",unNombreAbsoluto);
+	//printf("\n[%s]\n",unNombreAbsoluto); ///
 
 	archivoMetadataTabla = config_create(unNombreAbsoluto);
 
@@ -1054,9 +1104,11 @@ t_MetadataTabla *obtenerMetadataTabla(char *unNombreTabla)
 		log_error(logger,"No se encontro la key COMPACTION_TIME en la metadata del archivo solicitado");
 		exitLFS(EXIT_FAILURE);
 	}
+	//printf("\n[%s]\n%d\n%d",unMetadataTabla->Consistency,unMetadataTabla->Partitions,unMetadataTabla->Compaction_Time);
 
 	free(unNombreAbsoluto);
 	config_destroy(archivoMetadataTabla);
+	//printf("\n[%s]\n%d\n%d",unMetadataTabla->Consistency,unMetadataTabla->Partitions,unMetadataTabla->Compaction_Time);
 
 	return unMetadataTabla;
 }
