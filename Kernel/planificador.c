@@ -339,7 +339,7 @@ double tiempoPromedioSelect(){
 	if(!list_is_empty(selects_ejecutados)){
 		for(int i = 0; i < list_size(selects_ejecutados); i++){
 			t_select_ejecutado* select = list_get(selects_ejecutados,i);
-			tiempo_total += difftime(select->tiempo_fin, select->tiempo_inicio);
+			tiempo_total += (1000 * difftime(select->tiempo_fin, select->tiempo_inicio)); //Multiplico por 1000 para tener el resultado en ms ya que en seg sería muy pequeño
 		}
 		promedio = tiempo_total / list_size(selects_ejecutados);
 	}
