@@ -14,8 +14,8 @@ int main(void) {
 
 	log_info(loggerMemoria, "Esperando Conexiones");
 	pthread_create(&multiplexacionMemoria, NULL, (void*)realizarMultiplexacion, (void*) servidorEscuchaMemoria);
-	pthread_create(&config_observer,NULL,observer_config,NULL);
-	pthread_detach(config_observer);
+	//pthread_create(&config_observer,NULL,observer_config,NULL);
+	//pthread_detach(config_observer);
 	pthread_join(multiplexacionMemoria, NULL);
 	//iniciarEscuchaMemoria();
 	/*

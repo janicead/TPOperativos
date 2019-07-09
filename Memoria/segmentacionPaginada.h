@@ -52,17 +52,18 @@ pthread_mutex_t semTablaSegmentos;
 pthread_mutex_t semCantMaxMarcos;
 pthread_mutex_t semCantMarcosIngresados;
 pthread_mutex_t semMarcosOcupados;
+pthread_mutex_t semMemoriaPrincipal;
 //Parametros globales modificables
 t_list* tablaDeSegmentos; //elementos de tipo t_segmento
 int cantMaxMarcos;
 int cantMarcosIngresados;
 int* marcosOcupados;
+void* memoriaPrincipal;
 
 int obtenerValue;
 int tamanioUnRegistro;
 int tamanioDadoPorLFS;
 t_list* listaJournal;
-void* memoriaPrincipal;
 int tamanioMemoriaPrincipal;
 int tamanioMaxMemoria;
 
