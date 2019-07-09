@@ -14,9 +14,15 @@ void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS){
 	log_info(loggerMemoria,"Cant max de marcos posibles %d\n", cantMaxMarcos);
 	marcosOcupados=(int*)calloc(cantMaxMarcos,sizeof(int));
 	tablaDeSegmentos= list_create();
-
+	iniciarSemaforos();
 }
 
+void iniciarSemaforos(){
+	pthread_mutex_init(&semTablaSegmentos,NULL);
+	pthread_mutex_init(&semCantMaxMarcos,NULL);
+	pthread_mutex_init(&semCantMarcosIngresados,NULL);
+	pthread_mutex_init(&semMarcosOcupados,NULL);
+}
 int tamanioLista(t_list * lista){
 	return list_size(lista);
 }
@@ -41,7 +47,9 @@ void destructor(t_segmento* segmento){
 	free(segmento);
 }
 void borrarElementos(){
+		pthread_mutex_lock(&semTablaSegmentos);
 		list_destroy_and_destroy_elements(tablaDeSegmentos, (void*)destructor);
+		pthread_mutex_unlock(&semTablaSegmentos);
 }
 
 void borrarTodo(){
@@ -54,14 +62,17 @@ void borrarTodo(){
 //------------------------------------------SEGMENTOS--------------------------------------------------------//
 
 int buscarTablaSegmentos(char* nombreTabla){
+	pthread_mutex_lock(&semTablaSegmentos);
 	int cantSegmentos =  tamanioLista(tablaDeSegmentos);
 	for(int i = 0; i<cantSegmentos ; i++){
 		void * elemento = list_get(tablaDeSegmentos, i);
 		t_segmento *segmento =(t_segmento*)elemento;
 		if(string_equals_ignore_case(nombreTabla, segmento->nombreTabla)){
+			pthread_mutex_unlock(&semTablaSegmentos);
 			return i;
 		}
 	}
+	pthread_mutex_unlock(&semTablaSegmentos);
 	return cantSegmentos+1;
 }
 
@@ -69,11 +80,14 @@ t_segmento* guardarEnTablaDeSegmentos(char* nombreTabla){
 	t_segmento* segmento = malloc(sizeof(t_segmento));
 	segmento->nombreTabla = strdup(nombreTabla);
 	segmento->tablaPaginas= list_create();
+	pthread_mutex_lock(&semTablaSegmentos);
 	list_add(tablaDeSegmentos, (void*)segmento);
+	pthread_mutex_unlock(&semTablaSegmentos);
 	return segmento;
 }
 
 void mostrarElementosTablaSegmentos(){
+	pthread_mutex_lock(&semTablaSegmentos);
 	int tamanioTS= tamanioLista(tablaDeSegmentos);
 	if(tamanioTS==0){
 		log_info(loggerMemoria,"No hay SEGMENTOS en la TABLA DE SEGMENTOS");
@@ -84,6 +98,7 @@ void mostrarElementosTablaSegmentos(){
 		log_info(loggerMemoria, "NOMBRE DE TABLA: '%s'\n",segmento->nombreTabla);
 		mostrarElementosTablaPaginas(segmento->tablaPaginas);
 	}
+	pthread_mutex_unlock(&semTablaSegmentos);
 }
 //----------------------------------------PAGINAS----------------------------------------------------------//
 
@@ -291,7 +306,7 @@ t_LRU * LRU (){
 	t_LRU * lru = malloc (sizeof(t_LRU));
 	lru->numeroPag= cantMaxMarcos;
 	int tamanioTablaPaginas = 0;
-
+	pthread_mutex_lock(&semTablaSegmentos);
 	int tamanioTablaSegmentos = tamanioLista(tablaDeSegmentos);
 	for(int i = 0; i< tamanioTablaSegmentos; i++){
 
@@ -324,6 +339,7 @@ t_LRU * LRU (){
 			}
 		}
 	}
+	pthread_mutex_unlock(&semTablaSegmentos);
 	return lru;
 }
 

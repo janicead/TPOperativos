@@ -48,12 +48,18 @@ typedef struct {
 	t_registro* registro;
 }t_JOURNAL;
 
+pthread_mutex_t semTablaSegmentos;
+pthread_mutex_t semCantMaxMarcos;
+pthread_mutex_t semCantMarcosIngresados;
+pthread_mutex_t semMarcosOcupados;
+//Parametros globales modificables
 t_list* tablaDeSegmentos; //elementos de tipo t_segmento
 int cantMaxMarcos;
 int cantMarcosIngresados;
+int* marcosOcupados;
+
 int obtenerValue;
 int tamanioUnRegistro;
-int* marcosOcupados;
 int tamanioDadoPorLFS;
 t_list* listaJournal;
 void* memoriaPrincipal;
@@ -62,6 +68,7 @@ int tamanioMaxMemoria;
 
 //----------------------------------------GENERALES--------------------------------------------------------------//
 void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS);
+void iniciarSemaforos();
 int tamanioLista(t_list * lista);
 char* recibirRespuestaSELECTMemoriaLfs();
 void mostrarDatosMarcos();
