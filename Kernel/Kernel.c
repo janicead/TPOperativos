@@ -42,39 +42,27 @@ int main(void) {
 	iniciar();
 	crear_hilos_iniciales();
 	iniciarValoresParaTest();
-	//conectarAMemoria("127.0.0.6",35136);   NO ANDA :(
 	//pruebaParser();
-
-	//CONEXION A MEMORIAS
-	/*pthread_t recibirMemoriasYConectarme;
-	tablaDeGossip =  list_create();
-	memoriasALasQueMeConecte =  list_create();*/
-
-	/*conectarmeAMP();
-	pthread_create(&recibirMemoriasYConectarme, NULL,(void*) recibirMemorias, NULL);
-	pthread_detach(recibirMemoriasYConectarme);*/
 	pthread_join(consola,NULL);
 	exit_gracefully(EXIT_SUCCESS);
 }
 
 void iniciar(){
 	configure_logger_kernel();
-	//iniciar_semaforos();
-	//inicializarIds();
+	iniciar_semaforos();
+	inicializarIds();
 	srandom(time(NULL));
 	crear_colas();
 	crear_listas();
 	verificarArchivoConfigKernel();
 
-
-	int t = tamanioArray(configKernel.puertosDeSeeds);
-	printf("El tamano es %d\n", t);
+	int t = tamanioArray((void**)configKernel.puertosDeSeeds);
 	conectarAMemoria(configKernel.ip_memoria,configKernel.puerto_memoria);
-	/*for(int i= 0; i< t; i ++){
+	for(int i= 0; i< t; i ++){
 		printf("Ip de seeds %d es %s\n", i, configKernel.ipDeSeeds[i]);
 		printf("Ip de seeds %d es %d\n", i, configKernel.puertosDeSeeds[i]);
 		conectarAMemoria(configKernel.ipDeSeeds[i],configKernel.puertosDeSeeds[i]);
-	}*/
+	}
 	t_memoria* mem = list_get(memorias,0);
 	char* resp = opDESCRIBE(mem->socket_mem,"");
 	puts(resp);

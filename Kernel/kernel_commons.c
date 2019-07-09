@@ -61,6 +61,7 @@ void agregar_memoria(int puerto, char* ip, int nro_memoria){
 	memoria->puerto = puerto;
 	memoria->ip = malloc(1+strlen(ip));
 	strcpy(memoria->ip,ip);
+	memoria->valida = true;
 	pthread_mutex_lock(&memorias_sem);
 	if(!list_any_satisfy(memorias,(void*) sameID)){
 		list_add(memorias,memoria);
@@ -205,7 +206,9 @@ void free_tabla(t_tabla* tabla){
 }
 
 void free_memoria(t_memoria* memoria){
-	free(memoria->ip);
+	if(memoria->valida){
+		free(memoria->ip);
+	}
 	free(memoria);
 	return;
 }

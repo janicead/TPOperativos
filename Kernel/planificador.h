@@ -6,6 +6,7 @@
 #include "parser.h"
 #include <commons/collections/list.h>
 #include <stdbool.h>
+#include "consolaKernel.h"
 
 
 void* ejecutar();

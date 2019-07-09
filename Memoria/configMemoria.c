@@ -154,7 +154,7 @@ void actualizarArchivoConfig(){
 		configMemoria.retardoAccesoMemoriaPrincipal = config_get_int_value(archivoConfigMemoria,"RETARDO_ACCESO_MEMORIA_PRINCIPAL");
 	}
 	else{
-		log_error(loggerMemoria,"No se encontro la key QUANTUM en el archivo de configuracion");
+		log_error(loggerMemoria,"No se encontro la key RETARDO_ACCESO_MEMORIA_PRINCIPAL en el archivo de configuracion");
 		return;
 	}
 	if(config_has_property(archivoConfigMemoria, "RETARDO_ACCESO_FILE_SYSTEM")) {

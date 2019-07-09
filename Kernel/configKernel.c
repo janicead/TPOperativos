@@ -54,7 +54,7 @@ int leerConfigKernel(){
 			if (config_has_property(archivoConfigKernel, "PUERTOS_DE_SEEDS")) {
 				char** arrayPuertos= config_get_array_value(archivoConfigKernel,"PUERTOS_DE_SEEDS");
 
-				int cantPuertosSeeds = tamanioArray(arrayPuertos);
+				int cantPuertosSeeds = tamanioArray((void**)arrayPuertos);
 				char* ar [cantPuertosSeeds+1];
 				int j =0;
 				while(j<cantPuertosSeeds && arrayPuertos[j]!=NULL){
@@ -65,7 +65,7 @@ int leerConfigKernel(){
 					int a = atoi(ar[i]);
 					configKernel.puertosDeSeeds[i]= a;
 				}
-				hacerFreeArray(arrayPuertos);
+				hacerFreeArray((void**)arrayPuertos);
 				free(arrayPuertos);
 			} else {
 				log_error(loggerKernel,"No se encontro la key PUERTOS_DE_SEEDS en el archivo de configuracion");
@@ -99,34 +99,13 @@ void mostrarDatosArchivoConfigKernel(){
 }
 
 void actualizar_multiprocesamiento(){
-	//int mp_old,mp_new;
-	//mp_old = configKernel.multiprocesamiento;
 	configKernel.multiprocesamiento = config_get_int_value(archivoConfigKernel,"MULTIPROCESAMIENTO");
-	pthread_t hilo;
-	int thread_id = pthread_create(&hilo,NULL,ejecutar,NULL);
-	list_add(hilos_ejec,(void*)thread_id);
-	pthread_detach(hilo);
-	//mp_new = configKernel.multiprocesamiento;
-	/*if(mp_old > mp_new){
-		int dif = mp_old - mp_new;
-		pthread_mutex_lock(&multiProcesamiento_sem);
-		cambioMultiProcesamiento -= dif;
-		pthread_mutex_unlock(&multiProcesamiento_sem);
-		return;
+	for(int i = 0; i<configKernel.multiprocesamiento; i++){
+		pthread_t hilo;
+		int thread_id = pthread_create(&hilo,NULL,ejecutar,NULL);
+		list_add(hilos_ejec,(void*)thread_id);
+		pthread_detach(hilo);
 	}
-	if(mp_old < mp_new){
-		int dif = mp_new - mp_old;
-		for(int i = 0; i < dif; i++){
-			pthread_t hilo;
-			int thread_id = pthread_create(&hilo,NULL,ejecutar,NULL);
-			pthread_mutex_lock(&hilos_ejec_sem);
-			list_add(hilos_ejec,(void*)thread_id);
-			pthread_mutex_unlock(&hilos_ejec_sem);
-			pthread_detach(hilo);
-			log_info(loggerKernel,"Hilo de ejecución creado");
-		}
-		return;
-	}*/
 	return;
 }
 

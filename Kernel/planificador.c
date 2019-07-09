@@ -221,8 +221,8 @@ void lql_drop(t_LQL_operacion* op){
 
 void lql_journal(t_list* list_mem, t_LQL_operacion* op){
 	for(int i = 0; i < list_size(list_mem); i++){
-		t_memoria* memoria = list_get(list_mem,i);
-		/*char* resp = opJOURNAL(memoria->socket_mem);
+		/*t_memoria* memoria = list_get(list_mem,i);
+		char* resp = opJOURNAL(memoria->socket_mem);
 		char** valor =string_split(resp, " ");
 		if(!strcasecmp(valor[0],"ERROR")){
 			log_error(loggerKernel, "Hubo un problema al realizar el JOURNAL de la memoria numero %d", memoria->id_mem);
