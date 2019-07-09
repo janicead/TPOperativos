@@ -2,6 +2,7 @@
 
 void configure_logger_kernel(){
 	loggerKernel = log_create("kernel.log","kernel",1,LOG_LEVEL_INFO);
+	loggerKernelConsola = log_create("kernelConsola.log","kernelConsola",1,LOG_LEVEL_INFO);
 	return;
 }
 
@@ -9,6 +10,7 @@ void exit_gracefully(int exitInfo){
 	pthread_mutex_lock(&log_sem);
 	log_destroy(loggerKernel);
 	pthread_mutex_unlock(&log_sem);
+	log_destroy(loggerKernelConsola);
 	free(puertoMemoria);
 	destruir_colas();
 	destruir_listas();
@@ -28,6 +30,8 @@ void crear_listas(){
 	eventual_consistency = list_create();
 	memorias = list_create();
 	hilos_ejec = list_create();
+	inserts_ejecutados = list_create();
+	selects_ejecutados = list_create();
 	return;
 }
 
@@ -47,6 +51,8 @@ void iniciar_semaforos(){
 	pthread_mutex_init(&eventual_consistency_sem,NULL);
 	pthread_mutex_init(&tablas_sem,NULL);
 	pthread_mutex_init(&log_sem,NULL);
+	pthread_mutex_init(&inserts_ejecutados_sem,NULL);
+	pthread_mutex_init(&selects_ejecutados_sem,NULL);
 	sem_init(&execute_sem,0,0);
 	return;
 }
@@ -62,6 +68,7 @@ void agregar_memoria(int puerto, char* ip, int nro_memoria){
 	memoria->ip = malloc(1+strlen(ip));
 	strcpy(memoria->ip,ip);
 	memoria->valida = true;
+	memoria->cant_selects_inserts_ejecutados = 0;
 	pthread_mutex_lock(&memorias_sem);
 	if(!list_any_satisfy(memorias,(void*) sameID)){
 		list_add(memorias,memoria);
@@ -174,6 +181,12 @@ void destruir_listas(){
 	list_destroy(eventual_consistency);
 	pthread_mutex_unlock(&eventual_consistency_sem);
 	list_destroy_and_destroy_elements(hilos_ejec,(void*) free);
+	pthread_mutex_lock(&inserts_ejecutados_sem);
+	list_destroy_and_destroy_elements(inserts_ejecutados,(void*) free);
+	pthread_mutex_unlock(&inserts_ejecutados_sem);
+	pthread_mutex_lock(&selects_ejecutados_sem);
+	list_destroy_and_destroy_elements(selects_ejecutados,(void*) free);
+	pthread_mutex_unlock(&selects_ejecutados_sem);
 	return;
 }
 
@@ -196,6 +209,8 @@ void destruir_semaforos(){
 	pthread_mutex_destroy(&strong_hash_consistency_sem);
 	pthread_mutex_destroy(&eventual_consistency_sem);
 	pthread_mutex_destroy(&tablas_sem);
+	pthread_mutex_destroy(&selects_ejecutados_sem);
+	pthread_mutex_destroy(&inserts_ejecutados_sem);
 	sem_destroy(&execute_sem);
 	return;
 }

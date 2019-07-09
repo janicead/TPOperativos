@@ -72,9 +72,11 @@ void iniciar(){
 
 void crear_hilos_iniciales(){
 	pthread_create(&consola,NULL,setConsole,NULL);
-	pthread_create(&timer_thread,NULL,timer,NULL);
+	pthread_create(&timer_thread,NULL,metrics_timer,NULL);
 	pthread_detach(timer_thread);
 	pthread_create(&config_observer,NULL,observer_config,NULL);
 	pthread_detach(config_observer);
+	pthread_create(&metadata_refresh,NULL,refresh_metadata_timer,NULL);
+	pthread_detach(metadata_refresh);
 	return;
 }

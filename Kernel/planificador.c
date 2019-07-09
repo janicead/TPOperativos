@@ -7,22 +7,6 @@ void* ejecutar(){
 		int quantum = configKernel.quantum;
 		int sleep_time = configKernel.sleep_execution;
 		pthread_mutex_unlock(&config_sem);
-		//Si el grado de multiprogramación baja, se ejecutaría esta porción de código
-		/*pthread_mutex_lock(&multiProcesamiento_sem);
-		int multi = cambioMultiProcesamiento;
-		log_info(loggerKernel,"multi: %d",multi);
-		if(multi < 0){
-			cambioMultiProcesamiento++;
-			pthread_mutex_unlock(&multiProcesamiento_sem);
-			pthread_mutex_lock(&hilos_ejec_sem);
-			if(!list_is_empty(hilos_ejec)){
-				list_remove_and_destroy_element(hilos_ejec,0,(void*) free);
-			}
-			pthread_mutex_unlock(&hilos_ejec_sem);
-			sem_post(&execute_sem);
-			return NULL;
-		}
-		pthread_mutex_unlock(&multiProcesamiento_sem);*/
 		pthread_mutex_lock(&queue_ready_sem);
 		t_lcb* lcb = queue_pop(queue_ready);
 		pthread_mutex_unlock(&queue_ready_sem);
@@ -91,6 +75,7 @@ FILE* abrirArchivo(char* path){
 }
 
 void lql_select(t_LQL_operacion* operacion){
+	time_t tiempo_inicio = time(NULL);
 	pthread_mutex_lock(&tablas_sem);
 	t_tabla* tabla = devuelve_tabla(operacion->argumentos.SELECT.nombre_tabla);
 	pthread_mutex_unlock(&tablas_sem);
@@ -109,12 +94,23 @@ void lql_select(t_LQL_operacion* operacion){
 	}
 	char* respuesta = opSELECT(memoria->socket_mem,operacion->argumentos.SELECT.nombre_tabla, operacion->argumentos.SELECT.key);
 	puts(respuesta);
+	time_t tiempo_fin = time(NULL);
+	t_select_ejecutado* select = (t_select_ejecutado*)malloc(sizeof(t_select_ejecutado));
+	select->tiempo_fin = tiempo_fin;
+	select->tiempo_inicio = tiempo_inicio;
+	pthread_mutex_lock(&selects_ejecutados_sem);
+	list_add(selects_ejecutados,(void*)select);
+	pthread_mutex_unlock(&selects_ejecutados_sem);
 	operacion->success = true;
+	pthread_mutex_lock(&memorias_sem);
+	memoria->cant_selects_inserts_ejecutados++;
+	pthread_mutex_unlock(&memorias_sem);
 	free(respuesta);
 	return;
 }
 
 void lql_insert(t_LQL_operacion* op){
+	time_t tiempo_inicio = time(NULL);
 	pthread_mutex_lock(&tablas_sem);
 	t_tabla* tabla = devuelve_tabla(op->argumentos.INSERT.nombre_tabla);
 	pthread_mutex_unlock(&tablas_sem);
@@ -134,7 +130,17 @@ void lql_insert(t_LQL_operacion* op){
 	unsigned long int timestamp = obtenerTimeStamp();
 	char* resp = opINSERT(memoria->socket_mem, op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key,op->argumentos.INSERT.valor,timestamp);
 	puts(resp);
+	time_t tiempo_fin = time(NULL);
+	t_insert_ejecutado* insert = (t_insert_ejecutado*)malloc(sizeof(t_insert_ejecutado));
+	insert->tiempo_fin = tiempo_fin;
+	insert->tiempo_inicio = tiempo_inicio;
+	pthread_mutex_lock(&inserts_ejecutados_sem);
+	list_add(inserts_ejecutados,(void*)insert);
+	pthread_mutex_unlock(&inserts_ejecutados_sem);
 	op->success = true;
+	pthread_mutex_lock(&memorias_sem);
+	memoria->cant_selects_inserts_ejecutados++;
+	pthread_mutex_unlock(&memorias_sem);
 	free(resp);
 	return;
 }
@@ -327,18 +333,120 @@ void lql_run(FILE* archivo, t_LQL_operacion* op){
 	}
 }
 
+double tiempoPromedioSelect(){
+	double tiempo_total, promedio;
+	pthread_mutex_lock(&selects_ejecutados_sem);
+	if(!list_is_empty(selects_ejecutados)){
+		for(int i = 0; i < list_size(selects_ejecutados); i++){
+			t_select_ejecutado* select = list_get(selects_ejecutados,i);
+			tiempo_total += difftime(select->tiempo_fin, select->tiempo_inicio);
+		}
+		promedio = tiempo_total / list_size(selects_ejecutados);
+	}
+	else{
+		promedio = 0;
+	}
+	pthread_mutex_unlock(&selects_ejecutados_sem);
+	return promedio;
+}
+
+double tiempoPromedioInsert(){
+	double tiempo_total, promedio;
+	pthread_mutex_lock(&inserts_ejecutados_sem);
+	if(!list_is_empty(inserts_ejecutados)){
+		for(int i = 0; i < list_size(inserts_ejecutados); i++){
+			t_select_ejecutado* select = list_get(inserts_ejecutados,i);
+			tiempo_total += (1000*difftime(select->tiempo_fin, select->tiempo_inicio)); //Multiplico por 1000 para tener el resultado en ms ya que en seg sería muy pequeño
+		}
+		promedio = tiempo_total / list_size(inserts_ejecutados);
+	}
+	else{
+		promedio = 0;
+	}
+	pthread_mutex_unlock(&inserts_ejecutados_sem);
+	return promedio;
+}
+
+int cantidadSelects(){
+	int cantidad;
+	pthread_mutex_lock(&selects_ejecutados_sem);
+	cantidad = list_size(selects_ejecutados);
+	pthread_mutex_unlock(&selects_ejecutados_sem);
+	return cantidad;
+}
+
+int cantidadInserts(){
+	int cantidad;
+	pthread_mutex_lock(&inserts_ejecutados_sem);
+	cantidad = list_size(inserts_ejecutados);
+	pthread_mutex_unlock(&inserts_ejecutados_sem);
+	return cantidad;
+}
+
+int porcentajeSelectsInserts(int cant_selects_inserts_ejecutados){
+	if(!list_is_empty(selects_ejecutados) || !list_is_empty(inserts_ejecutados)){
+		int cant_total_inserts_selects = list_size(selects_ejecutados) + list_size(inserts_ejecutados);
+		return (cant_selects_inserts_ejecutados / cant_total_inserts_selects)*100;
+	}
+	return 0;
+}
+
+void memoryLoad(){
+	pthread_mutex_lock(&memorias_sem);
+	pthread_mutex_lock(&selects_ejecutados_sem);
+	pthread_mutex_lock(&inserts_ejecutados_sem);
+	for(int i = 0; i < list_size(memorias); i++){
+		t_memoria* mem = list_get(memorias,0);
+		log_info(loggerKernelConsola,"Memory Load: Memory %d porcentaje de uso: %d%%",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados));
+	}
+	pthread_mutex_unlock(&inserts_ejecutados_sem);
+	pthread_mutex_unlock(&selects_ejecutados_sem);
+	pthread_mutex_unlock(&memorias_sem);
+}
+
 void lql_metrics(){
-	puts("Metricas en desarrollo");
+	log_info(loggerKernelConsola,"Read Latency / 30s: %lf ms", tiempoPromedioSelect());
+	log_info(loggerKernelConsola,"Write Latency / 30s: %lf ms", tiempoPromedioInsert());
+	log_info(loggerKernelConsola,"Reads / 30s: %d", cantidadSelects());
+	log_info(loggerKernelConsola,"Writes / 30s: %d", cantidadInserts());
+	memoryLoad();
 	return;
 }
 
-void* timer(){
+void* metrics_timer(){
 	while(1){
-		usleep(30000000);
+		sleep(30);
 		lql_metrics();
 		pthread_mutex_lock(&queue_exit_sem);
 		queue_clean_and_destroy_elements(queue_exit,(void*) free_lcb);
 		pthread_mutex_unlock(&queue_exit_sem);
+		pthread_mutex_lock(&selects_ejecutados_sem);
+		list_clean_and_destroy_elements(selects_ejecutados,(void*) free);
+		pthread_mutex_unlock(&selects_ejecutados_sem);
+		pthread_mutex_lock(&inserts_ejecutados_sem);
+		list_clean_and_destroy_elements(inserts_ejecutados,(void*) free);
+		pthread_mutex_unlock(&inserts_ejecutados_sem);
+		pthread_mutex_lock(&memorias_sem);
+		for(int i = 0; i < list_size(memorias); i++){
+			t_memoria* mem = list_get(memorias,i);
+			mem->cant_selects_inserts_ejecutados = 0;
+		}
+		pthread_mutex_unlock(&memorias_sem);
+	}
+	return NULL;
+}
+
+void* refresh_metadata_timer(){
+	while(1){
+		pthread_mutex_lock(&config_sem);
+		int refresh_metadata = configKernel.metadata_refresh;
+		pthread_mutex_unlock(&config_sem);
+		sleep(refresh_metadata);
+		pthread_mutex_lock(&memorias_sem);
+		t_memoria* mem = random_memory(memorias);
+		pthread_mutex_unlock(&memorias_sem);
+		char* respuesta = opDESCRIBE(mem->socket_mem,"");
+		free(respuesta);
 	}
 	return NULL;
 }
