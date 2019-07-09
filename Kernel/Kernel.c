@@ -20,8 +20,8 @@ void iniciarValoresParaTest(){
 	tabla3->consistencia = "EC";
 	tabla3->nombre_tabla = "random";
 	agregar_tabla(tabla3);
-	crear_lql_add("sc",1);
-	/*agregar_memoria(5,"1",0);
+	/*crear_lql_add("sc",1);
+	agregar_memoria(5,"1",0);
 	agregar_memoria(6,"2",1);
 	agregar_memoria(7,"3",2);
 	agregar_memoria(8,"4",3);
