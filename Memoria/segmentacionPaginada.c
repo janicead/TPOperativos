@@ -146,7 +146,6 @@ void mostrarElementosTablaPaginas(t_list * lista){
 	}
 }
 
-
 int buscarEnTablaPaginasINSERT(t_list* tabla, uint16_t key,int timeStamp , char* value){
 
 	int cantPaginas = tamanioLista(tabla);
@@ -466,7 +465,6 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 			mostrarDatosMarcos();
 			mostrarElementosTablaSegmentos();
 			mostrarElementosMemoriaPrincipal();
-
 			return value;
 		}
 		else{ //no lo encontro en tabla de paginas
