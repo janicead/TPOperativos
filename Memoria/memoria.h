@@ -21,5 +21,5 @@
 #include "socketsMemoria.h"
 #include "segmentacionPaginada.h"
 
-
+void test();
 #endif /* MEMORIA_H_ */

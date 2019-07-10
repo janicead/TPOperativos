@@ -54,13 +54,14 @@ void borrarElementos(){
 }
 
 void borrarTodo(){
-	pthread_mutex_lock(&semCantMaxMarcos);
+
 	pthread_mutex_lock(&semMarcosOcupados);
+	pthread_mutex_lock(&semCantMaxMarcos);
 	for(int i = 0; i< cantMaxMarcos; i ++){
 		marcosOcupados[i]=0;
 		}
-	pthread_mutex_unlock(&semMarcosOcupados);
 	pthread_mutex_unlock(&semCantMaxMarcos);
+	pthread_mutex_unlock(&semMarcosOcupados);
 	borrarElementos();
 
 }
@@ -194,6 +195,7 @@ int buscarEspacioLibreEnMP(){
 	pthread_mutex_lock(&semCantMaxMarcos);
 	for(int i = 0; i< cantMaxMarcos; i ++){
 		if(marcosOcupados[i]==0){
+			pthread_mutex_unlock(&semCantMaxMarcos);
 			return i;
 		}
 	}
@@ -231,16 +233,19 @@ void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco, unsigne
 	pthread_mutex_lock(&semCantMarcosIngresados);
 	cantMarcosIngresados++;
 	pthread_mutex_unlock(&semCantMarcosIngresados);
-	pthread_mutex_unlock(&semMemoriaPrincipal);
 	settearMarcoEnMP(nroMarco, 1);
 	free(registro);
 }
 
 int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long int timestamp){
 	int nroMarco = buscarEspacioLibreEnMP();
+	puts("aca entre 1\n");
 	pthread_mutex_lock(&semCantMaxMarcos);
+	puts("aca entre 1\n");
 	if(nroMarco!=cantMaxMarcos){
+		puts("aca entre 1\n");
 		guardarEnMPLugarEspecifico(key, value, nroMarco, timestamp);
+		puts("aca entre 2 \n");
 		pthread_mutex_unlock(&semCantMaxMarcos);
 			return nroMarco;
 	}
@@ -328,7 +333,6 @@ t_LRU * LRU (){
 	//int paginaMenosCantVecesSolicitada = cantMaxMarcos;
 	int esElPrimerElemento = 0;
 	t_LRU * lru = malloc (sizeof(t_LRU));
-	pthread_mutex_lock(&semCantMaxMarcos);
 	lru->numeroPag= cantMaxMarcos;
 	pthread_mutex_unlock(&semCantMaxMarcos);
 	int tamanioTablaPaginas = 0;
@@ -454,9 +458,9 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
 		pthread_mutex_lock(&semTablaSegmentos);
 		void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
-		pthread_mutex_unlock(&semTablaSegmentos);
 		t_segmento *segmento =(t_segmento*)elemento;
 		char* value = buscarTablaPaginas(segmento->tablaPaginas, key);// aca tenemos que buscar en la tabla de paginas especifica de este segmento y meternos 1 x 1 en sus paginas para ver si en la memoria Principal esta el key
+		pthread_mutex_unlock(&semTablaSegmentos);
 		if(value!= NULL){ //lo encontro en tabla de paginas, lo busca en memoria principal y devuelve lo que vale
 			log_info(loggerMemoria,"Esta en la tabla de PAGINAS");
 			mostrarDatosMarcos();
@@ -472,7 +476,9 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 			char* value = recibirRespuestaSELECTMemoriaLfs(); //con SOCKETS
 			unsigned long int t = obtenerTimeStamp();
 			int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
+			pthread_mutex_lock(&semTablaSegmentos);
 			guardarEnTablaDePaginas(segmento, nroMarco, key, flagModificado);
+			pthread_mutex_unlock(&semTablaSegmentos);
 			mostrarDatosMarcos();
 			mostrarElementosTablaSegmentos();
 			mostrarElementosMemoriaPrincipal();
@@ -488,7 +494,9 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		segmento->tablaPaginas= list_create();
 		unsigned long int t = obtenerTimeStamp();
 		int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
+		pthread_mutex_lock(&semTablaSegmentos);
 		guardarEnTablaDePaginas(segmento, nroMarco, key, flagModificado);
+		pthread_mutex_unlock(&semTablaSegmentos);
 		log_info(loggerMemoria,"Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
 		mostrarDatosMarcos();
 		mostrarElementosTablaSegmentos();
@@ -506,9 +514,9 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 		log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
 		pthread_mutex_lock(&semTablaSegmentos);
 		void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
-		pthread_mutex_unlock(&semTablaSegmentos);
 		t_segmento *segmento =(t_segmento*)elemento;
 		int valor =  buscarEnTablaPaginasINSERT(segmento->tablaPaginas, key, timeStamp, value );// aca tenemos que buscar en la tabla de paginas especifica de este segmento y meternos 1 x 1 en sus paginas para ver si en la memoria Principal esta el key
+		pthread_mutex_unlock(&semTablaSegmentos);
 		if(valor!= 0){ //lo encontro en tabla de paginas
 			//tengo que verificar los timestamps entre ambos a ver cual se queda en memoria principal
 			log_info(loggerMemoria,"Esta en la tabla de PAGINAS");
@@ -523,7 +531,9 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 			if(t==0){
 				segmento = guardarEnTablaDeSegmentos(nombreTabla);
 			}
+			pthread_mutex_lock(&semTablaSegmentos);
 			guardarEnTablaDePaginas(segmento, indice, key, 1);
+			pthread_mutex_unlock(&semTablaSegmentos);
 			log_info(loggerMemoria,"Se guardo en la tabla de PAGINAS y en la MEMORIA");
 			return "INFO: Se guardo correctamente";
 		}
@@ -533,7 +543,9 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 		int indice = guardarEnMemoria(nombreTabla, key, value, timeStamp);
 		t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
 		segmento->tablaPaginas= list_create();
+		pthread_mutex_lock(&semTablaSegmentos);
 		guardarEnTablaDePaginas(segmento, indice, key, 1);
+		pthread_mutex_unlock(&semTablaSegmentos);
 		log_info(loggerMemoria, "Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
 		return "INFO: Se guardo correctamente";
 	}
@@ -549,10 +561,10 @@ char* DROPMemoria(char* nombreTabla){
 			log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
 			pthread_mutex_lock(&semTablaSegmentos);
 			void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
-			pthread_mutex_unlock(&semTablaSegmentos);
 			t_segmento *segmento =(t_segmento*)elemento;
 			quitarEspaciosGuardadosEnMemoria(segmento->tablaPaginas);
 			borrarTablaDePaginas(segmento->tablaPaginas);
+			pthread_mutex_unlock(&semTablaSegmentos);
 			list_remove(tablaDeSegmentos, ubicacionSegmento);
 			free(segmento->nombreTabla);
 			free(segmento);
