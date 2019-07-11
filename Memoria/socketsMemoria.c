@@ -11,7 +11,7 @@ void enviarRespuesta(int socketReceptor, int protocoloID, char *respuesta){
 	free(stringSerializado);
 	freeT_UnString(unString);
 }
-
+/*
 void realizarMultiplexacion(int socketEscuchando){
 	fd_set readSet;
 	fd_set tempReadSet;
@@ -29,14 +29,14 @@ void realizarMultiplexacion(int socketEscuchando){
 	maximoFD = socketEscuchando;
 	int i = 0;
 	while(1){
-		FD_ZERO(&tempReadSet);
+		//FD_ZERO(&tempReadSet);
 		tempReadSet = readSet;
 		resultado = select(maximoFD + 1, &tempReadSet, NULL, NULL, NULL);
-		printf("%d",resultado);
 
 		if(resultado == -1){
 			printf("Fallo en select().\n");
-			exitGracefully(EXIT_FAILURE,loggerMemoria,socketEscuchando);
+			exit(1);
+			//exitGracefully(EXIT_FAILURE,loggerMemoria,socketEscuchando);
 		}
 		//VERIFICO SI HAY NUEVA CONEXION
 		if (FD_ISSET(socketEscuchando, &tempReadSet)){
@@ -57,15 +57,25 @@ void realizarMultiplexacion(int socketEscuchando){
 		for(fd = 0; fd <= maximoFD; fd++){
 			if (FD_ISSET(fd, &tempReadSet)){ //HAY UN PAQUETE PARA RECIBIR
 				package = recibirPaquete(fd);
+				if(package->ID==0){
+					printf("Se cerro el socket\n");
+					close(fd);
+					//FD_CLR(fd,&tempReadSet);
+				}else if (package->ID<0){
+					perror("recv");
+					close(fd);
+				}else{
+
 				printf("\npackage->ID: %d\n",package->ID);
 				gestionarPaquetes(package, fd);
+				}
 			}
 			FD_CLR(fd,&tempReadSet);
 		}
 		i++;
 	}
 }
-
+*/
 void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 	if(packageRecibido->ID == 13){ //13: SELECT
 		t_SELECT *unSELECT;
@@ -309,13 +319,14 @@ void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger){
 
 }
 
-/*void realizarMultiplexacion(int socketEscuchando){
+void realizarMultiplexacion(int socketEscuchando){
 	int fdmax;        // número máximo de descriptores de fichero
 	int newfd;        // descriptor de socket de nueva conexión aceptada
 	char buf[256];    // buffer para datos del cliente
 	int nbytes;
 	int addrlen;
 	int i, j;
+	t_PaqueteDeDatos *package;
 	FD_ZERO(&master);    // borra los conjuntos maestro y temporal
 	FD_ZERO(&copy);
 	// añadir listener al conjunto maestro
@@ -333,96 +344,44 @@ void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger){
 		for(i = 0; i <= fdmax; i++) {
 		    if (FD_ISSET(i, &copy)) { // ¡¡tenemos datos!!
 		    	if (i == servidorEscuchaMemoria) {
-		                        // gestionar nuevas conexiones
-		    		addrlen = sizeof(clienteMemoria);
-		            	if ((newfd = accept(servidorEscuchaMemoria, (struct sockaddr *)&clienteMemoria,&addrlen)) == -1) {
-		            		perror("accept");
-		                } else {
-		                    FD_SET(newfd, &master); // añadir al conjunto maestro
-		                    if (newfd > fdmax) {    // actualizar el máximo
-		                    	fdmax = newfd;
-		                    }
-		                    int valor = recibirHandShakeMemoria(newfd,KERNELOMEMORIA, loggerMemoria);
-		                    if(valor!=0){
-		                    	int numMemoria = configMemoria.numeroDeMemoria;
-		                    	char* soyMemoria = string_new();
-		                    	string_append(&soyMemoria, "SOY MEMORIA ");
-		                    	char* numeroMemoria[1000];
-		                    	sprintf(numeroMemoria, "%d", numMemoria);
-		                    	string_append(&soyMemoria, numeroMemoria);
-		                    	realizarHandShake(newfd,KERNELOMEMORIA,soyMemoria);
-		                    	char* memoriasTablaGossip = memoriasTablaDeGossip();
-		                    	recibirMemoriasTablaDeGossip(newfd,KERNELOMEMORIA,loggerMemoria);
-		                    	mostrarmeMemoriasTablaGossip();
-		                    	enviarMemoriasTablaGossip(newfd,KERNELOMEMORIA,memoriasTablaGossip);
-		                    	free(soyMemoria);
-		                    	free(memoriasTablaGossip);
-		                    }
-		                    else{
-		                    	int numMemoria = configMemoria.numeroDeMemoria;
-		                    	char* soyMemoria = string_new();
-		                    	string_append(&soyMemoria, "SOY MEMORIA ");
-		                    	char* numeroMemoria[1000];
-		                    	kernel = newfd;
-		                    	sprintf(numeroMemoria, "%d", numMemoria);
-		                    	string_append(&soyMemoria, numeroMemoria);
-		                    	realizarHandShake(newfd,KERNELOMEMORIA,soyMemoria);
-		                    	char* memoriasTablaGossip = memoriasTablaDeGossip();
-		                    	enviarMemoriasTablaGossip(newfd,KERNELOMEMORIA,memoriasTablaGossip);
-		                    	free(soyMemoria);
-		                    	free(memoriasTablaGossip);
-		                    }
-
-
-		                }
+					newfd = aceptarConexiones(socketEscuchando, loggerMemoria);
+					int numMemoria = configMemoria.numeroDeMemoria;
+					char* soyMemoria = string_new();
+					string_append(&soyMemoria, "SOY MEMORIA ");
+					char* numeroMemoria = malloc(sizeof(1000));
+					kernel = newfd;
+					sprintf(numeroMemoria, "%d", numMemoria);
+					string_append(&soyMemoria, numeroMemoria);
+					realizarHandShake(newfd,KERNELOMEMORIA,soyMemoria);
+					FD_SET(newfd,&master);
+					fdmax = (newfd > fdmax)?newfd:fdmax;
+					FD_CLR(socketEscuchando,&copy);
 		    	} else {
-		    		t_PaqueteDeDatos *package;
-		    		package = (t_PaqueteDeDatos*) malloc(sizeof(t_PaqueteDeDatos));
-		            // gestionar datos de un cliente
-		    		if ((nbytes = recv(i, &package->ID,sizeof(uint32_t),MSG_WAITALL)) > 0) {
-		    			nbytes = recv(i, &package->longDatos,sizeof(uint32_t),MSG_WAITALL);
-		    			package->Datos = (char*) malloc(package->longDatos +1); //+1 VALGRIND
-		    			nbytes = recv(i, package->Datos, package->longDatos, MSG_WAITALL);
-		    			t_SELECT* select = deserializarT_SELECT(package->Datos);
-		    			printf("Los datos que recibi del socket %d, son %s\n", i, select->nombreTabla);
-		    			char* palabra="hola";
-		    			t_UnString* s = definirT_UnString(palabra);
-		    			char* serializados= serializarT_UnString(s);
-		    			int tamanioSerializado = s->longString+ sizeof (uint32_t);
 
-		    			empaquetarEnviarMensaje(i,14, tamanioSerializado,serializados);
-	                   // close(i); // bye!
-	                   // FD_CLR(i, &master); // eliminar del conjunto maestro
+		    		package = recibirPaquete(i);
+
+		    		if(package->ID==0){
+	                    // conexión cerrada
+	    				printf("El socket %d se desconecto\n", i);
+	                    close(i); // bye!
+	                    FD_CLR(i, &master); // eliminar del conjunto maestro
+		    		} else if(package->ID<0){
+	                    perror("recv");
+	                    close(i); // bye!
+	                    FD_CLR(i, &master); // eliminar del conjunto maestro
 		    		}
-		    		else if (nbytes == 0) {
-		                    // conexión cerrada
-		    				printf("El socket %d se desconecto\n", i);
-		                    close(i); // bye!
-		                    FD_CLR(i, &master); // eliminar del conjunto maestro
-		                }else if(nbytes<0) {
-		                    perror("recv");
-		                    close(i); // bye!
-		                    FD_CLR(i, &master); // eliminar del conjunto maestro
-		                } else {
-		                            // tenemos datos de algún cliente
-		                    for(j = 0; j <= fdmax; j++) {
-		                                // ¡enviar a todo el mundo!
-		                    	if (FD_ISSET(j, &master)) {
-		                                    // excepto al listener y a nosotros mismos
-		                    		if (j != servidorEscuchaMemoria && j != i) {
-		                                        if (send(j, buf, nbytes, 0) == -1) {
-		                                            perror("send");
-		                                        }
-		                                    }
-		                                }
-		                            }
-		                        }
+		    		else{
+
+						printf("\npackage->ID: %d\n",package->ID);
+						gestionarPaquetes(package, i);
+		    		}
+
 		                    }
 		                }
 		            }
 		        }
 
-}*/
+}
 
 void hacermeClienteDeMisServers(){
 	int cantidadSeeds = tamanioArray((void**)configMemoria.puertosDeSeeds);
