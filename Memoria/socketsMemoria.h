@@ -20,7 +20,7 @@
 fd_set master;   // conjunto maestro de descriptores de fichero
 fd_set copy;
 struct sockaddr_in servidorMemoria;
-pthread_t clienteM;
+pthread_t clienteM,kernelEnvio;
 struct sockaddr_in clienteMemoria; // dirección del cliente
 int servidorEscuchaMemoria;
        // para setsockopt() SO_REUSEADDR, más abajo
@@ -28,11 +28,8 @@ int kernel;
 
 t_list * tablaDeGossip;
 
-
-
-//t_memoriaConectada* tablaDeGossip [150];
-void definirValorKernel();
 void realizarGossip();
+void enviarAKernel();
 void iniciarEscuchaMemoria();
 void serCliente(char* ip, int puerto);
 void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger);

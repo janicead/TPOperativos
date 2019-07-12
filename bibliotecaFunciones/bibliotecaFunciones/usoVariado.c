@@ -57,3 +57,4 @@ int longitudArrayDePunteros(char **unArrayDePunteros){
 unsigned long int obtenerTimeStamp(){
 	return time(NULL);
 }
+

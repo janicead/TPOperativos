@@ -166,6 +166,7 @@ pthread_t consola;
 pthread_t timer_thread;
 pthread_t config_observer;
 pthread_t metadata_refresh;
+pthread_t gossipKernel;
 
 //FUNCIONES DE CONFIGURACIÓN INICIAL
 void crear_colas();

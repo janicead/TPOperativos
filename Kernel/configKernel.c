@@ -45,12 +45,20 @@ int leerConfigKernel(){
 		log_error(loggerKernel,"No se encontro la key SLEEP_EJECUCION en el archivo de configuracion");
 		return -1;
 	}
+
+	if (config_has_property(archivoConfigKernel, "TIEMPO_GOSSIPING")) {
+		configKernel.tiempoGossiping = config_get_int_value(archivoConfigKernel,"TIEMPO_GOSSIPING");
+	} else {
+		log_error(loggerKernel,"No se encontro la key TIEMPO_GOSSIPING en el archivo de configuracion");
+		exit(EXIT_FAILURE);
+		}
+
 	if (config_has_property(archivoConfigKernel, "IP_DE_SEEDS")) {
-			configKernel.ipDeSeeds = config_get_array_value(archivoConfigKernel,"IP_DE_SEEDS");
-			} else {
-				log_error(loggerKernel,"No se encontro la key IP_DE_SEEDS en el archivo de configuracion");
-				exit(EXIT_FAILURE);
-			}
+		configKernel.ipDeSeeds = config_get_array_value(archivoConfigKernel,"IP_DE_SEEDS");
+	} else {
+		log_error(loggerKernel,"No se encontro la key IP_DE_SEEDS en el archivo de configuracion");
+		exit(EXIT_FAILURE);
+		}
 			if (config_has_property(archivoConfigKernel, "PUERTOS_DE_SEEDS")) {
 				char** arrayPuertos= config_get_array_value(archivoConfigKernel,"PUERTOS_DE_SEEDS");
 
@@ -91,6 +99,7 @@ void mostrarDatosArchivoConfigKernel(){
 	log_info(loggerKernel,"MULTIPROCESAMIENTO: %d",configKernel.multiprocesamiento);
 	log_info(loggerKernel,"METADATA_REFRESH: %d",configKernel.metadata_refresh);
 	log_info(loggerKernel,"SLEEP_EXECUTION: %d",configKernel.sleep_execution);
+	log_info(loggerKernel,"TIEMPO GOSSIPING: %d",configKernel.tiempoGossiping);
 	printf("%s","IP_DE_SEEDS:\n" );
 	printearArrayDeChars(configKernel.ipDeSeeds);
 	printf("%s","PUERTOS_DE_SEEDS:\n");

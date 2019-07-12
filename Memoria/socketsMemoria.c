@@ -94,18 +94,20 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		enviarRespuesta(socketEmisor,id_respuesta_journal,"Todo ok");
 
 	}
-	freePackage(packageRecibido);
-}
+	if(packageRecibido->ID ==50){ //PIDO TABLA GOSSIP
+		char* memoriasDondeEstoyConectado = memoriasTablaDeGossip(tablaDeGossip);
+		printf("Memorias donde estoy conectado %s\n", memoriasDondeEstoyConectado);
+		enviarMemoriasTablaGossip(socketEmisor,KERNELOMEMORIA,memoriasDondeEstoyConectado);
 
-void definirValorKernel(){
-	kernel= 0;
+	}
+	freePackage(packageRecibido);
 }
 
 void realizarGossip(){
 
 	clock_t start, diff;
 	int elapsedsec;
-	int sec = 10; //aca debe ir tiempoGossiping
+	int sec = 10; //aca debe ir configMemoria.tiempoGossiping
 	int iterations = 0;
 
 	while (iterations < 1000) {
@@ -118,16 +120,17 @@ void realizarGossip(){
 	       if (elapsedsec >= sec) {
 	    	   pthread_create(&clienteM, NULL,(void*) hacermeClienteDeMisServers, NULL);
 
-	    	   if(kernel!=0){
-	    	   char* memoriasEnTablaDeGossip = memoriasTablaDeGossip(tablaDeGossip);
-	    	   enviarMemoriasTablaGossip(kernel,KERNELOMEMORIA,memoriasEnTablaDeGossip);
-	    	   free(memoriasEnTablaDeGossip);
-	    	   }
 	           iterations++;
 	           break;
 	       }
 	   }
 	}
+}
+
+void enviarAKernel(){
+	char* memoriasEnTablaDeGossip = memoriasTablaDeGossip(tablaDeGossip);
+	enviarMemoriasTablaGossip(kernel,KERNELOMEMORIA,memoriasEnTablaDeGossip);
+	free(memoriasEnTablaDeGossip);
 }
 
 void iniciarEscucha(){
