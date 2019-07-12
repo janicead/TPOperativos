@@ -11,71 +11,7 @@ void enviarRespuesta(int socketReceptor, int protocoloID, char *respuesta){
 	free(stringSerializado);
 	freeT_UnString(unString);
 }
-/*
-void realizarMultiplexacion(int socketEscuchando){
-	fd_set readSet;
-	fd_set tempReadSet;
-	int maximoFD;
-	int resultado;
 
-	int fd;
-	int nuevaConexion;
-	t_PaqueteDeDatos *package;
-
-	FD_ZERO(&readSet);
-	FD_ZERO(&tempReadSet);
-
-	FD_SET(socketEscuchando,&readSet);
-	maximoFD = socketEscuchando;
-	int i = 0;
-	while(1){
-		//FD_ZERO(&tempReadSet);
-		tempReadSet = readSet;
-		resultado = select(maximoFD + 1, &tempReadSet, NULL, NULL, NULL);
-
-		if(resultado == -1){
-			printf("Fallo en select().\n");
-			exit(1);
-			//exitGracefully(EXIT_FAILURE,loggerMemoria,socketEscuchando);
-		}
-		//VERIFICO SI HAY NUEVA CONEXION
-		if (FD_ISSET(socketEscuchando, &tempReadSet)){
-			nuevaConexion = aceptarConexiones(socketEscuchando, loggerMemoria);
-			int numMemoria = configMemoria.numeroDeMemoria;
-			char* soyMemoria = string_new();
-			string_append(&soyMemoria, "SOY MEMORIA ");
-			char* numeroMemoria = malloc(sizeof(1000));
-			kernel = nuevaConexion;
-			sprintf(numeroMemoria, "%d", numMemoria);
-			string_append(&soyMemoria, numeroMemoria);
-			realizarHandShake(nuevaConexion,KERNELOMEMORIA,soyMemoria);
-			FD_SET(nuevaConexion,&readSet);
-			maximoFD = (nuevaConexion > maximoFD)?nuevaConexion:maximoFD;
-			FD_CLR(socketEscuchando,&tempReadSet);
-		}
-		//BUSCO EN EL CONJUNTO, si hay datos para leer
-		for(fd = 0; fd <= maximoFD; fd++){
-			if (FD_ISSET(fd, &tempReadSet)){ //HAY UN PAQUETE PARA RECIBIR
-				package = recibirPaquete(fd);
-				if(package->ID==0){
-					printf("Se cerro el socket\n");
-					close(fd);
-					//FD_CLR(fd,&tempReadSet);
-				}else if (package->ID<0){
-					perror("recv");
-					close(fd);
-				}else{
-
-				printf("\npackage->ID: %d\n",package->ID);
-				gestionarPaquetes(package, fd);
-				}
-			}
-			FD_CLR(fd,&tempReadSet);
-		}
-		i++;
-	}
-}
-*/
 void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 	if(packageRecibido->ID == 13){ //13: SELECT
 		t_SELECT *unSELECT;
@@ -183,7 +119,7 @@ void realizarGossip(){
 	    	   pthread_create(&clienteM, NULL,(void*) hacermeClienteDeMisServers, NULL);
 
 	    	   if(kernel!=0){
-	    	   char* memoriasEnTablaDeGossip = memoriasTablaDeGossip();
+	    	   char* memoriasEnTablaDeGossip = memoriasTablaDeGossip(tablaDeGossip);
 	    	   enviarMemoriasTablaGossip(kernel,KERNELOMEMORIA,memoriasEnTablaDeGossip);
 	    	   free(memoriasEnTablaDeGossip);
 	    	   }
@@ -223,7 +159,7 @@ void iniciarEscucha(){
 	}
 	else
 	{
-		log_error(loggerMemoria,"fallo al establecer escucha, listen()");
+		log_error(loggerMemoria,"Fallo al establecer escucha, listen()");
 		exit(0);
 	}
 }
@@ -260,8 +196,7 @@ void iniciarEscuchaMemoria(){
 void serCliente(char* ip , int puerto){
 	char* ipServidor = quitarComillas(ip);
 	struct sockaddr_in dirServidorMemoria;
-	//struct sockaddr_in dirCliente;
-	//unsigned int tamanioDireccion;
+
 	dirServidorMemoria.sin_family = AF_INET;
 	dirServidorMemoria.sin_addr.s_addr = inet_addr(ipServidor);
 	dirServidorMemoria.sin_port = htons(puerto); //puerto al que va a escuchar
@@ -281,17 +216,19 @@ void serCliente(char* ip , int puerto){
 		int nroMemoria = recibirHandShakeMemoria(cliente,KERNELOMEMORIA,loggerMemoria);
 
 		if(nroMemoria!= -1){
-			char* memoriasDondeEstoyConectado = memoriasTablaDeGossip();
+			char* memoriasDondeEstoyConectado = memoriasTablaDeGossip(tablaDeGossip);
+			printf("Memorias donde estoy conectado %s\n", memoriasDondeEstoyConectado);
 			enviarMemoriasTablaGossip(cliente,KERNELOMEMORIA,memoriasDondeEstoyConectado);
-			agregarATablaDeGossip(puerto, ip, nroMemoria);
-			mostrarmeMemoriasTablaGossip();
-			recibirMemoriasTablaDeGossip(cliente,KERNELOMEMORIA,loggerMemoria);
+			agregarATablaDeGossip(puerto, ip, nroMemoria,tablaDeGossip);
+			mostrarmeMemoriasTablaGossip(tablaDeGossip);
+			recibirMemoriasTablaDeGossip(cliente,KERNELOMEMORIA,loggerMemoria, tablaDeGossip);
 			free(memoriasDondeEstoyConectado);
 		}
 	free(soyMemoria);
 	free(numeroMemoria);
 	}
 	free(ipServidor);
+	close(cliente);
 }
 
 void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger){
@@ -322,10 +259,6 @@ void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger){
 void realizarMultiplexacion(int socketEscuchando){
 	int fdmax;        // número máximo de descriptores de fichero
 	int newfd;        // descriptor de socket de nueva conexión aceptada
-	char buf[256];    // buffer para datos del cliente
-	int nbytes;
-	int addrlen;
-	int i, j;
 	t_PaqueteDeDatos *package;
 	FD_ZERO(&master);    // borra los conjuntos maestro y temporal
 	FD_ZERO(&copy);
@@ -341,7 +274,7 @@ void realizarMultiplexacion(int socketEscuchando){
 		    exit(1);
 		}
 		 // explorar conexiones existentes en busca de datos que leer
-		for(i = 0; i <= fdmax; i++) {
+		for(int i = 0; i <= fdmax; i++) {
 		    if (FD_ISSET(i, &copy)) { // ¡¡tenemos datos!!
 		    	if (i == servidorEscuchaMemoria) {
 					newfd = aceptarConexiones(socketEscuchando, loggerMemoria);
@@ -349,10 +282,18 @@ void realizarMultiplexacion(int socketEscuchando){
 					char* soyMemoria = string_new();
 					string_append(&soyMemoria, "SOY MEMORIA ");
 					char* numeroMemoria = malloc(sizeof(1000));
-					kernel = newfd;
 					sprintf(numeroMemoria, "%d", numMemoria);
 					string_append(&soyMemoria, numeroMemoria);
 					realizarHandShake(newfd,KERNELOMEMORIA,soyMemoria);
+					recibirHandShakeMemoria(newfd,KERNELOMEMORIA,loggerMemoria);
+
+					char* M = memoriasTablaDeGossip(tablaDeGossip);
+					printf("El M ES %s\n", M);
+					recibirMemoriasTablaDeGossip(newfd, KERNELOMEMORIA, loggerMemoria, tablaDeGossip);
+					mostrarmeMemoriasTablaGossip(tablaDeGossip);
+					enviarMemoriasTablaGossip(newfd, KERNELOMEMORIA, M);
+					free(soyMemoria);
+					free(M);
 					FD_SET(newfd,&master);
 					fdmax = (newfd > fdmax)?newfd:fdmax;
 					FD_CLR(socketEscuchando,&copy);

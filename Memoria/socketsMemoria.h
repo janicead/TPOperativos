@@ -26,6 +26,10 @@ int servidorEscuchaMemoria;
        // para setsockopt() SO_REUSEADDR, más abajo
 int kernel;
 
+t_list * tablaDeGossip;
+
+
+
 //t_memoriaConectada* tablaDeGossip [150];
 void definirValorKernel();
 void realizarGossip();

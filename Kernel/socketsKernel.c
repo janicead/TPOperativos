@@ -6,6 +6,15 @@ void conectarAMemoria(char* ip, int puerto){
 	int nroMemoria = recibirHandShakeMemoria(socketServer,KERNELOMEMORIA,loggerKernel);
 	agregar_memoria(puerto, ip, nroMemoria);
 	agregar_socket_mem(nroMemoria,socketServer);
+
+	char* memoriasDondeEstoyConectado = memoriasTablaDeGossip(tablaDeGossip);
+	printf("Memorias donde estoy conectado %s\n", memoriasDondeEstoyConectado);
+	enviarMemoriasTablaGossip(socketServer,KERNELOMEMORIA,memoriasDondeEstoyConectado);
+	recibirMemoriasTablaDeGossip(socketServer,KERNELOMEMORIA,loggerKernel, tablaDeGossip);
+	mostrarmeMemoriasTablaGossip(tablaDeGossip);
+	free(memoriasDondeEstoyConectado);
+
+
 }
 
 void definirValorMP(){
