@@ -1118,3 +1118,36 @@ void freeT_MetadataTabla(t_MetadataTabla *unStruct)
 	free(unStruct->Consistency);
 	free(unStruct);
 }
+/*
+*/
+char **enlistarElPath(char *unPath)
+{
+    struct dirent *dp;
+    DIR *dir = opendir(unPath);
+
+    char **listado;
+    char *unFile;
+    char *aux = string_new();
+
+    //if (!dir)
+        //return;
+
+    while ((dp = readdir(dir)) != NULL)
+    {
+    	if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0 && strcmp(dp->d_name, "Metadata"))
+    		if(!string_ends_with(dp->d_name,".bin"))
+    		{
+    			unFile = string_from_format(";%s",dp->d_name);
+    			string_append(&aux,unFile);
+    			//printf("%s\n", dp->d_name); ///
+    			free(unFile);
+    		}
+    }
+
+    listado = string_split(aux,";");
+    free(aux);
+
+    closedir(dir);
+
+    return listado;
+}

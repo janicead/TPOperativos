@@ -111,10 +111,14 @@ void *connection_handler(void *socket_desc);
 
 //###### SEGUN PROTOCOLO #############
 char *realizarSELECT(t_SELECT *unSELECT);
+
 char *realizarINSERT(t_INSERT *unINSERT);
+
 t_Tabla *crearTablaEnMEMTABLE(char *nombreTabla);
 t_Tabla *existeEnMemtable(char *nombreTabla);
 char *realizarCREATE(t_CREATE *unCREATE);
+
+char *realizarDESCRIBE(t_DESCRIBE *unDESCRIBE);
 
 //####################################
 //####################################

@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <libgen.h>
+#include <dirent.h> //PARA ENLISTAR
 
 #include <commons/log.h>
 #include <commons/collections/list.h>
@@ -169,5 +170,8 @@ char *guardarDatosEnArchivoEnFS(char *unPathArchivo, char *todoElArchivo);
 char *eliminarArchivoEnFS(char *unPathArchivo);
 t_MetadataTabla *obtenerMetadataTabla(char *unNombreTabla);
 void freeT_MetadataTabla(t_MetadataTabla *unStruct);
+
+//##########################
+char **enlistarElPath(char *unPath);
 
 #endif /* FS_H_ */

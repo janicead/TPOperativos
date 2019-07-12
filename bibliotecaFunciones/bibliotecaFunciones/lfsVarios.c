@@ -74,4 +74,26 @@ void enviarRespuesta(int socketReceptor, int protocoloID, char *respuesta)
 }
 
 
+char *respuestaDESCRIBEaPrintear(char *unaRespDESCRIBE)
+{
+	int i;
+	char **metadatasTablas = string_split(unaRespDESCRIBE,"#");
+	char **unaMetadata;
+	char *buffer = string_new();
+	char *aux;
+
+	for(i=0; metadatasTablas[i] != NULL;i++)
+	{
+		unaMetadata = string_split(metadatasTablas[i],";");
+		aux = string_from_format("\nTabla: [%s]\n   CONSISTENCY: %s\n   PARTITIONS: %s\n   COMPACTION_TIME: %s\n",unaMetadata[0],unaMetadata[1],unaMetadata[2],unaMetadata[3]);
+		string_append(&buffer,aux);
+		hacerFreeArray((void*)unaMetadata);
+	}
+
+	hacerFreeArray((void*)metadatasTablas);
+
+	return buffer;
+}
+
+
 

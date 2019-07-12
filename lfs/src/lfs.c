@@ -272,15 +272,48 @@ void consolaAPI()
 	    	//EL UNICO ARGUMENTO PUEDE SER OPCIONAL
 	    	if(cantArgumentos == 0)
 	    	{
-	    		log_info(logger,"Operacion DESCRIBE");
-	    		printf("Parametros: [sin Parametros]\n");
-	    		//IMPRIMO POR PANTALLA EL RESULTADO DE LA OPERACION (TODAS LAS TABLAS)
+	    		log_info(logger,"\n>DESCRIBE [Sin Parametros]\n");
+
+	    		t_DESCRIBE *unDESCRIBE = definirT_DESCRIBE("ALL_TABLES");
+	    		char *respuesta = realizarDESCRIBE(unDESCRIBE);
+	    		//printf("\nPor SOCKET: %s\n",respuesta);
+	    		if(strcmp(respuesta,"NO_EXISTEN_TABLAS") == 0)
+	    		{
+	    			printf("Respuesta: \n%s\n",respuesta);
+	    			log_info(logger,"Respuesta: \n%s\n------------------------------------------",respuesta);
+	    		}
+	    		else
+	    		{
+	    			char *respuestaAPRINTEAR = respuestaDESCRIBEaPrintear(respuesta);
+	    			printf("Respuesta: \n%s\n",respuestaAPRINTEAR);
+	    			log_info(logger,"Respuesta: \n%s\n------------------------------------------",respuestaAPRINTEAR);
+	    			free(respuestaAPRINTEAR);
+	    		}
+
+	    		free(respuesta);
+	    		freeT_DESCRIBE(unDESCRIBE);
 	    	}
 	    	else if(cantArgumentos == 1)
 	    	{
-	    		log_info(logger,"Operacion DESCRIBE");
-	    		printf("Parametros: [%s]\n",operacion[1]);
-	    		//IMPRIMO POR PANTALLA EL RESULTADO DE LA OPERACION (TABLA ESPECIFICA)
+	    		log_info(logger,"\n>DESCRIBE [%s]\n",operacion[1]);
+
+	    		t_DESCRIBE *unDESCRIBE = definirT_DESCRIBE(operacion[1]);
+	    		char *respuesta = realizarDESCRIBE(unDESCRIBE);
+	    		//printf("\nPor SOCKET: %s\n",respuesta);
+	    		if(strcmp(respuesta,"NO_EXISTE_TABLA") == 0)
+	    		{
+	    			printf("Respuesta: \n%s\n",respuesta);
+	    			log_info(logger,"Respuesta: \n%s\n------------------------------------------",respuesta);
+	    		}
+	    		else
+	    		{
+	    			char *respuestaAPRINTEAR = respuestaDESCRIBEaPrintear(respuesta);
+	    			printf("Respuesta: \n%s\n",respuestaAPRINTEAR);
+	    			log_info(logger,"Respuesta: \n%s\n------------------------------------------",respuestaAPRINTEAR);
+	    			free(respuestaAPRINTEAR);
+	    		}
+	    		free(respuesta);
+	    		freeT_DESCRIBE(unDESCRIBE);
 	    	}
 	    	else
 	    	{
@@ -309,8 +342,13 @@ void consolaAPI()
 	    	unArchivoComoLista = obtenerArchivoComoLista("t4/dump0.tmp");
 	    	printf("\nlist_size(unArchivoComoLista): %d\n",list_size(unArchivoComoLista));
 	    	*/
-
-
+	    	char *unPath = string_from_format("%s/Tables",configLFS.puntoMontaje);
+	    	char **listado = enlistarElPath(unPath);
+	    	int j;
+	    	for(j=0;listado[j]!=NULL;j++)
+	    		printf("%s\n",listado[j]);
+	    	free(unPath);
+	    	freeArrayDePunteros(listado);
 
 	    }
 
@@ -470,10 +508,10 @@ void realizarProtocoloDelPackage(t_PaqueteDeDatos *packageRecibido, int socketEm
 		t_CREATE *unCREATE;
 
 		unCREATE = deserializarT_CREATE(packageRecibido->Datos);
-		log_info(logger,"Query recibido: CREATE [%s] [%s] [%d] [%d]",unCREATE->nombreTabla,unCREATE->tipoConsistencia,unCREATE->nParticiones,unCREATE->tiempoCompactacion);
+		log_info(logger,"\nQuery recibido: CREATE [%s] [%s] [%d] [%d]",unCREATE->nombreTabla,unCREATE->tipoConsistencia,unCREATE->nParticiones,unCREATE->tiempoCompactacion);
 
 		char *respuesta = realizarCREATE(unCREATE);
-		printf("Respuesta: %s\n",respuesta);
+		//printf("Respuesta: %s\n",respuesta); ///
 		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
 
 		mostrarBitsDeBloques(8);///
@@ -489,15 +527,14 @@ void realizarProtocoloDelPackage(t_PaqueteDeDatos *packageRecibido, int socketEm
 		t_DESCRIBE *unDESCRIBE;
 
 		unDESCRIBE = deserializarT_DESCRIBE(packageRecibido->Datos);
-		printf("Query recibido: DESCRIBE [%s]",unDESCRIBE->nombreTabla);
+		log_info(logger,"\nQuery recibido: DESCRIBE [%s]",unDESCRIBE->nombreTabla);
 
+		char *respuesta = realizarDESCRIBE(unDESCRIBE);
+		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
 
-		//char *Respuesta = realizarDESCRIBE();
-		char* Respuesta = string_from_format("FIN_DESCRIBE");
-		enviarRespuesta(socketEmisor,20,Respuesta); //20: RESPUESTA DE UN PROTOCOLO = 19
+		enviarRespuesta(socketEmisor,20,respuesta); //20: RESPUESTA DE UN PROTOCOLO = 19
 
-
-		free(Respuesta);
+		free(respuesta);
 		freeT_DESCRIBE(unDESCRIBE); //HAY Q LIBERAR EL PAYLOAD SEGUN EL PROTOCOLO, particularmente en cada caso.
 	}
 
@@ -714,6 +751,57 @@ t_Tabla *existeEnMemtable(char *nombreTabla)
 char *realizarCREATE(t_CREATE *unCREATE)
 {
 	return crearTablaEnFS(unCREATE);
+}
+
+char *realizarDESCRIBE(t_DESCRIBE *unDESCRIBE)
+{
+	char *r = string_new();
+
+	if(strcmp(unDESCRIBE->nombreTabla,"ALL_TABLES") == 0)
+	{
+		char *pathTablas = string_from_format("%s/Tables",configLFS.puntoMontaje);
+		char **listaTablas = enlistarElPath(pathTablas);
+
+		if(longitudArrayDePunteros(listaTablas) == 0)
+		{
+			string_append(&r,"NO_EXISTEN_TABLAS");
+			//return r;
+		}
+		int i;
+		t_MetadataTabla *unMetadataTabla;
+		char *unaTabla;
+
+		free(pathTablas);
+
+		for(i=0; listaTablas[i] != NULL;i++)
+		{
+			unMetadataTabla = obtenerMetadataTabla(listaTablas[i]);
+			unaTabla = string_from_format("#%s;%s;%d;%d",listaTablas[i],unMetadataTabla->Consistency,unMetadataTabla->Partitions,unMetadataTabla->Compaction_Time);
+			//printf("\nunaTabla: %s\n",unaTabla);
+			string_append(&r,unaTabla);
+			free(unaTabla);
+			freeT_MetadataTabla(unMetadataTabla);
+		}
+
+		freeArrayDePunteros(listaTablas);
+	}
+	else
+	{
+		r = existeTablaEnFS(unDESCRIBE->nombreTabla);
+
+		if(strcmp(r,"YA_EXISTE_TABLA") == 0)
+		{
+			free(r);
+			t_MetadataTabla *unMetadataTabla;
+
+			unMetadataTabla = obtenerMetadataTabla(unDESCRIBE->nombreTabla);
+			r = string_from_format("%s;%s;%d;%d",unDESCRIBE->nombreTabla,unMetadataTabla->Consistency,unMetadataTabla->Partitions,unMetadataTabla->Compaction_Time);
+
+			freeT_MetadataTabla(unMetadataTabla);
+		}
+	}
+
+	return r;
 }
 
 void realizarHandshakeAMemoria(t_log *logger,int socketCliente, t_PaqueteDeDatos *packageRecibido,char* msjEnviado)
