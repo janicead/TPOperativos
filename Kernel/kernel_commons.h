@@ -110,13 +110,26 @@ typedef struct{
 	int puerto;
 	char* ip;
 	bool valida;
+	int cant_selects_inserts_ejecutados;
 }t_memoria;
 
 char* puertoMemoria;
 int idLCB;
 
+//ESTRUCTURAS PARA LAS MÉTRICAS
+typedef struct{
+	time_t tiempo_inicio;
+	time_t tiempo_fin;
+}t_select_ejecutado;
+
+typedef struct{
+	time_t tiempo_inicio;
+	time_t tiempo_fin;
+}t_insert_ejecutado;
+
 //VARIABLES DE CONFIGURACIÓN
 t_log* loggerKernel;
+t_log* loggerKernelConsola;
 t_config* archivoConfigKernel;
 
 //COLAS
@@ -130,6 +143,8 @@ t_list* memorias;
 t_list* strong_hash_consistency;
 t_list* eventual_consistency;
 t_memoria* strong_consistency;
+t_list* selects_ejecutados;
+t_list* inserts_ejecutados;
 
 //SEMÁFOROS
 pthread_mutex_t queue_ready_sem;
@@ -141,6 +156,8 @@ pthread_mutex_t strong_hash_consistency_sem;
 pthread_mutex_t eventual_consistency_sem;
 pthread_mutex_t tablas_sem;
 pthread_mutex_t log_sem;
+pthread_mutex_t selects_ejecutados_sem;
+pthread_mutex_t inserts_ejecutados_sem;
 sem_t execute_sem;
 
 //HILOS
@@ -148,6 +165,7 @@ pthread_t* hilos;
 pthread_t consola;
 pthread_t timer_thread;
 pthread_t config_observer;
+pthread_t metadata_refresh;
 
 //FUNCIONES DE CONFIGURACIÓN INICIAL
 void crear_colas();

@@ -7,6 +7,7 @@
 #include <commons/collections/list.h>
 #include <stdbool.h>
 #include "consolaKernel.h"
+#include <bibliotecaFunciones/lfsProtocolos.h>
 
 
 void* ejecutar();
@@ -28,7 +29,16 @@ void lql_journal(t_list* list_mem, t_LQL_operacion* op);
 void lql_add(t_LQL_operacion* op);
 void lql_run(FILE* archivo, t_LQL_operacion* op);
 void lql_metrics();
-void* timer();
+void* refresh_metadata_timer();
+
+//FUNCIONES PARA LAS MÉTRICAS
+void* metrics_timer();
+double tiempoPromedioSelect();
+double tiempoPromedioInsert();
+int cantidadSelects();
+int cantidadInserts();
+int porcentajeSelectsInserts(int cant_selects_inserts_ejecutados);
+void memoryLoad();
 
 //FUNCIONES EXTRA
 FILE* abrirArchivo(char* path);

@@ -20,8 +20,8 @@ void iniciarValoresParaTest(){
 	tabla3->consistencia = "EC";
 	tabla3->nombre_tabla = "random";
 	agregar_tabla(tabla3);
-	crear_lql_add("sc",1);
-	/*agregar_memoria(5,"1",0);
+	/*crear_lql_add("sc",1);
+	agregar_memoria(5,"1",0);
 	agregar_memoria(6,"2",1);
 	agregar_memoria(7,"3",2);
 	agregar_memoria(8,"4",3);
@@ -55,14 +55,15 @@ void iniciar(){
 	crear_colas();
 	crear_listas();
 	verificarArchivoConfigKernel();
+	tablaDeGossip = list_create();
 
 	int t = tamanioArray((void**)configKernel.puertosDeSeeds);
 	conectarAMemoria(configKernel.ip_memoria,configKernel.puerto_memoria);
-	for(int i= 0; i< t; i ++){
+	/*for(int i= 0; i< t; i ++){
 		printf("Ip de seeds %d es %s\n", i, configKernel.ipDeSeeds[i]);
 		printf("Ip de seeds %d es %d\n", i, configKernel.puertosDeSeeds[i]);
 		conectarAMemoria(configKernel.ipDeSeeds[i],configKernel.puertosDeSeeds[i]);
-	}
+	}*/
 	t_memoria* mem = list_get(memorias,0);
 	char* resp = opDESCRIBE(mem->socket_mem,"");
 	puts(resp);
@@ -72,9 +73,11 @@ void iniciar(){
 
 void crear_hilos_iniciales(){
 	pthread_create(&consola,NULL,setConsole,NULL);
-	pthread_create(&timer_thread,NULL,timer,NULL);
+	pthread_create(&timer_thread,NULL,metrics_timer,NULL);
 	pthread_detach(timer_thread);
 	pthread_create(&config_observer,NULL,observer_config,NULL);
 	pthread_detach(config_observer);
+	//pthread_create(&metadata_refresh,NULL,refresh_metadata_timer,NULL);
+	//pthread_detach(metadata_refresh);
 	return;
 }

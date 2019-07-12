@@ -37,8 +37,6 @@ typedef struct {
 }t_memoriaTablaDeGossip;
 
 
-t_list * tablaDeGossip;
-
 int conectarAlServidorEric(char * ip, char * port);
 int crearServidor();
 void escuchar(int servidor,struct sockaddr_in dirSocket);
@@ -66,13 +64,13 @@ t_PaqueteDeDatos *recibirPaquete(int socketEmisor);
 t_handShake* deserializarHandShake(char *handShakeSerializado);
 /////////////////////////////CONEXION KERNEL Y MEMORIA///////////////////////////
 
-void mostrarmeMemoriasTablaGossip();
-int verificarMensajeMemoriasTablaGossip(char* mensaje, t_log* logger);
-void recibirMemoriasTablaDeGossip(int emisor,t_identidad identidad, t_log* logger);
-char* memoriasTablaDeGossip();
-int cantMemoriasTablaDeGossip();
-void agregarATablaDeGossip(int puerto, char* ip, int memoria);
-int revisarQueNoEsteEnLaLista(int nroMemoria);
+void mostrarmeMemoriasTablaGossip(t_list* tablaDeGossip);
+int verificarMensajeMemoriasTablaGossip(char* mensaje, t_log* logger, t_list* tablaDeGossip);
+void recibirMemoriasTablaDeGossip(int emisor,t_identidad identidad, t_log* logger, t_list* tablaDeGossip);
+char* memoriasTablaDeGossip(t_list* tablaDeGossip);
+int cantMemoriasTablaDeGossip(t_list* tablaDeGossip);
+void agregarATablaDeGossip(int puerto, char* ipServidor, int memoria, t_list* tablaDeGossip);
+int revisarQueNoEsteEnLaLista(int nroMemoria, t_list* tablaDeGossip);
 char * quitarComillas(char* ip);
 
 

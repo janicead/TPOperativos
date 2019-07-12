@@ -11,7 +11,6 @@ int pasarMilisegundosASegundos(int milisegundos){
 	return milisegundos * 0.001;
 }
 
-
 void printearArrayDeChars(char** arrayDeChars){
 	int tamanioIpSeeds = tamanioArray(arrayDeChars);
 	for (int i =0; i<tamanioIpSeeds; i++){
@@ -19,6 +18,7 @@ void printearArrayDeChars(char** arrayDeChars){
 	}
 
 }
+
 void printearArrayDeInts(int arrayDeInts[]){
 	int tamanioIpSeeds = tamanioArray(arrayDeInts);
 	for (int i =0; i<tamanioIpSeeds; i++){
@@ -26,11 +26,13 @@ void printearArrayDeInts(int arrayDeInts[]){
 		printf("%d\n", a);
 	}
 }
+
 void hacerFreeArray(void** array){
 	for(int i = 0; array[i]!= NULL; i++){
 		free(array[i]);
 	}
 }
+
 int tamanioArray(void** array){
 	int i = 0;
 	while(array[i]!=NULL){
@@ -38,6 +40,7 @@ int tamanioArray(void** array){
 	}
 	return i;
 }
+
 long int cantLugaresEnArchivo(FILE* archivo){
 	 long int sz;
 	    fseek(archivo, 0L, SEEK_END);
@@ -45,12 +48,9 @@ long int cantLugaresEnArchivo(FILE* archivo){
 	return sz;
 }
 
-int longitudArrayDePunteros(char **unArrayDePunteros)
-{
+int longitudArrayDePunteros(char **unArrayDePunteros){
 	int i;
-
 	for(i=0; unArrayDePunteros[i] != NULL ;i++);
-
 	return i;
 }
 
