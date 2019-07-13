@@ -31,7 +31,7 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		unINSERT = deserializarT_INSERT(packageRecibido->Datos);
 		log_info(loggerMemoria,"Query recibido: INSERT [%s] [%d] [%s] [%d]",unINSERT->nombreTabla,unINSERT->KEY,unINSERT->Value,unINSERT->timeStamp);
 
-		uint16_t key = (uint16_t) unINSERT->KEY;
+		uint16_t key = unINSERT->KEY;
 
 		char* respuesta = INSERTMemoria(unINSERT->nombreTabla,key, unINSERT->Value, (unsigned long int)unINSERT->timeStamp);
 		enviarRespuesta(socketEmisor,id_respuesta_insert,respuesta);

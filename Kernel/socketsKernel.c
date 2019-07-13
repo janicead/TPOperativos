@@ -100,6 +100,8 @@ void recibirMemoriasTablaDeGossipKernel(int emisor,t_identidad identidad, t_log*
 	}
 	else{
 		log_error(logger,"ID incorrecto");
+		free(paquete);
+		return;
 	}
 
 	free(paquete->Datos);
