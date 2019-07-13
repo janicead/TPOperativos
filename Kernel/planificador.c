@@ -93,6 +93,12 @@ void lql_select(t_LQL_operacion* operacion){
 		return;
 	}
 	char* respuesta = opSELECT(memoria->socket_mem,operacion->argumentos.SELECT.nombre_tabla, operacion->argumentos.SELECT.key);
+	if(string_equals_ignore_case(respuesta,"MEMORIA_DESCONECTADA")){
+		log_error(loggerKernel,"La memoria %d fue desconectada.", memoria->id_mem);
+		operacion->success = true; //ESTE TIPO DE ERROR NO CORTA LA EJECUCIÓN DEL RESTO DE ARCHIVO LQL
+		sacar_memoria(memoria->id_mem);
+		return;
+	}
 	puts(respuesta);
 	time_t tiempo_fin = time(NULL);
 	t_select_ejecutado* select = (t_select_ejecutado*)malloc(sizeof(t_select_ejecutado));

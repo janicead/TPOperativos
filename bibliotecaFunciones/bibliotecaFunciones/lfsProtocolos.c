@@ -59,6 +59,10 @@ char *opSELECT(int socketReceptor, char* unNombreTabla, int unaKey)
 	printf("fd: %d\n",socketReceptor); ///
 	printf("package->ID: %d\n",packageRecibido->ID); ///
 
+	if(packageRecibido->ID == 0){
+		return "MEMORIA_DESCONECTADA";
+	}
+
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
 	freePackage(packageRecibido);
 

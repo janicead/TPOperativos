@@ -188,6 +188,7 @@ void agregar_tabla(t_tabla* tabla);
 void agregar_memoria(int puerto, char* ip, int nro_memoria);
 bool memoria_existente(t_list* l_memorias,int id);
 void agregar_socket_mem(int nro_memoria, int socket);
+void sacar_memoria(int nro_memoria);
 
 //FUNCIONES DE LIBERAR MEMORIA
 void destruir_operacion(t_LQL_operacion* op);

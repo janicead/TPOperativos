@@ -98,6 +98,26 @@ void agregar_socket_mem(int nro_memoria, int socket){
 	pthread_mutex_unlock(&memorias_sem);
 }
 
+void sacar_memoria(int nro_memoria){
+	bool sameID(t_memoria* mem){
+		return mem->id_mem == nro_memoria;
+	}
+	pthread_mutex_lock(&strong_consistency_sem);
+	if(strong_consistency->id_mem == nro_memoria){
+		strong_consistency = NULL;
+	}
+	pthread_mutex_unlock(&strong_consistency_sem);
+	pthread_mutex_lock(&strong_hash_consistency_sem);
+	list_remove_and_destroy_by_condition(strong_hash_consistency,(void*)sameID,(void*)free_memoria);
+	pthread_mutex_unlock(&strong_hash_consistency_sem);
+	pthread_mutex_lock(&eventual_consistency_sem);
+	list_remove_and_destroy_by_condition(eventual_consistency,(void*)sameID,(void*)free_memoria);
+	pthread_mutex_unlock(&eventual_consistency_sem);
+	pthread_mutex_lock(&memorias_sem);
+	list_remove_and_destroy_by_condition(memorias,(void*)sameID,(void*)free_memoria);
+	pthread_mutex_unlock(&memorias_sem);
+}
+
 t_lcb* crear_lcb(){
 	t_lcb* new_lcb = (t_lcb*)malloc(sizeof(t_lcb));
 	new_lcb->id_lcb = idLCB;
