@@ -26,7 +26,7 @@ int servidorEscuchaMemoria;
        // para setsockopt() SO_REUSEADDR, más abajo
 int kernel;
 
-t_list * tablaDeGossip;
+t_list * tablaDeGossipMemoria;
 
 void realizarGossip();
 void enviarAKernel();
@@ -40,7 +40,7 @@ int aceptarConexiones(int socket, t_log* logger);
 void exitGracefully(int return_nr, t_log* logger, int servidorEscucha);
 
 
-//AGREGAS POR ERIC
+//AGREGADAS POR ERIC
 void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor);
 void enviarRespuesta(int socketReceptor, int protocoloID, char *respuesta);
 void iniciarEscucha();

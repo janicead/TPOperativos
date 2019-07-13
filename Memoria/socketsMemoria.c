@@ -96,7 +96,7 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 
 	}
 	if(packageRecibido->ID ==50){ //PIDO TABLA GOSSIP
-		char* memoriasDondeEstoyConectado = memoriasTablaDeGossip(tablaDeGossip);
+		char* memoriasDondeEstoyConectado = memoriasTablaDeGossip(tablaDeGossipMemoria);
 		log_info(loggerMemoria, "Ya envie la TABLA DE GOSSIP a KERNEL");
 		enviarMemoriasTablaGossip(socketEmisor,KERNELOMEMORIA,memoriasDondeEstoyConectado);
 		free(memoriasDondeEstoyConectado);
@@ -130,7 +130,7 @@ void realizarGossip(){
 }
 
 void enviarAKernel(){
-	char* memoriasEnTablaDeGossip = memoriasTablaDeGossip(tablaDeGossip);
+	char* memoriasEnTablaDeGossip = memoriasTablaDeGossip(tablaDeGossipMemoria);
 	enviarMemoriasTablaGossip(kernel,KERNELOMEMORIA,memoriasEnTablaDeGossip);
 	free(memoriasEnTablaDeGossip);
 }
@@ -209,7 +209,7 @@ void serCliente(char* ip , int puerto){
 	if (connect (cliente, (void*)&dirServidorMemoria, sizeof(dirServidorMemoria))!=0){
 		log_info(loggerMemoria,"La memoria con puerto %d e ip %s no se encuentra activa",puerto,ipServidor);
 		borrarMemoriaSiEstaEnTablaGossip(ip, puerto);
-		mostrarmeMemoriasTablaGossip(tablaDeGossip);
+		mostrarmeMemoriasTablaGossip(tablaDeGossipMemoria);
 	}else{
 		int numMemoria = configMemoria.numeroDeMemoria;
 		char* soyMemoria = string_new();
@@ -222,12 +222,12 @@ void serCliente(char* ip , int puerto){
 		int nroMemoria = recibirHandShakeMemoria(cliente,KERNELOMEMORIA,loggerMemoria);
 
 		if(nroMemoria!= -1){
-			char* memoriasDondeEstoyConectado = memoriasTablaDeGossip(tablaDeGossip);
+			char* memoriasDondeEstoyConectado = memoriasTablaDeGossip(tablaDeGossipMemoria);
 			printf("Memorias donde estoy conectado %s\n", memoriasDondeEstoyConectado);
 			enviarMemoriasTablaGossip(cliente,KERNELOMEMORIA,memoriasDondeEstoyConectado);
-			agregarATablaDeGossip(puerto, ip, nroMemoria,tablaDeGossip);
-			mostrarmeMemoriasTablaGossip(tablaDeGossip);
-			recibirMemoriasTablaDeGossip(cliente,KERNELOMEMORIA,loggerMemoria, tablaDeGossip);
+			agregarATablaDeGossip(puerto, ip, nroMemoria,tablaDeGossipMemoria);
+			mostrarmeMemoriasTablaGossip(tablaDeGossipMemoria);
+			recibirMemoriasTablaDeGossip(cliente,KERNELOMEMORIA,loggerMemoria, tablaDeGossipMemoria);
 			free(memoriasDondeEstoyConectado);
 		}
 	free(soyMemoria);
@@ -238,12 +238,12 @@ void serCliente(char* ip , int puerto){
 }
 
 void borrarMemoriaSiEstaEnTablaGossip(char* ip, int puerto){
-	int tamanioTablaGossip = tamanioLista(tablaDeGossip);
+	int tamanioTablaGossip = tamanioLista(tablaDeGossipMemoria);
 	for (int i = 0 ; i< tamanioTablaGossip; i++){
-		void* elemento = list_get(tablaDeGossip, i);
+		void* elemento = list_get(tablaDeGossipMemoria, i);
 		t_memoriaTablaDeGossip *memoriaConectada =(t_memoriaTablaDeGossip*)elemento;
 		if(memoriaConectada->puerto == puerto && string_equals_ignore_case(memoriaConectada->ip, ip)==1){
-			void* elemento=list_remove(tablaDeGossip, i);
+			void* elemento=list_remove(tablaDeGossipMemoria, i);
 			t_memoriaTablaDeGossip * m = (t_memoriaTablaDeGossip*)elemento;
 			free(m->ip);
 			free(m);
@@ -308,9 +308,9 @@ void realizarMultiplexacion(int socketEscuchando){
 					realizarHandShake(newfd,KERNELOMEMORIA,soyMemoria);
 					recibirHandShakeMemoria(newfd,KERNELOMEMORIA,loggerMemoria);
 
-					char* M = memoriasTablaDeGossip(tablaDeGossip);
-					recibirMemoriasTablaDeGossip(newfd, KERNELOMEMORIA, loggerMemoria, tablaDeGossip);
-					mostrarmeMemoriasTablaGossip(tablaDeGossip);
+					char* M = memoriasTablaDeGossip(tablaDeGossipMemoria);
+					recibirMemoriasTablaDeGossip(newfd, KERNELOMEMORIA, loggerMemoria, tablaDeGossipMemoria);
+					mostrarmeMemoriasTablaGossip(tablaDeGossipMemoria);
 					enviarMemoriasTablaGossip(newfd, KERNELOMEMORIA, M);
 					free(soyMemoria);
 					free(M);

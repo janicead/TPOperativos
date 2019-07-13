@@ -120,7 +120,7 @@ void sacar_memoria(int nro_memoria){
 	if(strong_consistency->id_mem == nro_memoria){
 		strong_consistency = NULL;
 	}
-	//quitarMemoriaDeListas(nro_memoria,tablaDeGossip);
+	//quitarMemoriaDeListas(nro_memoria,tablaDeGossipKernel);
 	//quitarMemoriaDeListas(nro_memoria,memoriasALasQueMeConecte);
 
 	pthread_mutex_unlock(&strong_consistency_sem);

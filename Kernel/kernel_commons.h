@@ -118,7 +118,7 @@ int idLCB;
 
 
 //Listas necesarias
-t_list* tablaDeGossip;
+t_list* tablaDeGossipKernel;
 t_list * memoriasALasQueMeConecte;
 
 //ESTRUCTURAS PARA LAS MÉTRICAS

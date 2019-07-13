@@ -7,11 +7,11 @@ void conectarAMemoria(char* ip, int puerto){
 	agregar_memoria(puerto, ip, nroMemoria);
 	agregar_socket_mem(nroMemoria,socketServer);
 
-	char* memoriasDondeEstoyConectado = memoriasTablaDeGossip(tablaDeGossip);
+	char* memoriasDondeEstoyConectado = memoriasTablaDeGossip(tablaDeGossipKernel);
 	printf("Memorias donde estoy conectado %s\n", memoriasDondeEstoyConectado);
 	enviarMemoriasTablaGossip(socketServer,KERNELOMEMORIA,memoriasDondeEstoyConectado);
-	recibirMemoriasTablaDeGossip(socketServer,KERNELOMEMORIA,loggerKernel, tablaDeGossip);
-	mostrarmeMemoriasTablaGossip(tablaDeGossip);
+	recibirMemoriasTablaDeGossip(socketServer,KERNELOMEMORIA,loggerKernel, tablaDeGossipKernel);
+	mostrarmeMemoriasTablaGossip(tablaDeGossipKernel);
 	agregarAMemoriasConectadasAKernel(puerto, ip, nroMemoria);
 	conectarmeAMemorias();
 	mostrarmeMemoriasTablaGossip(memoriasALasQueMeConecte);
@@ -43,10 +43,10 @@ void conectarmeAMP(){
 		log_info(loggerKernel,"Me conecte a la memoria con puerto %d e ip %s",configKernel.puerto_memoria,ipServidor);
 		realizarHandShake(cliente,KERNELOMEMORIA,"SOY KERNEL");
 		int nroMemoria = recibirHandShakeMemoria(cliente,KERNELOMEMORIA,loggerKernel);
-		recibirMemoriasTablaDeGossip(cliente,KERNELOMEMORIA,loggerKernel,tablaDeGossip);
+		recibirMemoriasTablaDeGossip(cliente,KERNELOMEMORIA,loggerKernel,tablaDeGossipKernel);
 		agregarATablaDeGossipKernel(configKernel.puerto_memoria,ipServidor,nroMemoria);
 		agregarAMemoriasConectadasAKernel(configKernel.puerto_memoria,ipServidor,nroMemoria);
-		mostrarmeMemoriasTablaGossip(tablaDeGossip);
+		mostrarmeMemoriasTablaGossip(tablaDeGossipKernel);
 	}
 	free(ipServidor);
 }
@@ -71,7 +71,7 @@ void gossipDeKernel(){
 			t_memoria * memoria = random_memory(memorias);
 			pedirTablaGossip(memoria->socket_mem, 50, "Dame tabla gossip");
 			recibirMemoriasTablaDeGossipKernel(memoria->socket_mem,KERNELOMEMORIA,loggerKernel);
-			mostrarmeMemoriasTablaGossip(tablaDeGossip);
+			mostrarmeMemoriasTablaGossip(tablaDeGossipKernel);
 			conectarmeAMemorias();
 		}
 	}
@@ -136,8 +136,8 @@ void agregarATablaDeGossipKernel(int puerto, char* ipServidor, int memoria){
 	memoriaConectada->ip = (char*) malloc((strlen(ipServidor)+1)*sizeof(char));
 	memoriaConectada->numeroDeMemoria = memoria;
 	strcpy(memoriaConectada->ip,ipServidor);
-	if(revisarQueNoEsteEnLaLista(memoria, tablaDeGossip)==1){
-		list_add(tablaDeGossip, (void *)memoriaConectada);
+	if(revisarQueNoEsteEnLaLista(memoria, tablaDeGossipKernel)==1){
+		list_add(tablaDeGossipKernel, (void *)memoriaConectada);
 	}
 	else{
 		free(memoriaConectada->ip);
@@ -146,13 +146,13 @@ void agregarATablaDeGossipKernel(int puerto, char* ipServidor, int memoria){
 }
 
 void conectarmeAMemorias(){
-	int cantMemoriasTablaGossip= cantMemoriasTablaDeGossip(tablaDeGossip);
+	int cantMemoriasTablaGossip= cantMemoriasTablaDeGossip(tablaDeGossipKernel);
 	//int cantidadMemoriasConectadas = cantMemoriasConectadas();
 	if(cantMemoriasTablaGossip==0){
 		return;
 	}
 	for(int i = 0; i<cantMemoriasTablaGossip; i++){
-		void * elemento = list_get(tablaDeGossip, i);
+		void * elemento = list_get(tablaDeGossipKernel, i);
 		t_memoriaTablaDeGossip *memoriaTablaGossip =(t_memoriaTablaDeGossip*)elemento;
 		int nroMemoriaTablaGossip = memoriaTablaGossip->numeroDeMemoria;
 		if(revisarQueNoEsteEnListaMemoriasConectadas(nroMemoriaTablaGossip)==1){

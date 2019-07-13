@@ -55,7 +55,7 @@ void iniciar(){
 	crear_colas();
 	crear_listas();
 	verificarArchivoConfigKernel();
-	tablaDeGossip = list_create();
+	tablaDeGossipKernel = list_create();
 	memoriasALasQueMeConecte= list_create();
 	int t = tamanioArray((void**)configKernel.puertosDeSeeds);
 	conectarAMemoria(configKernel.ip_memoria,configKernel.puerto_memoria);

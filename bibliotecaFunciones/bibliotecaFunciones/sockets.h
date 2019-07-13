@@ -34,6 +34,7 @@ typedef struct {
 	char* ip;
 	int puerto;
 	int numeroDeMemoria;
+	bool conectado;
 }t_memoriaTablaDeGossip;
 
 

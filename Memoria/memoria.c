@@ -17,10 +17,10 @@ int main(void) {
 	pthread_create(&consola, NULL, (void*)crearConsolaMemoria, NULL);
 
 
-	tablaDeGossip = list_create();
-	t_list * listaMemoriasQueMeConecte=  list_create();
-	agregarATablaDeGossip(configMemoria.puertoDeEscucha,configMemoria.ipDeEscucha, configMemoria.numeroDeMemoria, tablaDeGossip);
-	mostrarmeMemoriasTablaGossip(tablaDeGossip);
+	tablaDeGossipMemoria = list_create();
+
+	agregarATablaDeGossip(configMemoria.puertoDeEscucha,configMemoria.ipDeEscucha, configMemoria.numeroDeMemoria, tablaDeGossipMemoria);
+	mostrarmeMemoriasTablaGossip(tablaDeGossipMemoria);
 
 	pthread_create(&multiplexacionMemoria, NULL, (void*)realizarMultiplexacion, (void*) servidorEscuchaMemoria);
 
