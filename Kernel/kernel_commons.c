@@ -98,6 +98,20 @@ void agregar_socket_mem(int nro_memoria, int socket){
 	pthread_mutex_unlock(&memorias_sem);
 }
 
+void quitarMemoriaDeListas(int nroMemoria,t_list * lista){
+	int tamanioTablaGossip = list_size(lista);
+	for (int i = 0 ; i< tamanioTablaGossip; i++){
+		void* elemento = list_get(lista, i);
+		t_memoriaTablaDeGossip *memoriaConectada =(t_memoriaTablaDeGossip*)elemento;
+		if(memoriaConectada->numeroDeMemoria==nroMemoria){
+			void* elemento=list_remove(lista, i);
+			t_memoriaTablaDeGossip * m = (t_memoriaTablaDeGossip*)elemento;
+			free(m->ip);
+			free(m);
+		}
+	}
+}
+
 void sacar_memoria(int nro_memoria){
 	bool sameID(t_memoria* mem){
 		return mem->id_mem == nro_memoria;
@@ -106,6 +120,9 @@ void sacar_memoria(int nro_memoria){
 	if(strong_consistency->id_mem == nro_memoria){
 		strong_consistency = NULL;
 	}
+	//quitarMemoriaDeListas(nro_memoria,tablaDeGossip);
+	//quitarMemoriaDeListas(nro_memoria,memoriasALasQueMeConecte);
+
 	pthread_mutex_unlock(&strong_consistency_sem);
 	pthread_mutex_lock(&strong_hash_consistency_sem);
 	list_remove_and_destroy_by_condition(strong_hash_consistency,(void*)sameID,(void*)free_memoria);

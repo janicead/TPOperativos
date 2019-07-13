@@ -116,6 +116,11 @@ typedef struct{
 char* puertoMemoria;
 int idLCB;
 
+
+//Listas necesarias
+t_list* tablaDeGossip;
+t_list * memoriasALasQueMeConecte;
+
 //ESTRUCTURAS PARA LAS MÉTRICAS
 typedef struct{
 	time_t tiempo_inicio;
@@ -188,6 +193,7 @@ void agregar_tabla(t_tabla* tabla);
 void agregar_memoria(int puerto, char* ip, int nro_memoria);
 bool memoria_existente(t_list* l_memorias,int id);
 void agregar_socket_mem(int nro_memoria, int socket);
+void quitarMemoriaDeListas(int nroMemoria,t_list * lista);
 void sacar_memoria(int nro_memoria);
 
 //FUNCIONES DE LIBERAR MEMORIA

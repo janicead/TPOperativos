@@ -164,6 +164,8 @@ int buscarEnTablaPaginasINSERT(t_list* tabla, uint16_t key,int timeStamp , char*
 				pagina->flagModificado=1;
 				log_info(loggerMemoria,"Se actualizo la MEMORIA PRINCIPAL");
 			}
+			free(registro->value);
+			free(registro);
 			return timeStamp;
 		}
 	}
@@ -217,7 +219,6 @@ void actualizarMemoriaPrincipal(int nroMarco, unsigned long int timeStamp, char*
 	t_registro * registro = malloc(tamanioUnRegistro);
 	registro->value= malloc(tamanioDadoPorLFS);
 	strcpy(registro->value, value);
-	//registro->value= value;
 	registro->timestamp= timeStamp;
 	//pthread_mutex_lock(&semMemoriaPrincipal);
 	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro+sizeof(uint16_t), &registro->timestamp, sizeof(unsigned long int));
@@ -232,7 +233,6 @@ void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco, unsigne
 	registro->key = key;
 	registro->value= malloc(tamanioDadoPorLFS);
 	strcpy(registro->value, value);
-	//registro->value = value;
 	registro->timestamp= timestamp;
 	//pthread_mutex_lock(&semMemoriaPrincipal);
 	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro, &registro->key, sizeof(uint16_t));
@@ -249,13 +249,9 @@ void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco, unsigne
 
 int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long int timestamp){
 	int nroMarco = buscarEspacioLibreEnMP();
-	puts("aca entre 1\n");
 	pthread_mutex_lock(&semCantMaxMarcos);
-	puts("aca entre 1\n");
 	if(nroMarco!=cantMaxMarcos){
-		puts("aca entre 1\n");
 		guardarEnMPLugarEspecifico(key, value, nroMarco, timestamp);
-		puts("aca entre 2 \n");
 		pthread_mutex_unlock(&semCantMaxMarcos);
 			return nroMarco;
 	}
@@ -344,7 +340,6 @@ t_LRU * LRU (){
 	int esElPrimerElemento = 0;
 	t_LRU * lru = malloc (sizeof(t_LRU));
 	lru->numeroPag= cantMaxMarcos;
-	pthread_mutex_unlock(&semCantMaxMarcos);
 	int tamanioTablaPaginas = 0;
 	pthread_mutex_lock(&semTablaSegmentos);
 	int tamanioTablaSegmentos = tamanioLista(tablaDeSegmentos);

@@ -12,8 +12,6 @@
 #include "configKernel.h"
 #include <bibliotecaFunciones/usoVariado.h>
 
-t_list * memoriasALasQueMeConecte;
-t_list* tablaDeGossip;
 int memoria;
 void definirValorMP();
 void conectarmeAMP();

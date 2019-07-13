@@ -32,6 +32,7 @@ void realizarGossip();
 void enviarAKernel();
 void iniciarEscuchaMemoria();
 void serCliente(char* ip, int puerto);
+void borrarMemoriaSiEstaEnTablaGossip(char* ip, int puerto);
 void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger);
 void realizarMultiplexacion(int socketEscuchando);
 void hacermeClienteDeMisServers();

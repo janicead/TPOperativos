@@ -208,7 +208,8 @@ void serCliente(char* ip , int puerto){
 	int cliente = socket(AF_INET,SOCK_STREAM,0);
 	if (connect (cliente, (void*)&dirServidorMemoria, sizeof(dirServidorMemoria))!=0){
 		log_info(loggerMemoria,"La memoria con puerto %d e ip %s no se encuentra activa",puerto,ipServidor);
-
+		borrarMemoriaSiEstaEnTablaGossip(ip, puerto);
+		mostrarmeMemoriasTablaGossip(tablaDeGossip);
 	}else{
 		int numMemoria = configMemoria.numeroDeMemoria;
 		char* soyMemoria = string_new();
@@ -235,6 +236,21 @@ void serCliente(char* ip , int puerto){
 	free(ipServidor);
 	close(cliente);
 }
+
+void borrarMemoriaSiEstaEnTablaGossip(char* ip, int puerto){
+	int tamanioTablaGossip = tamanioLista(tablaDeGossip);
+	for (int i = 0 ; i< tamanioTablaGossip; i++){
+		void* elemento = list_get(tablaDeGossip, i);
+		t_memoriaTablaDeGossip *memoriaConectada =(t_memoriaTablaDeGossip*)elemento;
+		if(memoriaConectada->puerto == puerto && string_equals_ignore_case(memoriaConectada->ip, ip)==1){
+			void* elemento=list_remove(tablaDeGossip, i);
+			t_memoriaTablaDeGossip * m = (t_memoriaTablaDeGossip*)elemento;
+			free(m->ip);
+			free(m);
+		}
+	}
+}
+
 
 void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger){
 
