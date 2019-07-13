@@ -173,13 +173,3 @@ char* quitarEspacioFalso(char* value){
 	}
 }
 
-
-char* quitarComillas(char* valor){
-	return string_split(valor, "\"")[0];
-}
-
-
-
-
-
-

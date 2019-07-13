@@ -97,8 +97,9 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 	}
 	if(packageRecibido->ID ==50){ //PIDO TABLA GOSSIP
 		char* memoriasDondeEstoyConectado = memoriasTablaDeGossip(tablaDeGossip);
-		printf("Memorias donde estoy conectado %s\n", memoriasDondeEstoyConectado);
+		log_info(loggerMemoria, "Ya envie la TABLA DE GOSSIP a KERNEL");
 		enviarMemoriasTablaGossip(socketEmisor,KERNELOMEMORIA,memoriasDondeEstoyConectado);
+		free(memoriasDondeEstoyConectado);
 
 	}
 	freePackage(packageRecibido);
@@ -292,7 +293,6 @@ void realizarMultiplexacion(int socketEscuchando){
 					recibirHandShakeMemoria(newfd,KERNELOMEMORIA,loggerMemoria);
 
 					char* M = memoriasTablaDeGossip(tablaDeGossip);
-					printf("El M ES %s\n", M);
 					recibirMemoriasTablaDeGossip(newfd, KERNELOMEMORIA, loggerMemoria, tablaDeGossip);
 					mostrarmeMemoriasTablaGossip(tablaDeGossip);
 					enviarMemoriasTablaGossip(newfd, KERNELOMEMORIA, M);

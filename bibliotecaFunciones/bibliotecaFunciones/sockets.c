@@ -209,15 +209,13 @@ void freeHandShake(t_handShake* handShake){
 	return;
 }
 void enviarMemoriasTablaGossip(int servidor, t_identidad identidad, char*mensaje){
-	t_handShake handShake;
-	t_handShake* punteroHandShake;
-	char* handShakeSerializado;
-	handShake = crearHandShake(identidad,mensaje);
-	punteroHandShake= crearPunteroHandShake(handShake);
+	t_handShake handShake = crearHandShake(identidad,mensaje);
+	t_handShake* punteroHandShake=crearPunteroHandShake(handShake);
 	int sizeHandshakeAEnviar = sizeof(t_identidad) + sizeof(uint32_t) + punteroHandShake->longMensaje;
-	handShakeSerializado=serializarHandShake(punteroHandShake);
+	char* handShakeSerializado=serializarHandShake(punteroHandShake);
 	empaquetarEnviarMensaje(servidor,punteroHandShake->identidad,sizeHandshakeAEnviar,handShakeSerializado);
 	freeHandShake(punteroHandShake);
+	free(handShakeSerializado);
 	return;
 }
 
@@ -433,7 +431,7 @@ void recibirMemoriasTablaDeGossip(int emisor,t_identidad identidad, t_log* logge
 			free(punteroHandShake);
 		}
 		else if(identidad == KERNELOMEMORIA && verificado ==NULL){
-			log_info(logger,"Esta memoria no posee seeds");
+			//log_info(logger,"Esta memoria no posee seeds");
 			free(punteroHandShake->mensaje);
 			free(punteroHandShake);
 
