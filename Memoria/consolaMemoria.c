@@ -14,8 +14,11 @@ void* crearConsolaMemoria(){
 		operacion = string_split(linea," ");
 		uint16_t * key = malloc(sizeof(uint16_t));
 
+		if(string_is_empty(linea)){
+			log_error(loggerMemoria, "No se ingresó ningún comando.");
+		}
 
-		if(string_equals_ignore_case(operacion[0],"INSERT")){
+		else if(string_equals_ignore_case(operacion[0],"INSERT")){
 
 			int tamanio = tamanioArray((void**)operacion);
 			char*lineadup = string_new();
@@ -52,7 +55,6 @@ void* crearConsolaMemoria(){
 			free(lineadup);
 			}
 		}
-
 		if(validarComando(linea, loggerMemoria)){
 			switch(comandoDeString(operacion[0])){
 				case CMD_SELECT:
