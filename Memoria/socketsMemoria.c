@@ -33,7 +33,8 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 
 		uint16_t key = (uint16_t) unINSERT->KEY;
 
-		char* respuesta = INSERTMemoria(unINSERT->nombreTabla,key, unINSERT->Value, (unsigned long int)unINSERT->timeStamp);
+
+		char* respuesta = INSERTMemoria(unINSERT->nombreTabla,key, unINSERT->Value,  (unsigned long int)unINSERT->timeStamp);
 		enviarRespuesta(socketEmisor,id_respuesta_insert,respuesta);
 
 		freeT_INSERT(unINSERT);

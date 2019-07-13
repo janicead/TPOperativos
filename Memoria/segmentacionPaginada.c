@@ -9,6 +9,7 @@ void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS){
 	obtenerValue = sizeof(unsigned long int) + sizeof(uint16_t);
 	memoriaPrincipal = malloc(tamanioMaxMemoria);
 	log_info(loggerMemoria,"El tamanio de un resgistro es de %d\n", tamanioUnRegistro);
+	log_info(loggerMemoria,"El tamanio de un resgistro2 es de %d\n", sizeof(t_registro));
 	cantMaxMarcos = tamanioMaxMemoria/ tamanioUnRegistro;
 	cantMarcosIngresados= 0;
 	log_info(loggerMemoria,"Cant max de marcos posibles %d\n", cantMaxMarcos);
@@ -87,9 +88,9 @@ t_segmento* guardarEnTablaDeSegmentos(char* nombreTabla){
 	t_segmento* segmento = malloc(sizeof(t_segmento));
 	segmento->nombreTabla = strdup(nombreTabla);
 	segmento->tablaPaginas= list_create();
-	pthread_mutex_lock(&semTablaSegmentos);
+	//pthread_mutex_lock(&semTablaSegmentos);
 	list_add(tablaDeSegmentos, (void*)segmento);
-	pthread_mutex_unlock(&semTablaSegmentos);
+	//pthread_mutex_unlock(&semTablaSegmentos);
 	return segmento;
 }
 
@@ -117,7 +118,11 @@ char* buscarTablaPaginas(t_list* tabla, uint16_t key){
 		t_registro* registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
 		pagina->contadorVecesSolicitado++;
 		log_info(loggerMemoria, "Cantidad veces solicitado %d\n", pagina->contadorVecesSolicitado);
-		return registro->value;
+		char* valor = malloc(tamanioDadoPorLFS);
+		strcpy(valor, registro->value);
+		free(registro->value);
+		free(registro);
+		return valor;
 		}
 	}
 	return NULL; // SI retorna null significa que no esta en tabla de paginas y hay que consultarle a FS y agregarlo
@@ -177,7 +182,7 @@ void borrarTablaDePaginas(t_list* lista){
 //------------------------------------------MEMORIA------------------------------------------//
 
 t_registro* buscarEnMemoriaPrincipal( int nroMarco){
-	t_registro * registro = malloc(sizeof(t_registro));
+	t_registro * registro = malloc(tamanioUnRegistro);
 	int copiarDesde = 0;
 	registro->value = malloc(tamanioDadoPorLFS);
 	pthread_mutex_lock(&semMemoriaPrincipal);
@@ -209,30 +214,36 @@ void settearMarcoEnMP(int nroMarco, int nroDeseado){
 }
 
 void actualizarMemoriaPrincipal(int nroMarco, unsigned long int timeStamp, char* value){
-	t_registro * registro = malloc(sizeof(t_registro));
-	registro->value = value;
+	t_registro * registro = malloc(tamanioUnRegistro);
+	registro->value= malloc(tamanioDadoPorLFS);
+	strcpy(registro->value, value);
+	//registro->value= value;
 	registro->timestamp= timeStamp;
-	pthread_mutex_lock(&semMemoriaPrincipal);
+	//pthread_mutex_lock(&semMemoriaPrincipal);
 	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro+sizeof(uint16_t), &registro->timestamp, sizeof(unsigned long int));
 	memcpy(memoriaPrincipal+nroMarco*tamanioUnRegistro+sizeof(uint16_t)+ sizeof(unsigned long int), registro->value, tamanioDadoPorLFS);
-	pthread_mutex_unlock(&semMemoriaPrincipal);
+	//pthread_mutex_unlock(&semMemoriaPrincipal);
+	free(registro->value);
 	free(registro);
 }
 
 void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco, unsigned long int timestamp){
-	t_registro * registro = malloc(sizeof(t_registro));
+	t_registro * registro = malloc(tamanioUnRegistro);
 	registro->key = key;
-	registro->value= value;
+	registro->value= malloc(tamanioDadoPorLFS);
+	strcpy(registro->value, value);
+	//registro->value = value;
 	registro->timestamp= timestamp;
-	pthread_mutex_lock(&semMemoriaPrincipal);
+	//pthread_mutex_lock(&semMemoriaPrincipal);
 	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro, &registro->key, sizeof(uint16_t));
 	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro+sizeof(uint16_t), &registro->timestamp, sizeof(unsigned long int));
 	memcpy(memoriaPrincipal+nroMarco*tamanioUnRegistro+sizeof(uint16_t)+ sizeof(unsigned long int), registro->value, tamanioDadoPorLFS);
-	pthread_mutex_unlock(&semMemoriaPrincipal);
-	pthread_mutex_lock(&semCantMarcosIngresados);
+	//pthread_mutex_unlock(&semMemoriaPrincipal);
+	//pthread_mutex_lock(&semCantMarcosIngresados);
 	cantMarcosIngresados++;
-	pthread_mutex_unlock(&semCantMarcosIngresados);
+	//pthread_mutex_unlock(&semCantMarcosIngresados);
 	settearMarcoEnMP(nroMarco, 1);
+	free(registro->value);
 	free(registro);
 }
 
