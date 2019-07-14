@@ -98,41 +98,31 @@ void agregar_socket_mem(int nro_memoria, int socket){
 	pthread_mutex_unlock(&memorias_sem);
 }
 
-void quitarMemoriaDeListas(int nroMemoria,t_list * lista){
-	int tamanioTablaGossip = list_size(lista);
-	for (int i = 0 ; i< tamanioTablaGossip; i++){
-		void* elemento = list_get(lista, i);
-		t_memoriaTablaDeGossip *memoriaConectada =(t_memoriaTablaDeGossip*)elemento;
-		if(memoriaConectada->numeroDeMemoria==nroMemoria){
-			void* elemento=list_remove(lista, i);
-			t_memoriaTablaDeGossip * m = (t_memoriaTablaDeGossip*)elemento;
-			free(m->ip);
-			free(m);
-		}
-	}
-}
-
 void sacar_memoria(int nro_memoria){
 	bool sameID(t_memoria* mem){
 		return mem->id_mem == nro_memoria;
 	}
-	pthread_mutex_lock(&strong_consistency_sem);
-	if(strong_consistency->id_mem == nro_memoria){
-		strong_consistency = NULL;
+	bool sameNroMem(t_memoriaTablaDeGossip* mem){
+		return mem->numeroDeMemoria = nro_memoria;
 	}
-	//quitarMemoriaDeListas(nro_memoria,tablaDeGossipKernel);
-	//quitarMemoriaDeListas(nro_memoria,memoriasALasQueMeConecte);
-
+	pthread_mutex_lock(&strong_consistency_sem);
+	if(strong_consistency != NULL){
+		if(strong_consistency->id_mem == nro_memoria){
+			strong_consistency = NULL;
+		}
+	}
 	pthread_mutex_unlock(&strong_consistency_sem);
 	pthread_mutex_lock(&strong_hash_consistency_sem);
-	list_remove_and_destroy_by_condition(strong_hash_consistency,(void*)sameID,(void*)free_memoria);
+	list_remove_by_condition(strong_hash_consistency,(void*)sameID);
 	pthread_mutex_unlock(&strong_hash_consistency_sem);
 	pthread_mutex_lock(&eventual_consistency_sem);
-	list_remove_and_destroy_by_condition(eventual_consistency,(void*)sameID,(void*)free_memoria);
+	list_remove_by_condition(eventual_consistency,(void*)sameID);
 	pthread_mutex_unlock(&eventual_consistency_sem);
 	pthread_mutex_lock(&memorias_sem);
 	list_remove_and_destroy_by_condition(memorias,(void*)sameID,(void*)free_memoria);
 	pthread_mutex_unlock(&memorias_sem);
+	list_remove_and_destroy_by_condition(tablaDeGossipKernel,(void*)sameNroMem, (void*)free_memoria_gossip);
+	list_remove_and_destroy_by_condition(memoriasALasQueMeConecte,(void*)sameNroMem, (void*)free_memoria_gossip);
 }
 
 t_lcb* crear_lcb(){
@@ -263,4 +253,9 @@ void free_memoria(t_memoria* memoria){
 	}
 	free(memoria);
 	return;
+}
+
+void free_memoria_gossip(t_memoriaTablaDeGossip* memoria){
+	free(memoria->ip);
+	free(memoria);
 }
