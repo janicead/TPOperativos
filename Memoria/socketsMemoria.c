@@ -223,7 +223,7 @@ void serCliente(char* ip , int puerto){
 
 		if(nroMemoria!= -1){
 			char* memoriasDondeEstoyConectado = memoriasTablaDeGossip(tablaDeGossipMemoria);
-			printf("ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA %s\n", memoriasDondeEstoyConectado);
+			printf("Memorias donde estoy conectado %s\n", memoriasDondeEstoyConectado);
 			enviarMemoriasTablaGossip(cliente,KERNELOMEMORIA,memoriasDondeEstoyConectado);
 			agregarATablaDeGossip(puerto, ip, nroMemoria,true, tablaDeGossipMemoria);
 			mostrarmeMemoriasTablaGossip(tablaDeGossipMemoria);

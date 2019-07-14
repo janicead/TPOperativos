@@ -12,7 +12,7 @@ void conectarAMemoria(char* ip, int puerto){
 	enviarMemoriasTablaGossip(socketServer,KERNELOMEMORIA,memoriasDondeEstoyConectado);
 	recibirMemoriasTablaDeGossip(socketServer,KERNELOMEMORIA,loggerKernel, tablaDeGossipKernel);
 	mostrarmeMemoriasTablaGossip(tablaDeGossipKernel);
-	agregarAMemoriasConectadasAKernel(puerto, ip, nroMemoria);
+	agregarAMemoriasConectadasAKernel(puerto, ip, true, nroMemoria);
 	conectarmeAMemorias();
 	mostrarmeMemoriasTablaGossip(memoriasALasQueMeConecte);
 	free(memoriasDondeEstoyConectado);
@@ -44,8 +44,8 @@ void conectarmeAMP(){
 		realizarHandShake(cliente,KERNELOMEMORIA,"SOY KERNEL");
 		int nroMemoria = recibirHandShakeMemoria(cliente,KERNELOMEMORIA,loggerKernel);
 		recibirMemoriasTablaDeGossip(cliente,KERNELOMEMORIA,loggerKernel,tablaDeGossipKernel);
-		agregarATablaDeGossipKernel(configKernel.puerto_memoria,ipServidor,nroMemoria);
-		agregarAMemoriasConectadasAKernel(configKernel.puerto_memoria,ipServidor,nroMemoria);
+		agregarATablaDeGossipKernel(configKernel.puerto_memoria,ipServidor,true , nroMemoria);
+		agregarAMemoriasConectadasAKernel(configKernel.puerto_memoria,ipServidor,true, nroMemoria);
 		mostrarmeMemoriasTablaGossip(tablaDeGossipKernel);
 	}
 	free(ipServidor);
@@ -111,7 +111,7 @@ void recibirMemoriasTablaDeGossipKernel(int emisor,t_identidad identidad, t_log*
 int verificarMensajeMemoriasTablaGossipKernel(char* mensaje, t_log* logger){
 	char** memorias= string_split(mensaje, " ");
 	int cantElementos = tamanioArray((void**)memorias);
-	int cantMemorias = cantElementos /3;
+	int cantMemorias = cantElementos /4;
 
 	int i = 0;
 	int j = 0;
@@ -120,8 +120,9 @@ int verificarMensajeMemoriasTablaGossipKernel(char* mensaje, t_log* logger){
 		return 0;
 	} else{
 		while(j<cantMemorias){
-			agregarATablaDeGossipKernel(atoi(memorias[i+1]), memorias[i],atoi(memorias[i+2]));
-			i= i+3;
+			bool booleano = pasarStringABool(memorias[i+3]);
+			agregarATablaDeGossipKernel(atoi(memorias[i+1]), memorias[i],booleano, atoi(memorias[i+2]));
+			i= i+4;
 			j++;
 		}
 	hacerFreeArray((void**)memorias);
@@ -130,11 +131,12 @@ int verificarMensajeMemoriasTablaGossipKernel(char* mensaje, t_log* logger){
 	}
 }
 
-void agregarATablaDeGossipKernel(int puerto, char* ipServidor, int memoria){
+void agregarATablaDeGossipKernel(int puerto, char* ipServidor,bool estado,  int memoria){
 	t_memoriaTablaDeGossip * memoriaConectada = malloc (sizeof(t_memoriaTablaDeGossip));
 	memoriaConectada->puerto = puerto;
 	memoriaConectada->ip = (char*) malloc((strlen(ipServidor)+1)*sizeof(char));
 	memoriaConectada->numeroDeMemoria = memoria;
+	memoriaConectada->conectado= estado;
 	strcpy(memoriaConectada->ip,ipServidor);
 	if(revisarQueNoEsteEnLaLista(memoria, tablaDeGossipKernel)==1){
 		list_add(tablaDeGossipKernel, (void *)memoriaConectada);
@@ -157,7 +159,7 @@ void conectarmeAMemorias(){
 		int nroMemoriaTablaGossip = memoriaTablaGossip->numeroDeMemoria;
 		if(revisarQueNoEsteEnListaMemoriasConectadas(nroMemoriaTablaGossip)==1){
 			conectarAMemoria(memoriaTablaGossip->ip, memoriaTablaGossip->puerto);
-			agregarAMemoriasConectadasAKernel(memoriaTablaGossip->puerto,memoriaTablaGossip->ip, memoriaTablaGossip->numeroDeMemoria);
+			agregarAMemoriasConectadasAKernel(memoriaTablaGossip->puerto,memoriaTablaGossip->ip, true, memoriaTablaGossip->numeroDeMemoria);
 		}
 	}
 }
@@ -181,12 +183,12 @@ void conectarmeAMemoriaEspecifica(int puerto,char* ipServidor, t_log* logger){
 	free(ip);
 }
 
-void agregarAMemoriasConectadasAKernel(int puerto, char* ipServidor, int memoria){
+void agregarAMemoriasConectadasAKernel(int puerto, char* ipServidor,bool booleano, int memoria){
 	t_memoriaTablaDeGossip * memoriaConectada = malloc (sizeof(t_memoriaTablaDeGossip));
 	memoriaConectada->puerto = puerto;
 	memoriaConectada->ip = (char*) malloc((strlen(ipServidor)+1)*sizeof(char));
 	memoriaConectada->numeroDeMemoria = memoria;
-	memoriaConectada->conectado= true;
+	memoriaConectada->conectado= booleano;
 	strcpy(memoriaConectada->ip,ipServidor);
 	if(revisarQueNoEsteEnListaMemoriasConectadas(memoria)!=0){
 		list_add(memoriasALasQueMeConecte , (void *)memoriaConectada);
