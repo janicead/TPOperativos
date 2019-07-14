@@ -96,6 +96,10 @@ char *opINSERT(int socketReceptor, char* unNombreTabla, int unaKey, char* unValu
 	printf("fd: %d\n",socketReceptor); ///
 	printf("package->ID: %d\n",packageRecibido->ID); ///
 
+	if(packageRecibido->ID == 0){
+		return "MEMORIA_DESCONECTADA";
+	}
+
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
 	freePackage(packageRecibido);
 
@@ -126,6 +130,10 @@ char *opCREATE(int socketReceptor, char* unNombreTabla, char* unaConsistencia, i
 	t_PaqueteDeDatos *packageRecibido = recibirPaquete(socketReceptor);
 	printf("fd: %d\n",socketReceptor); ///
 	printf("package->ID: %d\n",packageRecibido->ID); ///
+
+	if(packageRecibido->ID == 0){
+		return "MEMORIA_DESCONECTADA";
+	}
 
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
 	freePackage(packageRecibido);
@@ -158,6 +166,10 @@ char *opDESCRIBE(int socketReceptor, char* unNombreTabla)
 	printf("fd: %d\n",socketReceptor); ///
 	printf("package->ID: %d\n",packageRecibido->ID); ///
 
+	if(packageRecibido->ID == 0){
+		return "MEMORIA_DESCONECTADA";
+	}
+
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
 	freePackage(packageRecibido);
 
@@ -188,6 +200,10 @@ char *opDROP(int socketReceptor, char* unNombreTabla)
 	t_PaqueteDeDatos *packageRecibido = recibirPaquete(socketReceptor);
 	printf("fd: %d\n",socketReceptor); ///
 	printf("package->ID: %d\n",packageRecibido->ID); ///
+
+	if(packageRecibido->ID == 0){
+		return "MEMORIA_DESCONECTADA";
+	}
 
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
 	freePackage(packageRecibido);

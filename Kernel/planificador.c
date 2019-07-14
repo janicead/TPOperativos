@@ -93,10 +93,7 @@ void lql_select(t_LQL_operacion* operacion){
 		return;
 	}
 	char* respuesta = opSELECT(memoria->socket_mem,operacion->argumentos.SELECT.nombre_tabla, operacion->argumentos.SELECT.key);
-	if(string_equals_ignore_case(respuesta,"MEMORIA_DESCONECTADA")){
-		log_error(loggerKernel,"La memoria %d fue desconectada.", memoria->id_mem);
-		operacion->success = true; //ESTE TIPO DE ERROR NO CORTA LA EJECUCIÓN DEL RESTO DE ARCHIVO LQL
-		sacar_memoria(memoria->id_mem);
+	if(verificar_memoria_caida(respuesta,operacion,memoria->id_mem)){
 		return;
 	}
 	puts(respuesta);
@@ -135,6 +132,9 @@ void lql_insert(t_LQL_operacion* op){
 	}
 	unsigned long int timestamp = obtenerTimeStamp();
 	char* resp = opINSERT(memoria->socket_mem, op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key,op->argumentos.INSERT.valor,timestamp);
+	if(verificar_memoria_caida(resp,op,memoria->id_mem)){
+		return;
+	}
 	puts(resp);
 	time_t tiempo_fin = time(NULL);
 	t_insert_ejecutado* insert = (t_insert_ejecutado*)malloc(sizeof(t_insert_ejecutado));
@@ -161,6 +161,9 @@ void lql_create(t_LQL_operacion* op){
 	}
 	char* resp = opCREATE(memoria->socket_mem, op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
 			op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time);
+	if(verificar_memoria_caida(resp,op,memoria->id_mem)){
+		return;
+	}
 	puts(resp);
 	op->success = true;
 	free(resp);
@@ -171,6 +174,9 @@ void lql_describe(t_LQL_operacion* op){
 	if(string_is_empty(op->argumentos.DESCRIBE.nombre_tabla)){
 		t_memoria* mem = random_memory(memorias);
 		char* resp = opDESCRIBE(mem->socket_mem, "");
+		if(verificar_memoria_caida(resp,op,mem->id_mem)){
+			return;
+		}
 		puts(resp);
 		free(resp);
 		op->success = true;
@@ -193,6 +199,9 @@ void lql_describe(t_LQL_operacion* op){
 			return;
 		}
 		char* resp = opDESCRIBE(memoria->socket_mem,op->argumentos.DESCRIBE.nombre_tabla);
+		if(verificar_memoria_caida(resp,op,memoria->id_mem)){
+			return;
+		}
 		puts(resp);
 		free(resp);
 		op->success = true;
@@ -217,6 +226,9 @@ void lql_drop(t_LQL_operacion* op){
 		return;
 	}
 	char* resp = opDROP(memoria->socket_mem, op->argumentos.DROP.nombre_tabla);
+	if(verificar_memoria_caida(resp,op,memoria->id_mem)){
+		return;
+	}
 	char** valor =string_split(resp, " ");
 	if(!strcasecmp(valor[0],"ERROR")){
 		log_error(loggerKernel, "No se pudo borrar la tabla %s ya que no existe", op->argumentos.DROP.nombre_tabla);
@@ -530,3 +542,12 @@ t_memoria* random_memory(t_list* lista){
 	return list_get(lista,index);
 }
 
+bool verificar_memoria_caida(char* respuesta,t_LQL_operacion* op, int id_mem){
+	if(string_equals_ignore_case(respuesta,"MEMORIA_DESCONECTADA")){
+		log_error(loggerKernel,"La memoria %d fue desconectada.", id_mem);
+		op->success = true; //ESTE TIPO DE ERROR NO CORTA LA EJECUCIÓN DEL RESTO DE ARCHIVO LQL
+		sacar_memoria(id_mem);
+		return true;
+	}
+	return false;
+}
