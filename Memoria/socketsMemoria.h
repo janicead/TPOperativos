@@ -25,6 +25,8 @@ struct sockaddr_in clienteMemoria; // dirección del cliente
 int servidorEscuchaMemoria;
        // para setsockopt() SO_REUSEADDR, más abajo
 int kernel;
+int modificadoHacePoco;
+
 
 t_list * tablaDeGossipMemoria;
 

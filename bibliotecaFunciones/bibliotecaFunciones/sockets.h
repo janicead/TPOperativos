@@ -68,9 +68,13 @@ t_handShake* deserializarHandShake(char *handShakeSerializado);
 void mostrarmeMemoriasTablaGossip(t_list* tablaDeGossip);
 int verificarMensajeMemoriasTablaGossip(char* mensaje, t_log* logger, t_list* tablaDeGossip);
 void recibirMemoriasTablaDeGossip(int emisor,t_identidad identidad, t_log* logger, t_list* tablaDeGossip);
+char* pasarBoolAString(bool booleano);
+bool pasarStringABool(char* booleano);
 char* memoriasTablaDeGossip(t_list* tablaDeGossip);
 int cantMemoriasTablaDeGossip(t_list* tablaDeGossip);
-void agregarATablaDeGossip(int puerto, char* ipServidor, int memoria, t_list* tablaDeGossip);
+void agregarATablaDeGossip(int puerto, char* ipServidor, int memoria,bool booleano, t_list* tablaDeGossip);
+void agregarATablaDeGossipUnicoElemento(int puerto, char* ipServidor, int nroMemoria, t_list* tablaDeGossip);
+void actualizarMemoriaEspecifica(int nroMemoria, t_list* tablaDeGossip, bool nuevoBool);
 int revisarQueNoEsteEnLaLista(int nroMemoria, t_list* tablaDeGossip);
 char * quitarComillas(char* ip);
 

@@ -11,7 +11,7 @@ int main(void) {
 	//crearConsolaMemoria();
 
 	iniciarEscucha();
-
+	modificadoHacePoco=0; // NO ME TOQUEN ESTO.
 	pthread_t cosotest;
 	log_info(loggerMemoria, "Esperando Conexiones");
 	pthread_create(&consola, NULL, (void*)crearConsolaMemoria, NULL);
@@ -19,7 +19,7 @@ int main(void) {
 
 	tablaDeGossipMemoria = list_create();
 
-	agregarATablaDeGossip(configMemoria.puertoDeEscucha,configMemoria.ipDeEscucha, configMemoria.numeroDeMemoria, tablaDeGossipMemoria);
+	agregarATablaDeGossip(configMemoria.puertoDeEscucha,configMemoria.ipDeEscucha, configMemoria.numeroDeMemoria,true, tablaDeGossipMemoria);
 	mostrarmeMemoriasTablaGossip(tablaDeGossipMemoria);
 
 	pthread_create(&multiplexacionMemoria, NULL, (void*)realizarMultiplexacion, (void*) servidorEscuchaMemoria);
