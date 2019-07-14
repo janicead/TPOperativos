@@ -105,7 +105,7 @@ void lql_select(t_LQL_operacion* operacion){
 	select->tiempo_fin = tiempo_fin;
 	select->tiempo_inicio = tiempo_inicio;
 	pthread_mutex_lock(&selects_ejecutados_sem);
-	list_add(selects_ejecutados,(void*)select);
+	list_add(selects_ejecutados,select);
 	pthread_mutex_unlock(&selects_ejecutados_sem);
 	operacion->success = true;
 	pthread_mutex_lock(&memorias_sem);
@@ -141,7 +141,7 @@ void lql_insert(t_LQL_operacion* op){
 	insert->tiempo_fin = tiempo_fin;
 	insert->tiempo_inicio = tiempo_inicio;
 	pthread_mutex_lock(&inserts_ejecutados_sem);
-	list_add(inserts_ejecutados,(void*)insert);
+	list_add(inserts_ejecutados,insert);
 	pthread_mutex_unlock(&inserts_ejecutados_sem);
 	op->success = true;
 	pthread_mutex_lock(&memorias_sem);
@@ -340,8 +340,7 @@ void lql_run(FILE* archivo, t_LQL_operacion* op){
 }
 
 double tiempoPromedioSelect(){
-	double tiempo_total, promedio;
-	pthread_mutex_lock(&selects_ejecutados_sem);
+	double tiempo_total = 0, promedio = 0;
 	if(!list_is_empty(selects_ejecutados)){
 		for(int i = 0; i < list_size(selects_ejecutados); i++){
 			t_select_ejecutado* select = list_get(selects_ejecutados,i);
@@ -352,13 +351,11 @@ double tiempoPromedioSelect(){
 	else{
 		promedio = 0;
 	}
-	pthread_mutex_unlock(&selects_ejecutados_sem);
 	return promedio;
 }
 
 double tiempoPromedioInsert(){
-	double tiempo_total, promedio;
-	pthread_mutex_lock(&inserts_ejecutados_sem);
+	double tiempo_total = 0, promedio = 0;
 	if(!list_is_empty(inserts_ejecutados)){
 		for(int i = 0; i < list_size(inserts_ejecutados); i++){
 			t_select_ejecutado* select = list_get(inserts_ejecutados,i);
@@ -369,23 +366,18 @@ double tiempoPromedioInsert(){
 	else{
 		promedio = 0;
 	}
-	pthread_mutex_unlock(&inserts_ejecutados_sem);
 	return promedio;
 }
 
 int cantidadSelects(){
 	int cantidad;
-	pthread_mutex_lock(&selects_ejecutados_sem);
 	cantidad = list_size(selects_ejecutados);
-	pthread_mutex_unlock(&selects_ejecutados_sem);
 	return cantidad;
 }
 
 int cantidadInserts(){
 	int cantidad;
-	pthread_mutex_lock(&inserts_ejecutados_sem);
 	cantidad = list_size(inserts_ejecutados);
-	pthread_mutex_unlock(&inserts_ejecutados_sem);
 	return cantidad;
 }
 
@@ -398,24 +390,24 @@ int porcentajeSelectsInserts(int cant_selects_inserts_ejecutados){
 }
 
 void memoryLoad(){
-	pthread_mutex_lock(&memorias_sem);
-	pthread_mutex_lock(&selects_ejecutados_sem);
-	pthread_mutex_lock(&inserts_ejecutados_sem);
 	for(int i = 0; i < list_size(memorias); i++){
 		t_memoria* mem = list_get(memorias,0);
-		log_info(loggerKernelConsola,"Memory Load: Memory %d porcentaje de uso: %d%%",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados));
+		log_info(loggerKernel,"Memory Load: Memory %d porcentaje de uso: %d%%",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados));
 	}
-	pthread_mutex_unlock(&inserts_ejecutados_sem);
-	pthread_mutex_unlock(&selects_ejecutados_sem);
-	pthread_mutex_unlock(&memorias_sem);
 }
 
 void lql_metrics(){
-	log_info(loggerKernelConsola,"Read Latency / 30s: %lf ms", tiempoPromedioSelect());
-	log_info(loggerKernelConsola,"Write Latency / 30s: %lf ms", tiempoPromedioInsert());
-	log_info(loggerKernelConsola,"Reads / 30s: %d", cantidadSelects());
-	log_info(loggerKernelConsola,"Writes / 30s: %d", cantidadInserts());
+	pthread_mutex_lock(&memorias_sem);
+	pthread_mutex_lock(&selects_ejecutados_sem);
+	pthread_mutex_lock(&inserts_ejecutados_sem);
+	log_info(loggerKernel,"Read Latency / 30s: %lf ms", tiempoPromedioSelect());
+	log_info(loggerKernel,"Write Latency / 30s: %lf ms", tiempoPromedioInsert());
+	log_info(loggerKernel,"Reads / 30s: %d", cantidadSelects());
+	log_info(loggerKernel,"Writes / 30s: %d", cantidadInserts());
 	memoryLoad();
+	pthread_mutex_unlock(&inserts_ejecutados_sem);
+	pthread_mutex_unlock(&selects_ejecutados_sem);
+	pthread_mutex_unlock(&memorias_sem);
 	return;
 }
 
