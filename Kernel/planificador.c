@@ -93,6 +93,7 @@ void lql_select(t_LQL_operacion* operacion){
 		return;
 	}
 	char* respuesta = opSELECT(memoria->socket_mem,operacion->argumentos.SELECT.nombre_tabla, operacion->argumentos.SELECT.key);
+
 	if(verificar_memoria_caida(respuesta,operacion,memoria->id_mem)){
 		return;
 	}
@@ -225,6 +226,8 @@ void lql_drop(t_LQL_operacion* op){
 		op->success = false;
 		return;
 	}
+	char* p = malloc(sizeof(op->argumentos.DROP.nombre_tabla));
+	p = strdup(op->argumentos.DROP.nombre_tabla);
 	char* resp = opDROP(memoria->socket_mem, op->argumentos.DROP.nombre_tabla);
 	if(verificar_memoria_caida(resp,op,memoria->id_mem)){
 		return;
@@ -234,9 +237,10 @@ void lql_drop(t_LQL_operacion* op){
 		log_error(loggerKernel, "No se pudo borrar la tabla %s ya que no existe", op->argumentos.DROP.nombre_tabla);
 	}
 	else{
-		log_info(loggerKernel, "Se borro la tabla %s correctamente", op->argumentos.DROP.nombre_tabla);
+		printf("Se borro la tabla correctamente %s\n",p);
+		//log_info(loggerKernel, "Se borro la tabla %s correctamente", op->argumentos.DROP.nombre_tabla);
 	}
-	puts(resp);
+	free(p);
 	freeParametros(valor);
 	free(resp);
 	op->success = true;

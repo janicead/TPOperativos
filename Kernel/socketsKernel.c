@@ -186,6 +186,7 @@ void agregarAMemoriasConectadasAKernel(int puerto, char* ipServidor, int memoria
 	memoriaConectada->puerto = puerto;
 	memoriaConectada->ip = (char*) malloc((strlen(ipServidor)+1)*sizeof(char));
 	memoriaConectada->numeroDeMemoria = memoria;
+	memoriaConectada->conectado= true;
 	strcpy(memoriaConectada->ip,ipServidor);
 	if(revisarQueNoEsteEnListaMemoriasConectadas(memoria)!=0){
 		list_add(memoriasALasQueMeConecte , (void *)memoriaConectada);
