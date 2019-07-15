@@ -53,6 +53,10 @@ pthread_mutex_t semCantMaxMarcos;
 pthread_mutex_t semCantMarcosIngresados;
 pthread_mutex_t semMarcosOcupados;
 pthread_mutex_t semMemoriaPrincipal;
+pthread_mutex_t semLfs;
+pthread_mutex_t semRequest;
+
+
 //Parametros globales modificables
 t_list* tablaDeSegmentos; //elementos de tipo t_segmento
 int cantMaxMarcos;

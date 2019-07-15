@@ -28,6 +28,7 @@ int kernel;
 int modificadoHacePoco;
 
 
+
 t_list * tablaDeGossipMemoria;
 
 void realizarGossip();

@@ -19,8 +19,10 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		unSELECT = deserializarT_SELECT(packageRecibido->Datos);
 		log_info(loggerMemoria,"Query recibido: SELECT [%s] [%d]",unSELECT->nombreTabla,unSELECT->KEY);
 		uint16_t key = (uint16_t) unSELECT->KEY;
+
 		char* Respuesta = SELECTMemoria(unSELECT->nombreTabla,key,0);
 		enviarRespuesta(socketEmisor,id_respuesta_select,Respuesta);
+
 
 		freeT_SELECT(unSELECT);
 	}
