@@ -3,7 +3,7 @@
 //----------------------------------------GENERALES-------------------------------------------//
 
 void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS){
-	tamanioMaxMemoria = 52; //de archivo de config //antes 52
+	tamanioMaxMemoria = configMemoria.tamanioMemoria;//antes 52
 	tamanioDadoPorLFS= tamanioValueDadoXLFS;
 	tamanioUnRegistro = tamanioValueDadoXLFS + sizeof(unsigned long int) + sizeof(uint16_t); //6+ tamanioValueDado
 	obtenerValue = sizeof(unsigned long int) + sizeof(uint16_t);
@@ -447,6 +447,7 @@ void iniciarJournal(){
 	pthread_mutex_lock(&semCantMarcosIngresados);
 	cantMarcosIngresados=0;
 	pthread_mutex_unlock(&semCantMarcosIngresados);
+	sleep(configMemoria.retardoAccesoFileSystem);
 	//empaquetarEnviarMensaje(socketLFS,22,strlen(msjEnviado),msjEnviado);
 	free(elementoEnviar);
 }
@@ -455,6 +456,7 @@ void iniciarJournal(){
 
 
 char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
+	//sleep(configMemoria.retardoAccesoMemoriaPrincipal);
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	pthread_mutex_lock(&semTablaSegmentos);
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
@@ -474,6 +476,7 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 			return value;
 		}
 		else{ //no lo encontro en tabla de paginas
+			//sleep(configMemoria.retardoAccesoFileSystem);
 			//tengo que consultarle a LFS PERO solo guardo en tabla de paginas
 			//consultaSELECTMemoriaLfs();// esto va a mandarle SELECT nombreTabla key con SOCKETS
 			log_info(loggerMemoria,"No esta en la tabla de PAGINAS");
@@ -489,7 +492,9 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 			return value;
 		}
 	}
-	else{// no esta en tabla de segmentos
+	else{
+		//sleep(configMemoria.retardoAccesoFileSystem);
+		// no esta en tabla de segmentos
 		//pedirle a lfs y guardar datos en tabla segmentos y tabla paginas
 		//consultaSELECTMemoriaLfs();
 		log_info(loggerMemoria,"No se encontro en la tabla de SEGMENTOS");
@@ -510,6 +515,7 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 }
 
 char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long int timeStamp){
+	//sleep(configMemoria.retardoAccesoMemoriaPrincipal);
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	pthread_mutex_lock(&semTablaSegmentos);
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
@@ -557,6 +563,7 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 }
 
 char* DROPMemoria(char* nombreTabla){
+	//sleep(configMemoria.retardoAccesoMemoriaPrincipal);
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	pthread_mutex_lock(&semTablaSegmentos);
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
@@ -576,6 +583,7 @@ char* DROPMemoria(char* nombreTabla){
 		else{
 			log_info(loggerMemoria,"Dicha tabla no se encuentra en la tabla de SEGMENTOS");
 		}
+	//	sleep(configMemoria.retardoAccesoFileSystem);
 		int existe = 1; // esto es para q quede lindo despues se modifica de acuerdo a la rsta del lfs
 		//aca tengo que avisarle al FS que borre la tabla
 		if(existe == 1){
@@ -587,18 +595,23 @@ char* DROPMemoria(char* nombreTabla){
 
 }
 void JOURNALMemoria(){
+	//sleep(configMemoria.retardoAccesoMemoriaPrincipal);
 	iniciarJournal();
+
 }
 char* DESCRIBETodasLasTablasMemoria(){
+	//sleep(configMemoria.retardoAccesoFileSystem);
 	//aca le mando a lfs para q me de metadata de todas las tablas
 	return "DESCRIBE TOTAL OK";
 }
 char* DESCRIBEMemoria( char* nombreTabla){
+	//sleep(configMemoria.retardoAccesoFileSystem);
 	 //aca tengo q mandarle mensaje a LFS para q me de la metada de esa tabla
 	return "DESCRIBE OK";
 }
 
 char* CREATEMemoria(char* nombreTabla, char* tipoConsistencia, int nroParticiones, int compactionTime){
+	//sleep(configMemoria.retardoAccesoFileSystem);
 	 return "CREATE OK";
 }
 

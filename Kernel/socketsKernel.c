@@ -72,7 +72,7 @@ void pedirTablaGossip(int socketReceptor, int protocoloID, char *respuesta, int 
 
 void gossipDeKernel(){
 	while(1){
-		sleep(10);// aca deberia ir configKernel.tiempoGossiping
+		sleep(configKernel.tiempoGossiping);// aca deberia ir configKernel.tiempoGossiping
 
 		//pthread_mutex_lock(&memorias_sem);
 		int cantMemorias = list_size(memorias);

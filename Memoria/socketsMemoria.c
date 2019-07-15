@@ -109,10 +109,10 @@ void realizarGossip(){
 
 	clock_t start, diff;
 	int elapsedsec;
-	int sec = 10; //aca debe ir configMemoria.tiempoGossiping
+	int sec = configMemoria.tiempoGossiping; //aca debe ir configMemoria.tiempoGossiping
 	int iterations = 0;
 
-	while (iterations < 1000) {
+	while (iterations < 10000000) {
 	   start = clock();
 
 	   while (1) {

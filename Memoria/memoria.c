@@ -2,67 +2,46 @@
 
 int main(void) {
 
-	pthread_t multiplexacionMemoria, config_observer, consola, gossip/*, clienteMemoria, gossip*/;
-
 	configurarLoggerMemoria();
 	configMemoria =leerConfigMemoria();
 	mostrarDatosArchivoConfig();
 	definirTamanioMemoriaPrincipal(20);
-	//crearConsolaMemoria();
 
-	iniciarEscucha();
-	modificadoHacePoco=0; // NO ME TOQUEN ESTO.
-	pthread_t cosotest;
 	log_info(loggerMemoria, "Esperando Conexiones");
-	pthread_create(&consola, NULL, (void*)crearConsolaMemoria, NULL);
-
-
-	tablaDeGossipMemoria = list_create();
-
-	agregarATablaDeGossip(configMemoria.puertoDeEscucha,configMemoria.ipDeEscucha, configMemoria.numeroDeMemoria,true, tablaDeGossipMemoria);
-	mostrarmeMemoriasTablaGossip(tablaDeGossipMemoria);
-
-	pthread_create(&multiplexacionMemoria, NULL, (void*)realizarMultiplexacion, (void*) servidorEscuchaMemoria);
-
-	pthread_create(&gossip, NULL, realizarGossip, NULL);
-
-
-	pthread_join(multiplexacionMemoria, NULL);
-	pthread_join(consola, NULL);
-	pthread_join(gossip, NULL);
-
-
-	//pthread_create(&cosotest, NULL, (void*)test, NULL);
-	//pthread_join(cosotest, NULL);
-	//pthread_create(&config_observer,NULL,observer_config,NULL);
-	//pthread_detach(config_observer);
+	iniciarEscucha();
+	crearTablaGossip();
+	crearHilos();
 
 
 
-
-
-	pthread_exit(multiplexacionMemoria);
-	pthread_exit(gossip);
-
-	//iniciarEscuchaMemoria();
-	/*
-	//t_list * listaMemoriasQueMeConecte=  list_create();
-	tablaDeGossip = list_create();
-	//agregarATablaDeGossip(configMemoria.puertoDeEscucha,configMemoria.ipDeEscucha, configMemoria.numeroDeMemoria);
-	//pthread_create(&gossip, NULL, realizarGossip, NULL);
-	//pthread_create(&multiplexacionMemoria, NULL, (void*)realizarMultiplexacion, NULL);
-	//pthread_create(&clienteMemoria, NULL, hacermeClienteDeMisServers, NULL);
-	//pthread_join(gossip, NULL);
-	//
-	//pthread_join(gossip, NULL);
-	//pthread_exit(gossip);
-
-*/
 	return 0;
 }
 
+void crearTablaGossip(){
+	tablaDeGossipMemoria = list_create();
+	agregarATablaDeGossip(configMemoria.puertoDeEscucha,configMemoria.ipDeEscucha, configMemoria.numeroDeMemoria,true, tablaDeGossipMemoria);
+	mostrarmeMemoriasTablaGossip(tablaDeGossipMemoria);
 
+}
 
+void crearHilos(){
+
+	pthread_create(&consola, NULL, (void*)crearConsolaMemoria, NULL);
+
+	pthread_create(&multiplexacionMemoria, NULL, (void*)realizarMultiplexacion, (void*) servidorEscuchaMemoria);
+
+	pthread_create(&gossip, NULL, (void*)realizarGossip, NULL);
+
+	pthread_create(&hacerJournal,NULL, (void*)JOURNALMemoria, NULL);
+
+	//pthread_create(&config_observer,NULL,observer_config,NULL);
+	//pthread_detach(config_observer);
+	pthread_join(consola, NULL);
+	pthread_join(multiplexacionMemoria, NULL);
+	pthread_join(gossip, NULL);
+	pthread_join(hacerJournal, NULL);
+
+}
 void test(){
 	sleep(10);
 	char* rta = SELECTMemoria("TABLA 1", 12, 0);
