@@ -242,8 +242,9 @@ void borrarMemoriaSiEstaEnTablaGossip(char* ip, int puerto){
 	for (int i = 0 ; i< tamanioTablaGossip; i++){
 		void* elemento = list_get(tablaDeGossipMemoria, i);
 		t_memoriaTablaDeGossip *memoriaConectada =(t_memoriaTablaDeGossip*)elemento;
-		if(memoriaConectada->puerto == puerto && string_equals_ignore_case(memoriaConectada->ip, ip)){
+		if(memoriaConectada->puerto == puerto && string_equals_ignore_case(memoriaConectada->ip, ip)==1){
 			memoriaConectada->conectado=false;
+
 		}
 	}
 }

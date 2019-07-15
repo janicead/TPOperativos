@@ -555,3 +555,12 @@ bool verificar_memoria_caida(char* respuesta,t_LQL_operacion* op, int id_mem){
 	}
 	return false;
 }
+
+bool verificar_memoria_caida2(char* respuesta, int id_mem){
+	if(string_equals_ignore_case(respuesta,"MEMORIA_DESCONECTADA")){
+		log_error(loggerKernel,"La memoria %d fue desconectada.", id_mem);
+		sacar_memoria(id_mem);
+		return true;
+	}
+	return false;
+}

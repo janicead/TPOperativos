@@ -103,7 +103,7 @@ void sacar_memoria(int nro_memoria){
 		return mem->id_mem == nro_memoria;
 	}
 	bool sameNroMem(t_memoriaTablaDeGossip* mem){
-		return mem->numeroDeMemoria = nro_memoria;
+		return mem->numeroDeMemoria == nro_memoria;
 	}
 	pthread_mutex_lock(&strong_consistency_sem);
 	if(strong_consistency != NULL){
@@ -121,8 +121,14 @@ void sacar_memoria(int nro_memoria){
 	pthread_mutex_lock(&memorias_sem);
 	list_remove_and_destroy_by_condition(memorias,(void*)sameID,(void*)free_memoria);
 	pthread_mutex_unlock(&memorias_sem);
-	list_remove_and_destroy_by_condition(tablaDeGossipKernel,(void*)sameNroMem, (void*)free_memoria_gossip);
+
 	list_remove_and_destroy_by_condition(memoriasALasQueMeConecte,(void*)sameNroMem, (void*)free_memoria_gossip);
+	printf("Aca borre la memoria %d porque se desconecto\n", nro_memoria);
+	puts("MEMORIAS A LAS QUE ME CONECTE \n");
+	mostrarmeMemoriasTablaGossip(memoriasALasQueMeConecte);
+	puts("MEMORIAS EN MI TABLA DE GOSSIP \n");
+	mostrarmeMemoriasTablaGossip(tablaDeGossipKernel);
+
 }
 
 t_lcb* crear_lcb(){

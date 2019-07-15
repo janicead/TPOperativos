@@ -53,6 +53,7 @@ void realizarHandShake(int servidor, t_identidad identidad, char*mensaje);
 t_handShake* crearPunteroHandShake(t_handShake handShake);
 char* serializarHandShake(t_handShake *handShake);
 void empaquetarEnviarMensaje(int socketReceptor, int unID, int longitudDatos, char *datos);
+int empaquetarEnviarMensaje2(int socketReceptor, int unID, int longitudDatos, char *datos, t_log* logger);
 void definirHeader(t_PaqueteDeDatos *unPackage,int unID, int unaLongitudData);
 void freeHandShake(t_handShake* handShake);
 void enviarMemoriasTablaGossip(int servidor, t_identidad identidad, char*mensaje);

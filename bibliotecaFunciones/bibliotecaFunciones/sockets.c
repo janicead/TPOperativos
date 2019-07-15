@@ -64,16 +64,19 @@ int conectarAlServidor( char* ip, int puerto, t_log* logger){
 	if(inet_pton(AF_INET,ipSinComillas , &dirSocket.sin_addr)<=0)
 	    {
 		log_error(logger,"\nDireccion invalida/ Direccion no soportada\n" );
+		free(ipSinComillas);
 	    return -1;
 	    }
 
 	if(connect(cliente,(struct sockaddr*)&dirSocket,sizeof(dirSocket))<0){
 		log_error(logger,"No se pudo realizar la conexion\n" );
-		return 1;
+		free(ipSinComillas);
+		return -2;
 	}
 	free(ipSinComillas);
 	return cliente;
 }
+
 void emitirMensaje(int cliente) {
     char mensaje[1024] = {};
     while (1) {
@@ -197,6 +200,42 @@ void empaquetarEnviarMensaje(int socketReceptor, int unID, int longitudDatos, ch
 	free(package);
 
 }
+
+
+int empaquetarEnviarMensaje2(int socketReceptor, int unID, int longitudDatos, char *datos, t_log* logger){
+	t_PaqueteDeDatos *package;
+	char * paqueteListo;
+	int offset;
+	package = (t_PaqueteDeDatos *) malloc(sizeof(t_PaqueteDeDatos));
+	definirHeader(package, unID,longitudDatos);
+	package->Datos = datos;
+
+	paqueteListo = malloc((sizeof(uint32_t)*2) + (package->longDatos));
+	strcpy(paqueteListo,"");
+
+	offset = 0;
+	memcpy(paqueteListo + offset, &(package->ID), sizeof(package->ID));
+
+	offset += sizeof(package->ID);
+	memcpy(paqueteListo + offset,  &(package->longDatos), sizeof(package->longDatos));
+
+	offset += sizeof(package->longDatos);
+	memcpy(paqueteListo + offset, package->Datos, package->longDatos);
+
+	int bytesEnviados;
+
+	bytesEnviados = send(socketReceptor,paqueteListo,(sizeof(uint32_t)*2) + (package->longDatos),0);
+	if( bytesEnviados== -1)
+	{
+		log_error(logger, "No se pudo pedir la TABLA DE GOSSIP ya que esta desconectada dicha memoria");
+		return 0;
+	}
+	free(paqueteListo);
+	free(package);
+	return 1;
+
+}
+
 void definirHeader(t_PaqueteDeDatos *unPackage,int unID, int unaLongitudData)
 {
 	unPackage->ID = unID;
@@ -375,9 +414,6 @@ t_handShake* deserializarHandShake(char *handShakeSerializado){
 
 void mostrarmeMemoriasTablaGossip(t_list* tablaDeGossip){
 	int cantidadMemoriasConectadas = cantMemoriasTablaDeGossip(tablaDeGossip);
-	puts("---------------------------------------------------");
-	puts("---------------------------------------------------");
-	printf("MEMORIAS EN DONDE ESTOY CONECTADO \n");
 	for(int i = 0; i <cantidadMemoriasConectadas; i ++){
 		void * elemento = list_get(tablaDeGossip, i);
 		t_memoriaTablaDeGossip *memoriaConectada =(t_memoriaTablaDeGossip*)elemento;
@@ -543,6 +579,8 @@ void agregarATablaDeGossip(int puerto, char* ipServidor, int nroMemoria,bool est
 		list_add(tablaDeGossip , (void *)memoriaConectada);
 	}else if(revisarQueNoEsteEnLaLista(nroMemoria,tablaDeGossip) ==0){
 		actualizarMemoriaEspecifica(nroMemoria, tablaDeGossip, estado);
+		free(memoriaConectada->ip);
+		free(memoriaConectada);
 	}
 	else{
 		free(memoriaConectada->ip);

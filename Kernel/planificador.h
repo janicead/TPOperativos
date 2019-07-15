@@ -19,6 +19,7 @@ bool memoria_existente(t_list* l_memorias,int id);
 t_memoria* hash_memory(int key);
 t_memoria* random_memory(t_list* lista);
 bool verificar_memoria_caida(char* respuesta,t_LQL_operacion* op, int id_mem);
+bool verificar_memoria_caida2(char* respuesta, int id_mem);
 
 //FUNCIONES DE COMANDOS
 void lql_select(t_LQL_operacion* operacion);

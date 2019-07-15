@@ -15,9 +15,9 @@
 int memoria;
 void definirValorMP();
 void conectarmeAMP();
-void pedirTablaGossip(int socketReceptor, int protocoloID, char *respuesta);
+void pedirTablaGossip(int socketReceptor, int protocoloID, char *respuesta, int nroMemoria);
 void gossipDeKernel();
-void recibirMemoriasTablaDeGossipKernel(int emisor,t_identidad identidad, t_log* logger);
+char* recibirMemoriasTablaDeGossipKernel(int emisor,t_identidad identidad, t_log* logger);
 int verificarMensajeMemoriasTablaGossipKernel(char* mensaje, t_log* logger);
 void agregarATablaDeGossipKernel(int puerto, char* ipServidor,bool estado,  int memoria);
 void conectarmeAMemorias();
