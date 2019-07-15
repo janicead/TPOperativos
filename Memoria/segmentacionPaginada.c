@@ -420,7 +420,7 @@ void iniciarJournal(){
 			t_pagina * pagina = (t_pagina *) elemento;
 			if(pagina->flagModificado ==1){
 			t_registro* registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
-			char* unRegistro= string_from_format("%s %d %s %lu/",segmento->nombreTabla,registro->key,registro->value,registro->timestamp);
+			char* unRegistro= string_from_format("%s %d %s %lu ",segmento->nombreTabla,registro->key,registro->value,registro->timestamp);
 			string_append(&elementoEnviar, unRegistro);
 			free(unRegistro);
 			free(registro->value);
@@ -429,8 +429,11 @@ void iniciarJournal(){
 		}
 	}
 	puts("-------------------------------------------------------------------");
-	log_info(loggerMemoria, "JOURNAL: lista a enviar es---> %s\n", elementoEnviar);
+	log_info(loggerMemoria, "JOURNAL: lista a enviar es---> '%s'\n", elementoEnviar);
 	puts("-------------------------------------------------------------------");
+
+
+	descomposicionDelJOURNAL(elementoEnviar);
 
 	int t= tamanioLista(tablaDeSegmentos);
 	for(int j = 0; j < t ; j++){
@@ -451,6 +454,61 @@ void iniciarJournal(){
 	//empaquetarEnviarMensaje(socketLFS,22,strlen(msjEnviado),msjEnviado);
 	free(elementoEnviar);
 }
+
+
+
+bool pasarAUint162(const char *str, uint16_t *res) {
+    char *end;
+    int errno = 0;
+    long val = strtol(str, &end, 10);
+    if (errno || end == str || *end != '\0' || val < 0 || val >= 0x10000) {
+        return false;
+    }
+    *res = (uint16_t)val;
+    return true;
+}
+
+
+void descomposicionDelJOURNAL(char* journalGigante){ //agregar aca el int del tamanio de value del lfs
+	char** dividirEnTablas = string_split(journalGigante, " ");
+
+	int tamanioTabla = tamanioArray(dividirEnTablas);
+	printf("El tamanio de tabla es de %d\n", tamanioTabla);
+	int tamanioDeUnRegistro = tamanioDadoPorLFS + sizeof(unsigned long int) + sizeof(uint16_t); //6+ tamanioValueDado
+
+	for (int i = 0 ; i <tamanioTabla; i ++){
+
+		printf("I: %d , TABLA: '%s'\n",i, dividirEnTablas[i]);
+		printf("I: %d , KEY: '%s'\n",i, dividirEnTablas[i+1]);
+		printf("I: %d , VALUE: '%s'\n", i,dividirEnTablas[i+2]);
+		printf("I: %d , TIMESTAMP: '%s'\n",i, dividirEnTablas[i+3]);
+
+
+		char* nombreTabla = malloc(sizeof(dividirEnTablas[i]));
+		strcpy(nombreTabla, dividirEnTablas[i]);
+		t_registro* registro = malloc(sizeof(tamanioDeUnRegistro));
+		registro->value= malloc(tamanioDadoPorLFS);
+		strcpy(registro->value, dividirEnTablas[i+2]);
+
+		uint16_t * key = malloc(sizeof(uint16_t));
+		if (pasarAUint16(dividirEnTablas[i+1], key)){
+			char *ptr;
+			registro->timestamp = strtoul(dividirEnTablas[i+3], &ptr, 10);
+			registro->key = *key;
+		}
+
+		printf("NOMBRE DE TABLA: %s\n", nombreTabla);
+		printf("KEY: %d\n", registro->key);
+		printf("VALUE: %s\n",registro->value);
+		printf("TIMESTAMP: %lu\n", registro->timestamp);
+
+		i=i+3;
+	}
+
+
+}
+
+
 
 //----------------------------------------------------REQUESTS-------------------------------------------------//
 

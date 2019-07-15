@@ -105,6 +105,8 @@ t_LRU * LRU ();
 void mostrarElementosListaJournal();
 char* convertirAStringListaJournal();
 void iniciarJournal();
+bool pasarAUint162(const char *str, uint16_t *res) ;
+void descomposicionDelJOURNAL(char* journalGigante);
 //---------------------------------------REQUESTS--------------------------------------------------------//
 char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado);
 char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long int timeStamp);
