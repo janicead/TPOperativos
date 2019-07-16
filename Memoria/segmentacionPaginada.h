@@ -53,8 +53,9 @@ pthread_mutex_t semCantMaxMarcos;
 pthread_mutex_t semCantMarcosIngresados;
 pthread_mutex_t semMarcosOcupados;
 pthread_mutex_t semMemoriaPrincipal;
+pthread_mutex_t semMP;
 pthread_mutex_t semLfs;
-pthread_mutex_t semRequest;
+
 
 
 //Parametros globales modificables
@@ -77,6 +78,7 @@ void iniciarSemaforos();
 int tamanioLista(t_list * lista);
 char* recibirRespuestaSELECTMemoriaLfs();
 void mostrarDatosMarcos();
+void retardoMemoriaAplicado();
 //-------------------------------------BORRADO------------------------------------------------------------------//
 void destructor2(t_pagina * pagina);
 void destructor(t_segmento* segmento);

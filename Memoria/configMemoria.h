@@ -33,6 +33,8 @@ typedef struct
 }t_ConfigMemoria;
 
 t_ConfigMemoria configMemoria;
+pthread_mutex_t semConfig;
+
 
 t_ConfigMemoria leerConfigMemoria(void);
 void mostrarDatosArchivoConfig();

@@ -19,16 +19,9 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		unSELECT = deserializarT_SELECT(packageRecibido->Datos);
 		log_info(loggerMemoria,"Query recibido: SELECT [%s] [%d]",unSELECT->nombreTabla,unSELECT->KEY);
 		uint16_t key = (uint16_t) unSELECT->KEY;
-		pthread_mutex_lock(&semMemoriaPrincipal);
 		char* Respuesta = SELECTMemoria(unSELECT->nombreTabla,key,0);
 		enviarRespuesta(socketEmisor,id_respuesta_select,Respuesta);
-
 		freeT_SELECT(unSELECT);
-		//pthread_mutex_lock(&semConfig);
-		int retardoMemoriaPrincipal = configMemoria.retardoAccesoMemoriaPrincipal;
-		//pthread_mutex_unlock(&semConfig);
-		sleep(retardoMemoriaPrincipal);
-		pthread_mutex_unlock(&semMemoriaPrincipal);
 	}
 
 	if(packageRecibido->ID == 15){ //15: INSERT
@@ -39,11 +32,19 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 
 		uint16_t key = unINSERT->KEY;
 
+		pthread_mutex_lock(&semMemoriaPrincipal);
 
 		char* respuesta = INSERTMemoria(unINSERT->nombreTabla,key, unINSERT->Value,  (unsigned long int)unINSERT->timeStamp);
 		enviarRespuesta(socketEmisor,id_respuesta_insert,respuesta);
-
 		freeT_INSERT(unINSERT);
+
+		pthread_mutex_lock(&semConfig);
+		int retardoMemoriaPrincipal = configMemoria.retardoAccesoMemoriaPrincipal;
+		pthread_mutex_unlock(&semConfig);
+		sleep(retardoMemoriaPrincipal);
+		pthread_mutex_unlock(&semMemoriaPrincipal);
+
+
 	}
 
 	if(packageRecibido->ID == 17){ //17: CREATE
@@ -86,10 +87,18 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		unDROP = deserializarT_DROP(packageRecibido->Datos);
 		log_info(loggerMemoria, "Query recibido: DESCRIBE [%s]",unDROP->nombreTabla);
 
+		pthread_mutex_lock(&semMemoriaPrincipal);
+
 		char* respuesta = DROPMemoria(unDROP->nombreTabla);
 		enviarRespuesta(socketEmisor,id_respuesta_drop,respuesta);
 
 		freeT_DROP(unDROP);
+		pthread_mutex_lock(&semConfig);
+		int retardoMemoriaPrincipal = configMemoria.retardoAccesoMemoriaPrincipal;
+		pthread_mutex_unlock(&semConfig);
+		sleep(retardoMemoriaPrincipal);
+		pthread_mutex_unlock(&semMemoriaPrincipal);
+
 	}
 	if(packageRecibido->ID == 23){ // JOURNAL
 
@@ -97,8 +106,16 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 
 		log_info(loggerMemoria, "Query recibido: JOURNAL [%s]",packageRecibido->Datos);
 
-		//char* respuesta = DROPMemoria(unDROP->nombreTabla);
+		pthread_mutex_lock(&semMemoriaPrincipal);
+
+		JOURNALMemoria();
 		enviarRespuesta(socketEmisor,id_respuesta_journal,"Todo ok");
+
+		pthread_mutex_lock(&semConfig);
+		int retardoMemoriaPrincipal = configMemoria.retardoAccesoMemoriaPrincipal;
+		pthread_mutex_unlock(&semConfig);
+		sleep(retardoMemoriaPrincipal);
+		pthread_mutex_unlock(&semMemoriaPrincipal);
 
 	}
 	if(packageRecibido->ID ==50){ //PIDO TABLA GOSSIP
@@ -108,7 +125,7 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		free(memoriasDondeEstoyConectado);
 
 	}
-	//freePackage(packageRecibido);
+
 }
 
 void realizarGossip(){

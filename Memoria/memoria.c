@@ -34,8 +34,9 @@ void crearHilos(){
 
 	pthread_create(&hacerJournal,NULL, (void*)JOURNALMemoria, NULL);
 
-	//pthread_create(&config_observer,NULL,observer_config,NULL);
-	//pthread_detach(config_observer);
+	pthread_create(&config_observer,NULL,observer_config,NULL);
+
+	pthread_detach(config_observer);
 	pthread_join(consola, NULL);
 	pthread_join(multiplexacionMemoria, NULL);
 	pthread_join(gossip, NULL);

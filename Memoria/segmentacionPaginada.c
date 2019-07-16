@@ -23,7 +23,9 @@ void iniciarSemaforos(){
 	pthread_mutex_init(&semCantMaxMarcos,NULL);
 	pthread_mutex_init(&semCantMarcosIngresados,NULL);
 	pthread_mutex_init(&semMarcosOcupados,NULL);
+	pthread_mutex_init(&semMP, NULL);
 	pthread_mutex_init(&semMemoriaPrincipal,NULL);
+	pthread_mutex_init(&semLfs, NULL);
 }
 int tamanioLista(t_list * lista){
 	return list_size(lista);
@@ -70,17 +72,14 @@ void borrarTodo(){
 //------------------------------------------SEGMENTOS--------------------------------------------------------//
 
 int buscarTablaSegmentos(char* nombreTabla){
-	pthread_mutex_lock(&semTablaSegmentos);
 	int cantSegmentos =  tamanioLista(tablaDeSegmentos);
 	for(int i = 0; i<cantSegmentos ; i++){
 		void * elemento = list_get(tablaDeSegmentos, i);
 		t_segmento *segmento =(t_segmento*)elemento;
 		if(string_equals_ignore_case(nombreTabla, segmento->nombreTabla)){
-			pthread_mutex_unlock(&semTablaSegmentos);
 			return i;
 		}
 	}
-	pthread_mutex_unlock(&semTablaSegmentos);
 	return cantSegmentos+1;
 }
 
@@ -218,10 +217,10 @@ void actualizarMemoriaPrincipal(int nroMarco, unsigned long int timeStamp, char*
 	registro->value= malloc(tamanioDadoPorLFS);
 	strcpy(registro->value, value);
 	registro->timestamp= timeStamp;
-	//pthread_mutex_lock(&semMemoriaPrincipal);
+	pthread_mutex_lock(&semMP);
 	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro+sizeof(uint16_t), &registro->timestamp, sizeof(unsigned long int));
 	memcpy(memoriaPrincipal+nroMarco*tamanioUnRegistro+sizeof(uint16_t)+ sizeof(unsigned long int), registro->value, tamanioDadoPorLFS);
-//	pthread_mutex_unlock(&semMemoriaPrincipal);
+	pthread_mutex_unlock(&semMP);
 	free(registro->value);
 	free(registro);
 }
@@ -232,14 +231,14 @@ void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco, unsigne
 	registro->value= malloc(tamanioDadoPorLFS);
 	strcpy(registro->value, value);
 	registro->timestamp= timestamp;
-	//pthread_mutex_lock(&semMemoriaPrincipal);
+	pthread_mutex_lock(&semMP);
 	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro, &registro->key, sizeof(uint16_t));
 	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro+sizeof(uint16_t), &registro->timestamp, sizeof(unsigned long int));
 	memcpy(memoriaPrincipal+nroMarco*tamanioUnRegistro+sizeof(uint16_t)+ sizeof(unsigned long int), registro->value, tamanioDadoPorLFS);
-	//pthread_mutex_unlock(&semMemoriaPrincipal);
-	//pthread_mutex_lock(&semCantMarcosIngresados);
+	pthread_mutex_unlock(&semMP);
+	pthread_mutex_lock(&semCantMarcosIngresados);
 	cantMarcosIngresados++;
-//	pthread_mutex_unlock(&semCantMarcosIngresados);
+	pthread_mutex_unlock(&semCantMarcosIngresados);
 	settearMarcoEnMP(nroMarco, 1);
 	free(registro->value);
 	free(registro);
@@ -256,7 +255,7 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 	else{
 		t_LRU * lru = LRU();
 		if(lru->numeroPag != cantMaxMarcos){
-
+			pthread_mutex_unlock(&semCantMaxMarcos);
 			void * elemento = list_remove(lru->tablaPaginas, lru->numeroPag);
 			t_pagina *pagina =(t_pagina*)elemento;
 			int t = tamanioLista(lru->tablaPaginas);
@@ -269,17 +268,16 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 			free(lru);
 			int nroMarco = pagina->numeroMarco;
 			free(pagina);
-			pthread_mutex_unlock(&semCantMaxMarcos);
 			return nroMarco;
 		}
 		else {
+			pthread_mutex_unlock(&semCantMaxMarcos);
 			log_info(loggerMemoria,"Tengo que realizar JOURNAL\n");
 			iniciarJournal();// se inicia journal, osea que queda vacia la memoria entonces tiene si o si espacio
 			//luego de realizar journal, se terminaria guardando el dato :D
 			nroMarco = buscarEspacioLibreEnMP();
 			guardarEnMPLugarEspecifico(key, value, nroMarco, timestamp);
 			free(lru);
-			pthread_mutex_unlock(&semCantMaxMarcos);
 			return 0;
 		}
 	}
@@ -326,9 +324,9 @@ void borrarTodaMemoria(){
 		settearMarcoEnMP(i, 0);
 	}
 	pthread_mutex_unlock(&semCantMaxMarcos);
-	pthread_mutex_lock(&semMemoriaPrincipal);
+	pthread_mutex_lock(&semMP);
 	memset(memoriaPrincipal, 0, tamanioMaxMemoria);
-	pthread_mutex_unlock(&semMemoriaPrincipal);
+	pthread_mutex_unlock(&semMP);
 }
 //---------------------------------------LRU-------------------------------------------------------//
 
@@ -339,7 +337,6 @@ t_LRU * LRU (){
 	t_LRU * lru = malloc (sizeof(t_LRU));
 	lru->numeroPag= cantMaxMarcos;
 	int tamanioTablaPaginas = 0;
-	pthread_mutex_lock(&semTablaSegmentos);
 	int tamanioTablaSegmentos = tamanioLista(tablaDeSegmentos);
 	for(int i = 0; i< tamanioTablaSegmentos; i++){
 
@@ -372,7 +369,6 @@ t_LRU * LRU (){
 			}
 		}
 	}
-	pthread_mutex_unlock(&semTablaSegmentos);
 	return lru;
 }
 
@@ -406,7 +402,6 @@ char* convertirAStringListaJournal(){
 }
 
 void iniciarJournal(){
-	pthread_mutex_lock(&semTablaSegmentos);
 	int tamanioTablaSegmentos = tamanioLista(tablaDeSegmentos);
 	char* elementoEnviar = string_new();
 	for(int i = 0 ; i < tamanioTablaSegmentos; i ++){
@@ -419,6 +414,7 @@ void iniciarJournal(){
 			if(pagina->flagModificado ==1){
 			t_registro* registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
 			char* unRegistro= string_from_format("%s %d %s %lu ",segmento->nombreTabla,registro->key,registro->value,registro->timestamp);
+			//aca tengo que hacer INSERT para cada uno de estos registros para mandarselos al LFS con opINSERT
 			string_append(&elementoEnviar, unRegistro);
 			free(unRegistro);
 			free(registro->value);
@@ -430,9 +426,6 @@ void iniciarJournal(){
 	log_info(loggerMemoria, "JOURNAL: lista a enviar es---> '%s'\n", elementoEnviar);
 	puts("-------------------------------------------------------------------");
 
-
-	//descomposicionDelJOURNAL(elementoEnviar);
-
 	int t= tamanioLista(tablaDeSegmentos);
 	for(int j = 0; j < t ; j++){
 		void* elemento = list_get(tablaDeSegmentos, j);
@@ -443,68 +436,23 @@ void iniciarJournal(){
 		free(s);
 	}
 	list_clean(tablaDeSegmentos);
-	pthread_mutex_unlock(&semTablaSegmentos);
 	borrarTodaMemoria();
 	pthread_mutex_lock(&semCantMarcosIngresados);
 	cantMarcosIngresados=0;
 	pthread_mutex_unlock(&semCantMarcosIngresados);
-	sleep(configMemoria.retardoAccesoFileSystem);
 	//empaquetarEnviarMensaje(socketLFS,22,strlen(msjEnviado),msjEnviado);
 	free(elementoEnviar);
 }
 
-
-
-bool pasarAUint162(const char *str, uint16_t *res) {
-    char *end;
-    int errno = 0;
-    long val = strtol(str, &end, 10);
-    if (errno || end == str || *end != '\0' || val < 0 || val >= 0x10000) {
-        return false;
-    }
-    *res = (uint16_t)val;
-    return true;
+void retardoMemoriaAplicado(){
+	pthread_mutex_lock(&semMemoriaPrincipal);
+	pthread_mutex_lock(&semConfig);
+	int retardoMemoriaPrincipal = configMemoria.retardoAccesoMemoriaPrincipal;
+	pthread_mutex_unlock(&semConfig);
+	sleep(retardoMemoriaPrincipal);
+	pthread_mutex_unlock(&semMemoriaPrincipal);
 }
 
-
-void descomposicionDelJOURNAL(char* journalGigante){ //agregar aca el int del tamanio de value del lfs
-	char** dividirEnTablas = string_split(journalGigante, " ");
-
-	int tamanioTabla = tamanioArray(dividirEnTablas);
-	printf("El tamanio de tabla es de %d\n", tamanioTabla);
-	int tamanioDeUnRegistro = tamanioDadoPorLFS + sizeof(unsigned long int) + sizeof(uint16_t); //6+ tamanioValueDado
-
-	for (int i = 0 ; i <tamanioTabla; i ++){
-
-		printf("I: %d , TABLA: '%s'\n",i, dividirEnTablas[i]);
-		printf("I: %d , KEY: '%s'\n",i, dividirEnTablas[i+1]);
-		printf("I: %d , VALUE: '%s'\n", i,dividirEnTablas[i+2]);
-		printf("I: %d , TIMESTAMP: '%s'\n",i, dividirEnTablas[i+3]);
-
-
-		char* nombreTabla = malloc(sizeof(dividirEnTablas[i]));
-		strcpy(nombreTabla, dividirEnTablas[i]);
-		t_registro* registro = malloc(sizeof(tamanioDeUnRegistro));
-		registro->value= malloc(tamanioDadoPorLFS);
-		strcpy(registro->value, dividirEnTablas[i+2]);
-
-		uint16_t * key = malloc(sizeof(uint16_t));
-		if (pasarAUint16(dividirEnTablas[i+1], key)){
-			char *ptr;
-			registro->timestamp = strtoul(dividirEnTablas[i+3], &ptr, 10);
-			registro->key = *key;
-		}
-
-		printf("NOMBRE DE TABLA: %s\n", nombreTabla);
-		printf("KEY: %d\n", registro->key);
-		printf("VALUE: %s\n",registro->value);
-		printf("TIMESTAMP: %lu\n", registro->timestamp);
-
-		i=i+3;
-	}
-
-
-}
 
 
 
@@ -512,12 +460,11 @@ void descomposicionDelJOURNAL(char* journalGigante){ //agregar aca el int del ta
 
 
 char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
-	//sleep(configMemoria.retardoAccesoMemoriaPrincipal);
-	//pthread_mutex_lock(&semRequest);
-	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	pthread_mutex_lock(&semTablaSegmentos);
+	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
 	pthread_mutex_unlock(&semTablaSegmentos);
+	retardoMemoriaAplicado();
 	if(ubicacionSegmento!=(cantSegmentos+1)){ //esta en tabla de segmentos
 		log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
 		pthread_mutex_lock(&semTablaSegmentos);
@@ -527,15 +474,12 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		pthread_mutex_unlock(&semTablaSegmentos);
 		if(value!= NULL){ //lo encontro en tabla de paginas, lo busca en memoria principal y devuelve lo que vale
 			log_info(loggerMemoria,"Esta en la tabla de PAGINAS");
-			mostrarDatosMarcos();
-			mostrarElementosTablaSegmentos();
-			mostrarElementosMemoriaPrincipal();
-			//sleep(configMemoria.retardoAccesoMemoriaPrincipal);
-			//pthread_mutex_unlock(&semRequest);
+			//mostrarDatosMarcos();
+			//mostrarElementosTablaSegmentos();
+			//mostrarElementosMemoriaPrincipal();
 			return value;
 		}
 		else{ //no lo encontro en tabla de paginas
-			//sleep(configMemoria.retardoAccesoFileSystem);
 			//tengo que consultarle a LFS PERO solo guardo en tabla de paginas
 			//consultaSELECTMemoriaLfs();// esto va a mandarle SELECT nombreTabla key con SOCKETS
 			log_info(loggerMemoria,"No esta en la tabla de PAGINAS");
@@ -546,18 +490,21 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 			int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
 			guardarEnTablaDePaginas(segmento, nroMarco, key, flagModificado);
 			pthread_mutex_unlock(&semTablaSegmentos);
-			sleep(configMemoria.retardoAccesoFileSystem);
+
+			pthread_mutex_lock(&semConfig);
+			int retardoLFS= configMemoria.retardoAccesoFileSystem;
+			pthread_mutex_unlock(&semConfig);
+			sleep(retardoLFS);
+
 			pthread_mutex_unlock(&semLfs);
-			mostrarDatosMarcos();
-			mostrarElementosTablaSegmentos();
-			mostrarElementosMemoriaPrincipal();
-			//sleep(configMemoria.retardoAccesoMemoriaPrincipal);
-			//pthread_mutex_unlock(&semRequest);
+			///mostrarDatosMarcos();
+			//mostrarElementosTablaSegmentos();
+			//mostrarElementosMemoriaPrincipal();
+			retardoMemoriaAplicado();
 			return value;
 		}
 	}
 	else{
-		//
 		// no esta en tabla de segmentos
 		//pedirle a lfs y guardar datos en tabla segmentos y tabla paginas
 		//consultaSELECTMemoriaLfs();
@@ -571,22 +518,25 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
 		guardarEnTablaDePaginas(segmento, nroMarco, key, flagModificado);
 		pthread_mutex_unlock(&semTablaSegmentos);
-		sleep(configMemoria.retardoAccesoFileSystem);
+
+		pthread_mutex_lock(&semConfig);
+		int retardoLFS= configMemoria.retardoAccesoFileSystem;
+		pthread_mutex_unlock(&semConfig);
+		sleep(retardoLFS);
+
 		pthread_mutex_unlock(&semLfs);
 		log_info(loggerMemoria,"Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
-		mostrarDatosMarcos();
-		mostrarElementosTablaSegmentos();
-		mostrarElementosMemoriaPrincipal();
-		//sleep(configMemoria.retardoAccesoMemoriaPrincipal);
-		//pthread_mutex_unlock(&semRequest);
+		//mostrarDatosMarcos();
+		//mostrarElementosTablaSegmentos();
+		//mostrarElementosMemoriaPrincipal();
+		retardoMemoriaAplicado();
 		return value;
 	}
 }
 
 char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long int timeStamp){
-	//sleep(configMemoria.retardoAccesoMemoriaPrincipal);
-	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	pthread_mutex_lock(&semTablaSegmentos);
+	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
 	pthread_mutex_unlock(&semTablaSegmentos);
 	if(ubicacionSegmento!=(cantSegmentos+1)){ //esta en tabla de SEGMENTOS
@@ -633,9 +583,8 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 }
 
 char* DROPMemoria(char* nombreTabla){
-	//sleep(configMemoria.retardoAccesoMemoriaPrincipal);
-	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	pthread_mutex_lock(&semTablaSegmentos);
+	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
 	pthread_mutex_unlock(&semTablaSegmentos);
 		if(ubicacionSegmento!=(cantSegmentos+1)){
@@ -653,35 +602,70 @@ char* DROPMemoria(char* nombreTabla){
 		else{
 			log_info(loggerMemoria,"Dicha tabla no se encuentra en la tabla de SEGMENTOS");
 		}
-	//	sleep(configMemoria.retardoAccesoFileSystem);
-		int existe = 1; // esto es para q quede lindo despues se modifica de acuerdo a la rsta del lfs
-		//aca tengo que avisarle al FS que borre la tabla
+		pthread_mutex_lock(&semLfs);
+		//ACA le paso al LFS los datos del drop
+
+		pthread_mutex_lock(&semConfig);
+		int retardoLFS= configMemoria.retardoAccesoFileSystem;
+		pthread_mutex_unlock(&semConfig);
+		sleep(retardoLFS);
+
+		int existe = 1; //esto es lo que me devuelve el LFS cuando hago DROP, si existe va a devolver 1 sino devuelve 0.
 		if(existe == 1){
+			pthread_mutex_unlock(&semLfs);
 			return  "INFO: Se borro correctamente la tabla";
 		}
 		else{ // si la encuentra, la borra y sino tiro mensaje de error de que no existe
+			pthread_mutex_unlock(&semLfs);
 			return "ERROR: Dicha tabla no se encuentra en la tabla de SEGMENTOS";
 		}
 
+
 }
 void JOURNALMemoria(){
-	//sleep(configMemoria.retardoAccesoMemoriaPrincipal);
+	pthread_mutex_lock(&semLfs);
+	//ACA le paso al LFS los datos del JOURNAL
+	pthread_mutex_lock(&semTablaSegmentos);
 	iniciarJournal();
+	pthread_mutex_unlock(&semTablaSegmentos);
+	pthread_mutex_lock(&semConfig);
+	int retardoLFS= configMemoria.retardoAccesoFileSystem;
+	pthread_mutex_unlock(&semConfig);
+	sleep(retardoLFS);
+	pthread_mutex_unlock(&semLfs);
+
 
 }
 char* DESCRIBETodasLasTablasMemoria(){
-	//sleep(configMemoria.retardoAccesoFileSystem);
+	pthread_mutex_lock(&semLfs);
 	//aca le mando a lfs para q me de metadata de todas las tablas
+	pthread_mutex_lock(&semConfig);
+	int retardoLFS= configMemoria.retardoAccesoFileSystem;
+	pthread_mutex_unlock(&semConfig);
+	sleep(retardoLFS);
+	pthread_mutex_unlock(&semLfs);
+
 	return "DESCRIBE TOTAL OK";
 }
 char* DESCRIBEMemoria( char* nombreTabla){
-	//sleep(configMemoria.retardoAccesoFileSystem);
+	pthread_mutex_lock(&semLfs);
 	 //aca tengo q mandarle mensaje a LFS para q me de la metada de esa tabla
+	pthread_mutex_lock(&semConfig);
+	int retardoLFS= configMemoria.retardoAccesoFileSystem;
+	pthread_mutex_unlock(&semConfig);
+	sleep(retardoLFS);
+	pthread_mutex_unlock(&semLfs);
 	return "DESCRIBE OK";
 }
 
 char* CREATEMemoria(char* nombreTabla, char* tipoConsistencia, int nroParticiones, int compactionTime){
-	//sleep(configMemoria.retardoAccesoFileSystem);
+	pthread_mutex_lock(&semLfs);
+	 //aca tengo q mandarle mensaje a LFS para que haga create y me dice si lo hizo correctamente
+	pthread_mutex_lock(&semConfig);
+	int retardoLFS= configMemoria.retardoAccesoFileSystem;
+	pthread_mutex_unlock(&semConfig);
+	sleep(retardoLFS);
+	pthread_mutex_unlock(&semLfs);
 	 return "CREATE OK";
 }
 

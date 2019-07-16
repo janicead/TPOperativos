@@ -135,12 +135,12 @@ void* observer_config(){
 
 	file_descriptor = inotify_init();
 	file_observer = inotify_add_watch(file_descriptor,configMemoriaDir,IN_MODIFY);
-
+	pthread_mutex_init(&semConfig, NULL);
 	while(1){
 		read(file_descriptor,buffer,buffer_size);
-		//pthread_mutex_lock(&config_sem);
+		pthread_mutex_lock(&semConfig);
 		actualizarArchivoConfig();
-		//pthread_mutex_unlock(&config_sem);
+		pthread_mutex_unlock(&semConfig);
 	}
 
 	inotify_rm_watch(file_descriptor,file_observer);
