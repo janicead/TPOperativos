@@ -66,6 +66,9 @@ void* setConsole(){
 			else if(parametros[4] == NULL || string_is_empty(parametros[4])){
 				log_error(loggerKernel,"No se ha especificado ningun tiempo de compactación");
 			}
+			else if(!validar_consistencia(parametros[2])){
+				log_error(loggerKernel,"La consistencia %s no es válida.",parametros[2]);
+			}
 			else{
 				numeroParticiones = atoi(parametros[3]);
 				compactationTime = atoi(parametros[4]);
@@ -116,6 +119,9 @@ void* setConsole(){
 			}
 			else if(parametros[4] == NULL || string_is_empty(parametros[4])){
 				log_error(loggerKernel,"No se ha especificado ningún criterio");
+			}
+			else if(!validar_consistencia(parametros[4])){
+				log_error(loggerKernel,"La consistencia %s no es válida.",parametros[4]);
 			}
 			else{
 				memoria = atoi(parametros[2]);
