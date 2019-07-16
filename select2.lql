@@ -1,0 +1,16 @@
+ADD MEMORY 2 TO SHC
+INSERT hash 1 "Rufus"
+SELECT hash 1
+INSERT hash 1 "Raffa"
+SELECT hash 1
+INSERT hash 1 "Lulu"
+SELECT hash 1
+INSERT hash 1 "Rufus"
+SELECT hash 1
+SELECT hash 1
+SELECT hash 1
+SELECT hash 1
+SELECT hash 1
+SELECT hash 1
+SELECT hash 1
+SELECT hash 1

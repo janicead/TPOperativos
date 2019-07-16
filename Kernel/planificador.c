@@ -45,6 +45,7 @@ void* ejecutar(){
 					operacion->success = true;
 					break;
 			}
+			sleep(sleep_time);
 			if(!operacion->success){
 				lcb->abortar = true;
 				break;
@@ -52,7 +53,6 @@ void* ejecutar(){
 			lcb->program_counter++;
 			lcb->abortar = false;
 			quantum--;
-			usleep(sleep_time*100);
 		}
 		if(lcb->program_counter >= list_size(lcb->operaciones) || lcb->abortar){
 			pasar_lcb_a_exit(lcb);

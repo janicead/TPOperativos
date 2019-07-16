@@ -32,10 +32,7 @@ t_LQL_operacion* parse(char* linea){
 		ret->keyword = INSERT;
 		ret->argumentos.INSERT.nombre_tabla =  split[1];
 		ret->argumentos.INSERT.key =  atoi(split[2]);
-		char** value = string_n_split(split[3],2,"\"");
-		ret->argumentos.INSERT.valor =  value[0];
-		string_iterate_lines(value, (void*) free);
-		free(value);
+		ret->argumentos.INSERT.valor = quitarComillas(split[3]);
 	}
 	else if(string_equals_ignore_case(keyword, "CREATE")){
 		ret->keyword = CREATE;
