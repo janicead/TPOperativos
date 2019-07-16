@@ -260,7 +260,9 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 			t_pagina *pagina =(t_pagina*)elemento;
 			int t = tamanioLista(lru->tablaPaginas);
 			if(t==0){
+				pthread_mutex_unlock(&semTablaSegmentos);
 				DROPMemoria(lru->nombreTabla);
+				pthread_mutex_lock(&semTablaSegmentos);
 			}
 			log_info(loggerMemoria,"La PAGINA que voy a reemplazar es la nro %d del SEGMENTO '%s' \n", lru->numeroPag, lru->nombreTabla);
 			settearMarcoEnMP(pagina->numeroMarco, 0);
@@ -415,6 +417,7 @@ void iniciarJournal(){
 			t_registro* registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
 			char* unRegistro= string_from_format("%s %d %s %lu ",segmento->nombreTabla,registro->key,registro->value,registro->timestamp);
 			//aca tengo que hacer INSERT para cada uno de estos registros para mandarselos al LFS con opINSERT
+			//se avisa por archivo de log si se hizo correctamente
 			string_append(&elementoEnviar, unRegistro);
 			free(unRegistro);
 			free(registro->value);

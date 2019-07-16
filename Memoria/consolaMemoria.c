@@ -71,8 +71,14 @@ void* crearConsolaMemoria(){
 						char *ptr;
 						unsigned long int timestamp = strtoul(operacion[4], &ptr, 10);
 						char* value = quitarEspacioFalso(operacion[3]);
+						pthread_mutex_lock(&semMemoriaPrincipal);
 						INSERTMemoria(operacion[1], *key, value, timestamp);
 						free(value);
+						pthread_mutex_lock(&semConfig);
+						int retardoMemoriaPrincipal1 = configMemoria.retardoAccesoMemoriaPrincipal;
+						pthread_mutex_unlock(&semConfig);
+						sleep(retardoMemoriaPrincipal1);
+						pthread_mutex_unlock(&semMemoriaPrincipal);
 					}
 					mostrarElementosMemoriaPrincipal(memoriaPrincipal);
 					mostrarElementosTablaSegmentos();
@@ -88,11 +94,24 @@ void* crearConsolaMemoria(){
 					printf("COMANDO DESCRIBE\n");
 					break;
 				case CMD_DROP:
-					DROPMemoria(operacion[1]);
-					printf("COMANDO DROP\n");
+					pthread_mutex_lock(&semMemoriaPrincipal);
+					char* value = DROPMemoria(operacion[1]);
+					pthread_mutex_lock(&semConfig);
+					int retardoMemoriaPrincipal2 = configMemoria.retardoAccesoMemoriaPrincipal;
+					pthread_mutex_unlock(&semConfig);
+					sleep(retardoMemoriaPrincipal2);
+					pthread_mutex_unlock(&semMemoriaPrincipal);
+					log_info(loggerMemoria,value);
+					free(value);
 					break;
 				case CMD_JOURNAL:
+					pthread_mutex_lock(&semMemoriaPrincipal);
 					JOURNALMemoria();
+					pthread_mutex_lock(&semConfig);
+					int retardoMemoriaPrincipal3 = configMemoria.retardoAccesoMemoriaPrincipal;
+					pthread_mutex_unlock(&semConfig);
+					sleep(retardoMemoriaPrincipal3);
+					pthread_mutex_unlock(&semMemoriaPrincipal);
 					break;
 				case CMD_NOENCONTRADO:default:
 					log_error(loggerMemoria, "No se reconoce el comando.");
