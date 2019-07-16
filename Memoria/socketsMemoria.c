@@ -19,12 +19,16 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		unSELECT = deserializarT_SELECT(packageRecibido->Datos);
 		log_info(loggerMemoria,"Query recibido: SELECT [%s] [%d]",unSELECT->nombreTabla,unSELECT->KEY);
 		uint16_t key = (uint16_t) unSELECT->KEY;
-
+		pthread_mutex_lock(&semMemoriaPrincipal);
 		char* Respuesta = SELECTMemoria(unSELECT->nombreTabla,key,0);
 		enviarRespuesta(socketEmisor,id_respuesta_select,Respuesta);
 
-
 		freeT_SELECT(unSELECT);
+		//pthread_mutex_lock(&semConfig);
+		int retardoMemoriaPrincipal = configMemoria.retardoAccesoMemoriaPrincipal;
+		//pthread_mutex_unlock(&semConfig);
+		sleep(retardoMemoriaPrincipal);
+		pthread_mutex_unlock(&semMemoriaPrincipal);
 	}
 
 	if(packageRecibido->ID == 15){ //15: INSERT

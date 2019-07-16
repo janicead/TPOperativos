@@ -187,13 +187,11 @@ t_registro* buscarEnMemoriaPrincipal( int nroMarco){
 	t_registro * registro = malloc(tamanioUnRegistro);
 	int copiarDesde = 0;
 	registro->value = malloc(tamanioDadoPorLFS);
-	pthread_mutex_lock(&semMemoriaPrincipal);
 	memcpy(&registro->key, memoriaPrincipal + tamanioUnRegistro * nroMarco + copiarDesde,sizeof(uint16_t));
 	copiarDesde += sizeof(uint16_t);
 	memcpy(&registro->timestamp, memoriaPrincipal+tamanioUnRegistro * nroMarco+ copiarDesde, sizeof(unsigned long int));
 	copiarDesde += sizeof(unsigned long int);
 	memcpy(registro->value, memoriaPrincipal + tamanioUnRegistro * nroMarco+ copiarDesde,tamanioDadoPorLFS);
-	pthread_mutex_unlock(&semMemoriaPrincipal);
 	return registro;
 }
 
