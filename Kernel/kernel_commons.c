@@ -182,6 +182,10 @@ void agregar_tabla(t_tabla* tabla){
 	return;
 }
 
+bool validar_consistencia(char* consistencia){
+	return string_equals_ignore_case(consistencia,"sc") || string_equals_ignore_case(consistencia,"shc") || string_equals_ignore_case(consistencia,"ec");
+}
+
 void free_lcb(t_lcb* lcb){
 	list_destroy_and_destroy_elements(lcb->operaciones,(void*) destruir_operacion);
 	free(lcb);

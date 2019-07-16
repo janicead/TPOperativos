@@ -16,11 +16,11 @@ void freeParametros(char** parametros);
 
 
 //FUNCIONES QUE SE EJECUTAN SEGUN EL COMANDO QUE SE INGRESE EN LA CONSOLA
-void crear_lql_select(char* nombre_tabla, int key);
-void crear_lql_insert(char* nombre_tabla, int key, char* value);
-void crear_lql_create(char* nombre_tabla, int compactation_time, int cant_particiones, char* consistencia);
-void crear_lql_describe(char* nombre_tabla);
-void crear_lql_drop(char* nombre_tabla);
+void crear_lql_select(char** parametros);
+void crear_lql_insert(char** parametros);
+void crear_lql_create(char** parametros);
+void crear_lql_describe(char** parametros);
+void crear_lql_drop(char** parametros);
 void crear_lql_journal();
 void crear_lql_add(char* criterio, int nro_memoria);
 void crear_lql_run(char* path);

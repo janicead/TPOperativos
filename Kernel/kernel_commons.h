@@ -195,6 +195,7 @@ bool memoria_existente(t_list* l_memorias,int id);
 void agregar_socket_mem(int nro_memoria, int socket);
 void sacar_memoria(int nro_memoria);
 void free_memoria_gossip(t_memoriaTablaDeGossip* memoria);
+bool validar_consistencia(char* consistencia);
 
 //FUNCIONES DE LIBERAR MEMORIA
 void destruir_operacion(t_LQL_operacion* op);
