@@ -11,4 +11,11 @@
 t_LQL_operacion* parse(char* linea);
 t_LQL_operacion* parse_error();
 
+int buscarFinalValue(char** value);
+char* armarValue(char** value);
+char* quitarEspacioFalso(char* value);
+
+
+
+
 #endif /* PARSER_H_ */

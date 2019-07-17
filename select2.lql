@@ -1,18 +1,3 @@
-ADD MEMORY 2 TO SHC
+ADD MEMORY 1 TO SHC
 INSERT hash 1 "Rufus"
-SELECT hash 1
-INSERT hash 1 "Raffa"
-INSERT personajes 1 "KERNEL"
-SELECT personajes 1
-SELECT hash 1
-INSERT hash 1 "Lulu"
-SELECT hash 1
-INSERT hash 1 "Rufus"
-SELECT hash 1
-SELECT hash 1
-SELECT hash 1
-SELECT hash 1
-SELECT hash 1
-SELECT hash 1
-SELECT hash 1
 SELECT hash 1
