@@ -137,8 +137,10 @@ void* setConsole(){
 				log_error(loggerKernel,"No se ha especificado ningún path LQL");
 			}
 			else{
-				crear_lql_run(parametros[1]);
+				char* path = string_from_format("%s",parametros[1]);
+				crear_lql_run(path);
 				log_info(loggerKernel,"La operación run fue ingresada la cola de ready");
+				free(path);
 			}
 			freeParametros(parametros);
 		}
@@ -268,7 +270,8 @@ void crear_lql_run(char* path){
 	t_LQL_operacion* op = (t_LQL_operacion*) malloc(sizeof(t_LQL_operacion));
 	op->_raw = NULL;
 	op->keyword = RUN;
-	op->argumentos.RUN.path = path;
+	op->argumentos.RUN.path = malloc(strlen(path)+1);
+	strcpy(op->argumentos.RUN.path, path);
 	op->success = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);

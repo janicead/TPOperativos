@@ -133,6 +133,7 @@ void lql_insert(t_LQL_operacion* op){
 		op->success = false;
 		return;
 	}
+	pthread_mutex_lock(&(memoria->socket_mem_sem));
 	unsigned long int timestamp = obtenerTimeStamp();
 	char* resp = opINSERT(memoria->socket_mem, op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key,op->argumentos.INSERT.valor,timestamp);
 	if(verificar_memoria_caida(resp,op,memoria->id_mem)){
