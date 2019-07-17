@@ -53,6 +53,7 @@ void iniciar_semaforos(){
 	pthread_mutex_init(&log_sem,NULL);
 	pthread_mutex_init(&inserts_ejecutados_sem,NULL);
 	pthread_mutex_init(&selects_ejecutados_sem,NULL);
+	pthread_mutex_init(&id_lcb_sem,NULL);
 	sem_init(&execute_sem,0,0);
 	return;
 }
@@ -134,8 +135,10 @@ void sacar_memoria(int nro_memoria){
 
 t_lcb* crear_lcb(){
 	t_lcb* new_lcb = (t_lcb*)malloc(sizeof(t_lcb));
+	pthread_mutex_lock(&id_lcb_sem);
 	new_lcb->id_lcb = idLCB;
 	idLCB++;
+	pthread_mutex_unlock(&id_lcb_sem);
 	new_lcb->estado = NEW;
 	new_lcb->program_counter = 0;
 	new_lcb->operaciones = list_create();
@@ -252,6 +255,7 @@ void destruir_semaforos(){
 	pthread_mutex_destroy(&tablas_sem);
 	pthread_mutex_destroy(&selects_ejecutados_sem);
 	pthread_mutex_destroy(&inserts_ejecutados_sem);
+	pthread_mutex_destroy(&id_lcb_sem);
 	sem_destroy(&execute_sem);
 	return;
 }

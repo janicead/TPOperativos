@@ -466,12 +466,8 @@ void* refresh_metadata_timer(){
 		int refresh_metadata = configKernel.metadata_refresh;
 		pthread_mutex_unlock(&config_sem);
 		sleep(refresh_metadata);
-		t_LQL_operacion* op = (t_LQL_operacion*)malloc(sizeof(t_LQL_operacion));
-		op->_raw = NULL;
-		op->keyword = DESCRIBE;
-		op->argumentos.DESCRIBE.nombre_tabla = "";
-		lql_describe(op);
-		destruir_operacion(op);
+		char** parametros = string_n_split("DESCRIBE",2," ");
+		crear_lql_describe(parametros);
 	}
 	return NULL;
 }

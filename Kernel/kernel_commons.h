@@ -163,6 +163,7 @@ pthread_mutex_t tablas_sem;
 pthread_mutex_t log_sem;
 pthread_mutex_t selects_ejecutados_sem;
 pthread_mutex_t inserts_ejecutados_sem;
+pthread_mutex_t id_lcb_sem;
 sem_t execute_sem;
 
 //HILOS
