@@ -22,7 +22,10 @@ int realizarHandshakeAlLFS(t_log *logger,int socketServer, char *msjEnviado)
 	}
 	else
 	{
-		tamanioPagina = atoi(package->Datos);
+		char* valor = malloc(strlen(package->Datos)+1);
+		strcpy(valor, package->Datos);
+		tamanioPagina = atoi(valor);
+		free(valor);
 		log_info(logger,"LISSANDRA: Tamanio de VALUE = %d",tamanioPagina);
 		log_info(logger,"Handshake  con socket %d: DONE!", socketServer);
 

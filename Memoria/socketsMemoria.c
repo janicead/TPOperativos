@@ -410,10 +410,10 @@ void exitGracefully(int return_nr, t_log* logger, int servidorEscucha)
 }
 
 
-void conectarmeAlLFS() {
+int conectarmeAlLFS() {
 	char* ipServidor = quitarComillas(configMemoria.ipDelFileSystem);
 	struct sockaddr_in dirServidorMemoria;
-
+	int tamanioValue;
 	dirServidorMemoria.sin_family = AF_INET;
 	dirServidorMemoria.sin_addr.s_addr = inet_addr(ipServidor);
 	dirServidorMemoria.sin_port = htons(configMemoria.puertoDelFileSystem); //puerto al que va a escuchar
@@ -422,8 +422,10 @@ void conectarmeAlLFS() {
 		log_info(loggerMemoria,"No me he podido conectar con el LFS");
 	}else{
 		char *msjEnviado = string_from_format("Memoria %d",configMemoria.numeroDeMemoria); //ACA EN VEZ DEL 1, IRIA EL NrO Q TIENE LA MEMORIA
-		tamanioDadoPorLFS = realizarHandshakeAlLFS(loggerMemoria,cliente,msjEnviado);
-
+		tamanioValue = realizarHandshakeAlLFS(loggerMemoria,cliente,msjEnviado);
+		free(msjEnviado);
 		}
 	socketLFS= cliente;
+	free(ipServidor);
+	return tamanioValue;
 }

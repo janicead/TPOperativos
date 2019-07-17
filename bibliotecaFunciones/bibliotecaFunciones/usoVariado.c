@@ -90,3 +90,11 @@ char* armarValue(char** value){
 char * quitarComillas(char* ip){
 	return string_substring(ip,1,(string_length(ip)-2));
 }
+
+int pasarUINT16AInt(uint16_t nro){
+	char str[120000];
+
+	int str_len = sprintf(str, "%d", nro);
+
+	return atoi(str);
+}
