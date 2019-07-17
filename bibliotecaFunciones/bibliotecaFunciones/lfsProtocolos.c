@@ -210,5 +210,20 @@ char *opDROP(int socketReceptor, char* unNombreTabla)
 	return respuesta;
 }
 char* opJOURNAL(int socketReceptor){
+	int protocoloID = 23;
+	t_UnString* mensaje = definirT_UnString("JOURNAL");
+	char* mensaje_serializado = serializarT_UnString(mensaje);
+	int tamanioStructSerializado = (sizeof(uint32_t)) + mensaje->longString;
+	empaquetarEnviarMensaje(socketReceptor,protocoloID, tamanioStructSerializado, mensaje_serializado);
+	free(mensaje_serializado);
+	freeT_UnString(mensaje);
 
+	t_PaqueteDeDatos* packageRecibido = recibirPaquete(socketReceptor);
+	if(packageRecibido->ID == 0){
+		return "MEMORIA_DESCONECTADA";
+	}
+
+	char* respuesta = deserializarRespuesta(packageRecibido->Datos);
+	freePackage(packageRecibido);
+	return respuesta;
 }

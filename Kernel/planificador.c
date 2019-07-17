@@ -99,7 +99,21 @@ void lql_select(t_LQL_operacion* operacion){
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
-	log_info(loggerKernel,"SELECT %s %d -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
+	char** valor =string_split(respuesta, " ");
+	if(string_equals_ignore_case(valor[0],"NO_EXISTE_TABLA")){
+		log_error(loggerKernel, "No se realizar SELECT %s %d ya que la tabla %s no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.nombre_tabla);
+		operacion->success = false;
+		freeParametros(valor);
+		return;
+	}
+	if(string_equals_ignore_case(valor[0],"NO_EXISTE_VALUE")){
+		log_error(loggerKernel, "No se realizar SELECT %s %d ya que la key %d no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.key);
+		operacion->success = false;
+		freeParametros(valor);
+		return;
+	}
+	freeParametros(valor);
+	log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
 	time_t tiempo_fin = time(NULL);
 	t_select_ejecutado* select = (t_select_ejecutado*)malloc(sizeof(t_select_ejecutado));
 	select->tiempo_fin = tiempo_fin;
@@ -140,7 +154,17 @@ void lql_insert(t_LQL_operacion* op){
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
-	puts(resp);
+	char** valor =string_split(resp, " ");
+	if(string_equals_ignore_case(valor[0],"NO_EXISTE_TABLA")){
+		log_error(loggerKernel, "No se pudo realizar: INSERT %s %d %s ya que la tabla %s no existe.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor, op->argumentos.INSERT.nombre_tabla);
+		op->success = false;
+		freeParametros(valor);
+		return;
+	}
+	else{
+		log_info(loggerKernel, "INSERT %s %d %s realizado correctamente.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
+	}
+	freeParametros(valor);
 	time_t tiempo_fin = time(NULL);
 	t_insert_ejecutado* insert = (t_insert_ejecutado*)malloc(sizeof(t_insert_ejecutado));
 	insert->tiempo_fin = tiempo_fin;
@@ -245,7 +269,7 @@ void lql_drop(t_LQL_operacion* op){
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
 	char** valor =string_split(resp, " ");
-	if(!strcasecmp(valor[0],"ERROR")){
+	if(string_equals_ignore_case(valor[0],"NO_EXISTE_TABLA")){
 		log_error(loggerKernel, "No se pudo borrar la tabla %s ya que no existe", op->argumentos.DROP.nombre_tabla);
 	}
 	else{
@@ -259,20 +283,16 @@ void lql_drop(t_LQL_operacion* op){
 
 void lql_journal(t_list* list_mem, t_LQL_operacion* op){
 	for(int i = 0; i < list_size(list_mem); i++){
-		/*t_memoria* memoria = list_get(list_mem,i);
+		t_memoria* memoria = list_get(list_mem,i);
+		pthread_mutex_lock(&(memoria->socket_mem_sem));
 		char* resp = opJOURNAL(memoria->socket_mem);
-		char** valor =string_split(resp, " ");
-		if(!strcasecmp(valor[0],"ERROR")){
-			log_error(loggerKernel, "Hubo un problema al realizar el JOURNAL de la memoria numero %d", memoria->id_mem);
+		pthread_mutex_unlock(&(memoria->socket_mem_sem));
+		if(!verificar_memoria_caida(resp,op,memoria->id_mem)){
+			log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
 		}
-		else{
-			log_info(loggerKernel, "Se hizo JOURNAL de la memoria numero %d",memoria->id_mem);
-		}
-		freeParametros(valor);
-		free(resp);*/
+		free(resp);
 	}
 	op->success = true;
-
 	return;
 }
 
