@@ -26,6 +26,7 @@ typedef struct
 	int sleep_execution;
 	char **ipDeSeeds;
 	int puertosDeSeeds[150];
+	int tiempoGossiping;
 
 }t_ConfigKernel;
 

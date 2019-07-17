@@ -2,6 +2,7 @@
 #define BIBLIOTECAFUNCIONES_USOVARIADO_H_
 #include <stdio.h>
 #include "consola.h"
+#include <inttypes.h>
 
 typedef struct{
 	char* request;
@@ -42,5 +43,9 @@ int tamanioArray(void** array);
 long int cantLugaresEnArchivo(FILE* archivo);
 char* int_to_string(int numero);
 unsigned long int obtenerTimeStamp();
+int buscarFinalValue(char** value);
+char* armarValue(char** value);
+char * quitarComillas(char* ip);
+int pasarUINT16AInt(uint16_t nro);
 
 #endif /* BIBLIOTECAFUNCIONES_USOVARIADO_H_ */

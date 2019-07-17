@@ -15,8 +15,6 @@
 void* crearConsolaMemoria();
 bool pasarAUint16(const char *str, uint16_t *res);
 int buscarFinalValue(char** value);
-char* armarValue(char** value);
-char* quitarEspacioFalso(char* value);
-char* quitarComillas(char* valor);
+char* quitarEspacioFalsoMemoria(char* value);
 
 #endif /* CONSOLAMEMORIA_H_ */

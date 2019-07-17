@@ -1,29 +1,5 @@
 #include "sockets.h"
 
-/*int conectarAlServidorEric(char * ip, char * port) {
-  struct addrinfo hints;
-  struct addrinfo *server_info;
-
-  memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_UNSPEC;    // Permite que la maquina se encargue de verificar si usamos IPv4 o IPv6
-  hints.ai_socktype = SOCK_STREAM;  // Indica que usaremos el protocolo TCP
-
-  getaddrinfo(ip, port, &hints, &server_info);  // Carga en server_info los datos de la conexion
-
-  // 2. Creemos el socket con el nombre "server_socket" usando la "server_info" que creamos anteriormente
-  int server_socket = socket( server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol );
-
-  int retorno = connect(server_socket,server_info->ai_addr,server_info->ai_addrlen);
-
-  freeaddrinfo(server_info);  // No lo necesitamos mas
-
-  if (retorno==-1)
-  {
-	  puts("Error al conectar");
-	  exit(0);
-  }
-  return server_socket;
-} */
 int crearServidor(){
 	int servidor,aceptar = 1;
 	if((servidor= socket(AF_INET, SOCK_STREAM, 0))==-1){
@@ -64,16 +40,19 @@ int conectarAlServidor( char* ip, int puerto, t_log* logger){
 	if(inet_pton(AF_INET,ipSinComillas , &dirSocket.sin_addr)<=0)
 	    {
 		log_error(logger,"\nDireccion invalida/ Direccion no soportada\n" );
+		free(ipSinComillas);
 	    return -1;
 	    }
 
 	if(connect(cliente,(struct sockaddr*)&dirSocket,sizeof(dirSocket))<0){
 		log_error(logger,"No se pudo realizar la conexion\n" );
-		return 1;
+		free(ipSinComillas);
+		return -2;
 	}
 	free(ipSinComillas);
 	return cliente;
 }
+
 void emitirMensaje(int cliente) {
     char mensaje[1024] = {};
     while (1) {
@@ -197,6 +176,42 @@ void empaquetarEnviarMensaje(int socketReceptor, int unID, int longitudDatos, ch
 	free(package);
 
 }
+
+
+int empaquetarEnviarMensaje2(int socketReceptor, int unID, int longitudDatos, char *datos, t_log* logger){
+	t_PaqueteDeDatos *package;
+	char * paqueteListo;
+	int offset;
+	package = (t_PaqueteDeDatos *) malloc(sizeof(t_PaqueteDeDatos));
+	definirHeader(package, unID,longitudDatos);
+	package->Datos = datos;
+
+	paqueteListo = malloc((sizeof(uint32_t)*2) + (package->longDatos));
+	strcpy(paqueteListo,"");
+
+	offset = 0;
+	memcpy(paqueteListo + offset, &(package->ID), sizeof(package->ID));
+
+	offset += sizeof(package->ID);
+	memcpy(paqueteListo + offset,  &(package->longDatos), sizeof(package->longDatos));
+
+	offset += sizeof(package->longDatos);
+	memcpy(paqueteListo + offset, package->Datos, package->longDatos);
+
+	int bytesEnviados;
+
+	bytesEnviados = send(socketReceptor,paqueteListo,(sizeof(uint32_t)*2) + (package->longDatos),0);
+	if( bytesEnviados== -1)
+	{
+		log_error(logger, "No se pudo pedir la TABLA DE GOSSIP ya que esta desconectada dicha memoria");
+		return 0;
+	}
+	free(paqueteListo);
+	free(package);
+	return 1;
+
+}
+
 void definirHeader(t_PaqueteDeDatos *unPackage,int unID, int unaLongitudData)
 {
 	unPackage->ID = unID;
@@ -209,15 +224,13 @@ void freeHandShake(t_handShake* handShake){
 	return;
 }
 void enviarMemoriasTablaGossip(int servidor, t_identidad identidad, char*mensaje){
-	t_handShake handShake;
-	t_handShake* punteroHandShake;
-	char* handShakeSerializado;
-	handShake = crearHandShake(identidad,mensaje);
-	punteroHandShake= crearPunteroHandShake(handShake);
+	t_handShake handShake = crearHandShake(identidad,mensaje);
+	t_handShake* punteroHandShake=crearPunteroHandShake(handShake);
 	int sizeHandshakeAEnviar = sizeof(t_identidad) + sizeof(uint32_t) + punteroHandShake->longMensaje;
-	handShakeSerializado=serializarHandShake(punteroHandShake);
+	char* handShakeSerializado=serializarHandShake(punteroHandShake);
 	empaquetarEnviarMensaje(servidor,punteroHandShake->identidad,sizeHandshakeAEnviar,handShakeSerializado);
 	freeHandShake(punteroHandShake);
+	free(handShakeSerializado);
 	return;
 }
 
@@ -377,9 +390,6 @@ t_handShake* deserializarHandShake(char *handShakeSerializado){
 
 void mostrarmeMemoriasTablaGossip(t_list* tablaDeGossip){
 	int cantidadMemoriasConectadas = cantMemoriasTablaDeGossip(tablaDeGossip);
-	puts("---------------------------------------------------");
-	puts("---------------------------------------------------");
-	printf("MEMORIAS EN DONDE ESTOY CONECTADO \n");
 	for(int i = 0; i <cantidadMemoriasConectadas; i ++){
 		void * elemento = list_get(tablaDeGossip, i);
 		t_memoriaTablaDeGossip *memoriaConectada =(t_memoriaTablaDeGossip*)elemento;
@@ -387,28 +397,59 @@ void mostrarmeMemoriasTablaGossip(t_list* tablaDeGossip){
 		printf("IP: '%s'\n",memoriaConectada->ip);
 		printf("PUERTO: '%d'\n",memoriaConectada->puerto);
 		printf("NRO MEMORIA: '%d'\n",memoriaConectada->numeroDeMemoria);
+		char* booleano = pasarBoolAString(memoriaConectada->conectado);
+		printf("CONECTADO: '%s'\n", booleano);
 		puts("---------------------------------------------------");
 	}
 	puts("---------------------------------------------------");
+}
+
+bool modificadoHacePocoEnGossip(bool modificadoHacePoco){
+	return modificadoHacePoco;
 }
 
 
 int verificarMensajeMemoriasTablaGossip(char* mensaje, t_log* logger, t_list* tablaDeGossip){
 	char** memorias= string_split(mensaje, " ");
 	int cantElementos = tamanioArray(memorias);
-	int cantMemorias = cantElementos /3;
+	int cantMemorias = cantElementos /4;
 
 	int i = 0;
 	int j = 0;
+
+	int tamanioTablaGossip = list_size(tablaDeGossip);
+	int valor = 0;
+	int miNroDeMemoria =0;
+	if(tamanioTablaGossip==1){
+
+		void* elemento =list_get(tablaDeGossip, 0);
+		t_memoriaTablaDeGossip * soyYoMismo = (t_memoriaTablaDeGossip*)elemento;
+		miNroDeMemoria = soyYoMismo->numeroDeMemoria;
+		valor = 1;
+	}
 	if(cantMemorias == 0){
+
 		free(memorias);
 		return 0;
-	} else{
+	} else if(cantMemorias ==1 ){
+		agregarATablaDeGossipUnicoElemento(atoi(memorias[i+1]), memorias[i],atoi(memorias[i+2]), tablaDeGossip);
+		if(valor == 1){
+			actualizarMemoriaEspecifica(miNroDeMemoria, tablaDeGossip, true);
+		}
+
+		hacerFreeArray(memorias);
+		free(memorias);
+		return cantMemorias;
+	}else{
 		while(j<cantMemorias){
-			agregarATablaDeGossip(atoi(memorias[i+1]), memorias[i],atoi(memorias[i+2]), tablaDeGossip);
-			i= i+3;
+			bool booleano = pasarStringABool(memorias[i+3]);
+			agregarATablaDeGossip(atoi(memorias[i+1]), memorias[i],atoi(memorias[i+2]),booleano, tablaDeGossip);
+			i= i+4;
 			j++;
 
+		}
+		if(valor == 1){
+			actualizarMemoriaEspecifica(miNroDeMemoria, tablaDeGossip, true);
 		}
 	hacerFreeArray(memorias);
 	free(memorias);
@@ -433,7 +474,7 @@ void recibirMemoriasTablaDeGossip(int emisor,t_identidad identidad, t_log* logge
 			free(punteroHandShake);
 		}
 		else if(identidad == KERNELOMEMORIA && verificado ==NULL){
-			log_info(logger,"Esta memoria no posee seeds");
+			//log_info(logger,"Esta memoria no posee seeds");
 			free(punteroHandShake->mensaje);
 			free(punteroHandShake);
 
@@ -445,6 +486,22 @@ void recibirMemoriasTablaDeGossip(int emisor,t_identidad identidad, t_log* logge
 
 	free(paquete->Datos);
 	free(paquete);
+}
+
+char* pasarBoolAString(bool booleano){
+	if(booleano){
+		return "true";
+	}
+	return "false";
+
+}
+
+bool pasarStringABool(char* booleano){
+	if(string_equals_ignore_case(booleano, "true")){
+		return true;
+	}
+	return false;
+
 }
 
 char* memoriasTablaDeGossip(t_list* tablaDeGossip){
@@ -462,6 +519,9 @@ char* memoriasTablaDeGossip(t_list* tablaDeGossip){
 		t_memoriaTablaDeGossip *memoriaTablaGossip =(t_memoriaTablaDeGossip*)elemento;
 		puerto = memoriaTablaGossip->puerto;
 		memoria = memoriaTablaGossip->numeroDeMemoria;
+		char* booleano = pasarBoolAString(memoriaTablaGossip->conectado);
+
+		//FORMATO : IP PUERTO NROMEMORIA BOOLCONECTADO
 		char * ip = malloc((strlen(memoriaTablaGossip->ip)+1));
 		strcpy(ip,memoriaTablaGossip->ip);
 		string_append(&completo, ip);
@@ -469,6 +529,8 @@ char* memoriasTablaDeGossip(t_list* tablaDeGossip){
 		string_append(&completo, puertoChar);
 		sprintf(memoriaChar, " %d ",memoria);
 		string_append(&completo, memoriaChar);
+		string_append(&completo, booleano);
+		string_append(&completo, " ");
 		free(ip);
 	}
 
@@ -480,14 +542,21 @@ int cantMemoriasTablaDeGossip(t_list* tablaDeGossip){
 	return  list_size(tablaDeGossip);
 }
 
-void agregarATablaDeGossip(int puerto, char* ipServidor, int memoria, t_list* tablaDeGossip){
+void agregarATablaDeGossip(int puerto, char* ipServidor, int nroMemoria,bool estado, t_list* tablaDeGossip){
 	t_memoriaTablaDeGossip * memoriaConectada = malloc (sizeof(t_memoriaTablaDeGossip));
 	memoriaConectada->puerto = puerto;
 	memoriaConectada->ip = (char*) malloc((strlen(ipServidor)+1)*sizeof(char));
-	memoriaConectada->numeroDeMemoria = memoria;
 	strcpy(memoriaConectada->ip,ipServidor);
-	if(revisarQueNoEsteEnLaLista(memoria, tablaDeGossip)==1){
+	memoriaConectada->numeroDeMemoria = nroMemoria;
+	memoriaConectada->conectado =estado;
+
+
+	if(revisarQueNoEsteEnLaLista(nroMemoria, tablaDeGossip)==1 && estado ==true){
 		list_add(tablaDeGossip , (void *)memoriaConectada);
+	}else if(revisarQueNoEsteEnLaLista(nroMemoria,tablaDeGossip) ==0){
+		actualizarMemoriaEspecifica(nroMemoria, tablaDeGossip, estado);
+		free(memoriaConectada->ip);
+		free(memoriaConectada);
 	}
 	else{
 		free(memoriaConectada->ip);
@@ -496,8 +565,36 @@ void agregarATablaDeGossip(int puerto, char* ipServidor, int memoria, t_list* ta
 
 }
 
+void agregarATablaDeGossipUnicoElemento(int puerto, char* ipServidor, int nroMemoria, t_list* tablaDeGossip){
+	t_memoriaTablaDeGossip * memoriaConectada = malloc (sizeof(t_memoriaTablaDeGossip));
+	memoriaConectada->puerto = puerto;
+	memoriaConectada->ip = (char*) malloc((strlen(ipServidor)+1)*sizeof(char));
+	strcpy(memoriaConectada->ip,ipServidor);
+	memoriaConectada->numeroDeMemoria = nroMemoria;
+	memoriaConectada->conectado =true;
+	if(revisarQueNoEsteEnLaLista(nroMemoria, tablaDeGossip)==1){
+		list_add(tablaDeGossip , (void *)memoriaConectada);
+	}
+	else{
+		actualizarMemoriaEspecifica(nroMemoria, tablaDeGossip, true);
+		free(memoriaConectada->ip);
+		free(memoriaConectada);
+	}
+}
+
+void actualizarMemoriaEspecifica(int nroMemoria, t_list* tablaDeGossip, bool nuevoBool){
+	int tamanio = list_size(tablaDeGossip);
+	for(int i = 0; i <tamanio ; i ++){
+		void* elemento = list_get(tablaDeGossip, i);
+		t_memoriaTablaDeGossip * memoriaConectada = (t_memoriaTablaDeGossip*)elemento;
+		if(memoriaConectada->numeroDeMemoria==nroMemoria){
+			memoriaConectada->conectado=nuevoBool;
+		}
+	}
+}
+
 int revisarQueNoEsteEnLaLista(int nroMemoria, t_list* tablaDeGossip){
-	int cantidadMemoriasTablaGossip = cantMemoriasTablaDeGossip(tablaDeGossip);
+	int cantidadMemoriasTablaGossip = list_size(tablaDeGossip);
 	for(int i = 0 ; i<cantidadMemoriasTablaGossip;i ++){
 
 		void * elemento = list_get(tablaDeGossip, i);
@@ -509,7 +606,3 @@ int revisarQueNoEsteEnLaLista(int nroMemoria, t_list* tablaDeGossip){
 	return 1;
 }
 
-
-char * quitarComillas(char* ip){
-	return string_substring(ip,1,(string_length(ip)-2));
-}

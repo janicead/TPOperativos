@@ -53,6 +53,7 @@ void iniciar_semaforos(){
 	pthread_mutex_init(&log_sem,NULL);
 	pthread_mutex_init(&inserts_ejecutados_sem,NULL);
 	pthread_mutex_init(&selects_ejecutados_sem,NULL);
+	pthread_mutex_init(&id_lcb_sem,NULL);
 	sem_init(&execute_sem,0,0);
 	return;
 }
@@ -69,6 +70,7 @@ void agregar_memoria(int puerto, char* ip, int nro_memoria){
 	strcpy(memoria->ip,ip);
 	memoria->valida = true;
 	memoria->cant_selects_inserts_ejecutados = 0;
+	pthread_mutex_init(&(memoria->socket_mem_sem),NULL);
 	pthread_mutex_lock(&memorias_sem);
 	if(!list_any_satisfy(memorias,(void*) sameID)){
 		list_add(memorias,memoria);
@@ -98,10 +100,45 @@ void agregar_socket_mem(int nro_memoria, int socket){
 	pthread_mutex_unlock(&memorias_sem);
 }
 
+void sacar_memoria(int nro_memoria){
+	bool sameID(t_memoria* mem){
+		return mem->id_mem == nro_memoria;
+	}
+	bool sameNroMem(t_memoriaTablaDeGossip* mem){
+		return mem->numeroDeMemoria == nro_memoria;
+	}
+	pthread_mutex_lock(&strong_consistency_sem);
+	if(strong_consistency != NULL){
+		if(strong_consistency->id_mem == nro_memoria){
+			strong_consistency = NULL;
+		}
+	}
+	pthread_mutex_unlock(&strong_consistency_sem);
+	pthread_mutex_lock(&strong_hash_consistency_sem);
+	list_remove_by_condition(strong_hash_consistency,(void*)sameID);
+	pthread_mutex_unlock(&strong_hash_consistency_sem);
+	pthread_mutex_lock(&eventual_consistency_sem);
+	list_remove_by_condition(eventual_consistency,(void*)sameID);
+	pthread_mutex_unlock(&eventual_consistency_sem);
+	pthread_mutex_lock(&memorias_sem);
+	list_remove_and_destroy_by_condition(memorias,(void*)sameID,(void*)free_memoria);
+	pthread_mutex_unlock(&memorias_sem);
+
+	list_remove_and_destroy_by_condition(memoriasALasQueMeConecte,(void*)sameNroMem, (void*)free_memoria_gossip);
+	printf("Aca borre la memoria %d porque se desconecto\n", nro_memoria);
+	puts("MEMORIAS A LAS QUE ME CONECTE \n");
+	mostrarmeMemoriasTablaGossip(memoriasALasQueMeConecte);
+	puts("MEMORIAS EN MI TABLA DE GOSSIP \n");
+	mostrarmeMemoriasTablaGossip(tablaDeGossipKernel);
+
+}
+
 t_lcb* crear_lcb(){
 	t_lcb* new_lcb = (t_lcb*)malloc(sizeof(t_lcb));
+	pthread_mutex_lock(&id_lcb_sem);
 	new_lcb->id_lcb = idLCB;
 	idLCB++;
+	pthread_mutex_unlock(&id_lcb_sem);
 	new_lcb->estado = NEW;
 	new_lcb->program_counter = 0;
 	new_lcb->operaciones = list_create();
@@ -149,6 +186,10 @@ void agregar_tabla(t_tabla* tabla){
 	return;
 }
 
+bool validar_consistencia(char* consistencia){
+	return string_equals_ignore_case(consistencia,"sc") || string_equals_ignore_case(consistencia,"shc") || string_equals_ignore_case(consistencia,"ec");
+}
+
 void free_lcb(t_lcb* lcb){
 	list_destroy_and_destroy_elements(lcb->operaciones,(void*) destruir_operacion);
 	free(lcb);
@@ -156,6 +197,12 @@ void free_lcb(t_lcb* lcb){
 }
 
 void destruir_operacion(t_LQL_operacion* op){
+	if(op->keyword == INSERT){
+		free(op->argumentos.INSERT.valor);
+	}
+	if(op->keyword == RUN){
+		free(op->argumentos.RUN.path);
+	}
 	if(op->_raw){
 		string_iterate_lines(op->_raw, (void*) free);
 		free(op->_raw);
@@ -211,6 +258,7 @@ void destruir_semaforos(){
 	pthread_mutex_destroy(&tablas_sem);
 	pthread_mutex_destroy(&selects_ejecutados_sem);
 	pthread_mutex_destroy(&inserts_ejecutados_sem);
+	pthread_mutex_destroy(&id_lcb_sem);
 	sem_destroy(&execute_sem);
 	return;
 }
@@ -223,7 +271,13 @@ void free_tabla(t_tabla* tabla){
 void free_memoria(t_memoria* memoria){
 	if(memoria->valida){
 		free(memoria->ip);
+		pthread_mutex_destroy(&(memoria->socket_mem_sem));
 	}
 	free(memoria);
 	return;
+}
+
+void free_memoria_gossip(t_memoriaTablaDeGossip* memoria){
+	free(memoria->ip);
+	free(memoria);
 }

@@ -12,67 +12,70 @@ void* setConsole(){
 		//INSTRUCCIÓN SELECT PARÁMETROS: [NOMBRE TABLA] [KEY]
 		if(!strncmp(linea,"select",6) || !strncmp(linea,"SELECT",4)){
 			cantidadParametros = 2;
-			int key;
 			char** parametros = obtenerParametros(linea,cantidadParametros + 1);
 			if(parametros[1] == NULL || string_is_empty(parametros[1])){
 				log_error(loggerKernel,"No se ha especificado un nombre de tabla");
+				freeParametros(parametros);
 			}
 			else if(parametros[2] == NULL || string_is_empty(parametros[2])){
 				log_error(loggerKernel,"No se ha especificado ninguna key");
+				freeParametros(parametros);
 			}
 			else{
-				key = atoi(parametros[2]);
-				crear_lql_select(parametros[1],key);
+				crear_lql_select(parametros);
 				log_info(loggerKernel,"La operación select fue ingresada la cola de ready");
 			}
-			freeParametros(parametros);
 		}
 		//INSTRUCCIÓN INSERT PARÁMETROS: [NOMBRE TABLA] [KEY] "[VALUE]"
 		else if(!strncmp(linea,"insert",6) || !strncmp(linea,"INSERT",4)){
 			cantidadParametros = 3;
-			int key;
 			char** parametros = obtenerParametros(linea,cantidadParametros + 1);
 			if(parametros[1] == NULL || string_is_empty(parametros[1])){
 				log_error(loggerKernel,"No se ha especificado un nombre de tabla");
+				freeParametros(parametros);
 			}
 			else if(parametros[2] == NULL || string_is_empty(parametros[2])){
 				log_error(loggerKernel,"No se ha especificado ninguna key");
+				freeParametros(parametros);
 			}
 			else if(parametros[3] == NULL || string_is_empty(parametros[3])){
 				log_error(loggerKernel,"No se ha especificado ningun valor");
+				freeParametros(parametros);
 			}
 			else{
-				key = atoi(parametros[2]);
-				char* palabra = quitarComillas(parametros[3]);
-				crear_lql_insert(parametros[1],key,palabra);
+				crear_lql_insert(parametros);
 				log_info(loggerKernel,"La operación insert fue ingresada la cola de ready");
 			}
-			freeParametros(parametros);
 		}
 		//INSTRUCCIÓN CREATE PARÁMETROS: [NOMBRE TABLA] [TIPO DE CONSISTENCIA] [CANTIDAD PARTICIONES] [TIEMPO DE COMPACTACION]
 		else if(!strncmp(linea,"create",6) || !strncmp(linea,"CREATE",4)){
 			cantidadParametros = 4;
-			int numeroParticiones,compactationTime;
 			char** parametros = obtenerParametros(linea,cantidadParametros + 1);
 			if(parametros[1] == NULL || string_is_empty(parametros[1])){
 				log_error(loggerKernel,"No se ha especificado un nombre de tabla");
+				freeParametros(parametros);
 			}
 			else if(parametros[2] == NULL || string_is_empty(parametros[2])){
 				log_error(loggerKernel,"No se ha especificado ningun tipo de consistencia");
+				freeParametros(parametros);
 			}
 			else if(parametros[3] == NULL || string_is_empty(parametros[3])){
 				log_error(loggerKernel,"No se ha especificado ninguna cantidad de particiones");
+				freeParametros(parametros);
 			}
 			else if(parametros[4] == NULL || string_is_empty(parametros[4])){
 				log_error(loggerKernel,"No se ha especificado ningun tiempo de compactación");
+				freeParametros(parametros);
+			}
+			else if(!validar_consistencia(parametros[2])){
+				log_error(loggerKernel,"La consistencia %s no es válida.",parametros[2]);
+				freeParametros(parametros);
 			}
 			else{
-				numeroParticiones = atoi(parametros[3]);
-				compactationTime = atoi(parametros[4]);
-				crear_lql_create(parametros[1],compactationTime,numeroParticiones,parametros[2]);
+				crear_lql_create(parametros);
 				log_info(loggerKernel,"La operación create fue ingresada la cola de ready");
 			}
-			freeParametros(parametros);
+
 		}
 		//INSTRUCCIÓN DESCRIE PARÁMETROS: [NOMBRE TABLA]
 		//SI NO HAY PARAMETROS SE DESCRIBEN TODAS LAS TABLAS
@@ -80,13 +83,12 @@ void* setConsole(){
 			cantidadParametros = 1;
 			char** parametros = obtenerParametros(linea,cantidadParametros + 1);
 			if(parametros[1] == NULL || string_is_empty(parametros[1])){
-				crear_lql_describe("");
+				crear_lql_describe(parametros);
 			}
 			else{
-				crear_lql_describe(parametros[1]);
+				crear_lql_describe(parametros);
 				log_info(loggerKernel,"La operación describe fue ingresada la cola de ready");
 			}
-			freeParametros(parametros);
 		}
 		//INSTRUCCIÓN DROP PARÁMETROS: [NOMBRE TABLA]
 		else if(!strncmp(linea,"drop",4) || !strncmp(linea,"DROP",4)){
@@ -94,12 +96,12 @@ void* setConsole(){
 			char** parametros = obtenerParametros(linea,cantidadParametros + 1);
 			if(parametros[1] == NULL || string_is_empty(parametros[1])){
 				log_error(loggerKernel,"No se ha especificado un nombre de tabla");
+				freeParametros(parametros);
 			}
 			else{
-				crear_lql_drop(parametros[1]);
+				crear_lql_drop(parametros);
 				log_info(loggerKernel,"La operación drop fue ingresada la cola de ready");
 			}
-			freeParametros(parametros);
 		}
 		//INSTRUCCIÓN JOURNAL NO TIENE PARÁMETROS
 		else if(string_equals_ignore_case(linea,"journal")){
@@ -117,6 +119,9 @@ void* setConsole(){
 			else if(parametros[4] == NULL || string_is_empty(parametros[4])){
 				log_error(loggerKernel,"No se ha especificado ningún criterio");
 			}
+			else if(!validar_consistencia(parametros[4])){
+				log_error(loggerKernel,"La consistencia %s no es válida.",parametros[4]);
+			}
 			else{
 				memoria = atoi(parametros[2]);
 				crear_lql_add(parametros[4],memoria);
@@ -132,8 +137,10 @@ void* setConsole(){
 				log_error(loggerKernel,"No se ha especificado ningún path LQL");
 			}
 			else{
-				crear_lql_run(parametros[1]);
+				char* path = string_from_format("%s",parametros[1]);
+				crear_lql_run(path);
 				log_info(loggerKernel,"La operación run fue ingresada la cola de ready");
+				free(path);
 			}
 			freeParametros(parametros);
 		}
@@ -163,66 +170,71 @@ void freeParametros(char** parametros){
 	free(parametros);
 }
 
-void crear_lql_select(char* nombre_tabla, int key){
+void crear_lql_select(char** parametros){
 	t_lcb* lcb = crear_lcb();
 	t_LQL_operacion* op = (t_LQL_operacion*) malloc(sizeof(t_LQL_operacion));
-	op->_raw = NULL;
 	op->keyword = SELECT;
-	op->argumentos.SELECT.key = key;
-	op->argumentos.SELECT.nombre_tabla = nombre_tabla;
+	op->argumentos.SELECT.key = atoi(parametros[2]);
+	op->argumentos.SELECT.nombre_tabla = parametros[1];
 	op->success = true;
+	op->_raw = parametros;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
 }
 
-void crear_lql_insert(char* nombre_tabla, int key, char* value){
+void crear_lql_insert(char** parametros){
 	t_lcb* lcb = crear_lcb();
 	t_LQL_operacion* op = (t_LQL_operacion*) malloc(sizeof(t_LQL_operacion));
-	op->_raw = NULL;
+	op->_raw = parametros;
 	op->keyword = INSERT;
-	op->argumentos.INSERT.key = key;
-	op->argumentos.INSERT.nombre_tabla = nombre_tabla;
-	op->argumentos.INSERT.valor = value;
+	op->argumentos.INSERT.key = atoi(parametros[2]);
+	op->argumentos.INSERT.nombre_tabla = parametros[1];
+	op->argumentos.INSERT.valor = quitarComillas(parametros[3]);
 	op->success = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
 }
 
-void crear_lql_create(char* nombre_tabla, int compactation_time, int cant_particiones, char* consistencia){
+void crear_lql_create(char** parametros){
 	t_lcb* lcb = crear_lcb();
 	t_LQL_operacion* op = (t_LQL_operacion*) malloc(sizeof(t_LQL_operacion));
-	op->_raw = NULL;
+	op->_raw = parametros;
 	op->keyword = CREATE;
-	op->argumentos.CREATE.nombre_tabla = nombre_tabla;
-	op->argumentos.CREATE.compactation_time = compactation_time;
-	op->argumentos.CREATE.numero_particiones = cant_particiones;
-	op->argumentos.CREATE.tipo_consistencia = consistencia;
+	op->argumentos.CREATE.nombre_tabla = parametros[1];
+	op->argumentos.CREATE.compactation_time = atoi(parametros[4]);
+	op->argumentos.CREATE.numero_particiones = atoi(parametros[3]);
+	op->argumentos.CREATE.tipo_consistencia = parametros[2];
 	op->success = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
 }
 
-void crear_lql_describe(char* nombre_tabla){
+void crear_lql_describe(char** parametros){
 	t_lcb* lcb = crear_lcb();
 	t_LQL_operacion* op = (t_LQL_operacion*) malloc(sizeof(t_LQL_operacion));
-	op->_raw = NULL;
 	op->keyword = DESCRIBE;
-	op->argumentos.DESCRIBE.nombre_tabla = nombre_tabla;
 	op->success = true;
+	op->_raw = parametros;
+	if(parametros[1] == NULL || string_is_empty(parametros[1])){
+		op->argumentos.DESCRIBE.nombre_tabla = "";
+	}
+	else{
+		op->argumentos.DESCRIBE.nombre_tabla = parametros[1];
+	}
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
 }
 
-void crear_lql_drop(char* nombre_tabla){
+void crear_lql_drop(char** parametros){
 	t_lcb* lcb = crear_lcb();
 	t_LQL_operacion* op = (t_LQL_operacion*) malloc(sizeof(t_LQL_operacion));
-	op->_raw = NULL;
+	op->_raw = parametros;
 	op->keyword = DROP;
-	op->argumentos.DROP.nombre_tabla = nombre_tabla;
+	op->argumentos.DROP.nombre_tabla = parametros[1];
 	op->success = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
@@ -258,7 +270,8 @@ void crear_lql_run(char* path){
 	t_LQL_operacion* op = (t_LQL_operacion*) malloc(sizeof(t_LQL_operacion));
 	op->_raw = NULL;
 	op->keyword = RUN;
-	op->argumentos.RUN.path = path;
+	op->argumentos.RUN.path = malloc(strlen(path)+1);
+	strcpy(op->argumentos.RUN.path, path);
 	op->success = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);

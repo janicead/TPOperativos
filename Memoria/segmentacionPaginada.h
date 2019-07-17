@@ -48,13 +48,26 @@ typedef struct {
 	t_registro* registro;
 }t_JOURNAL;
 
+typedef struct{
+	t_JOURNAL datosJOURNAL;
+	char* valorObtenido;
+
+}t_INSERTJOURNAL;
+
 pthread_mutex_t semTablaSegmentos;
 pthread_mutex_t semCantMaxMarcos;
 pthread_mutex_t semCantMarcosIngresados;
 pthread_mutex_t semMarcosOcupados;
 pthread_mutex_t semMemoriaPrincipal;
+pthread_mutex_t semMP;
+pthread_mutex_t semLfs;
+
+
+
 //Parametros globales modificables
 t_list* tablaDeSegmentos; //elementos de tipo t_segmento
+t_list* journalRespuestas;
+
 int cantMaxMarcos;
 int cantMarcosIngresados;
 int* marcosOcupados;
@@ -68,11 +81,12 @@ int tamanioMemoriaPrincipal;
 int tamanioMaxMemoria;
 
 //----------------------------------------GENERALES--------------------------------------------------------------//
-void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS);
+void definirTamanioMemoriaPrincipal(int tamanioValue);
 void iniciarSemaforos();
 int tamanioLista(t_list * lista);
 char* recibirRespuestaSELECTMemoriaLfs();
 void mostrarDatosMarcos();
+void retardoMemoriaAplicado();
 //-------------------------------------BORRADO------------------------------------------------------------------//
 void destructor2(t_pagina * pagina);
 void destructor(t_segmento* segmento);
@@ -105,6 +119,8 @@ t_LRU * LRU ();
 void mostrarElementosListaJournal();
 char* convertirAStringListaJournal();
 void iniciarJournal();
+bool pasarAUint162(const char *str, uint16_t *res) ;
+void descomposicionDelJOURNAL(char* journalGigante);
 //---------------------------------------REQUESTS--------------------------------------------------------//
 char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado);
 char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long int timeStamp);

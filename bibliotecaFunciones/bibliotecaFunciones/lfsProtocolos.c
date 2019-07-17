@@ -8,7 +8,6 @@ int realizarHandshakeAlLFS(t_log *logger,int socketServer, char *msjEnviado)
 	int protocoloID = 11; // 11: Handshake
 	int tamanioPagina;
 
-	printf("Enviando '%s'...\n",msjEnviado);
 	empaquetarEnviarMensaje(socketServer,protocoloID,strlen(msjEnviado),msjEnviado);
 	//printf("\nPAQUETE ENVIADO\n");
 
@@ -23,8 +22,11 @@ int realizarHandshakeAlLFS(t_log *logger,int socketServer, char *msjEnviado)
 	}
 	else
 	{
-		tamanioPagina = atoi(package->Datos);
-		log_info(logger,"LISSANDRA: Tamanio de pagina = %d",tamanioPagina);
+		char* valor = malloc(strlen(package->Datos)+1);
+		strcpy(valor, package->Datos);
+		tamanioPagina = atoi(valor);
+		free(valor);
+		log_info(logger,"LISSANDRA: Tamanio de VALUE = %d",tamanioPagina);
 		log_info(logger,"Handshake  con socket %d: DONE!", socketServer);
 
 	}
@@ -59,6 +61,10 @@ char *opSELECT(int socketReceptor, char* unNombreTabla, int unaKey)
 	printf("fd: %d\n",socketReceptor); ///
 	printf("package->ID: %d\n",packageRecibido->ID); ///
 
+	if(packageRecibido->ID == 0){
+		return "MEMORIA_DESCONECTADA";
+	}
+
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
 	freePackage(packageRecibido);
 
@@ -92,6 +98,10 @@ char *opINSERT(int socketReceptor, char* unNombreTabla, int unaKey, char* unValu
 	printf("fd: %d\n",socketReceptor); ///
 	printf("package->ID: %d\n",packageRecibido->ID); ///
 
+	if(packageRecibido->ID == 0){
+		return "MEMORIA_DESCONECTADA";
+	}
+
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
 	freePackage(packageRecibido);
 
@@ -122,6 +132,10 @@ char *opCREATE(int socketReceptor, char* unNombreTabla, char* unaConsistencia, i
 	t_PaqueteDeDatos *packageRecibido = recibirPaquete(socketReceptor);
 	printf("fd: %d\n",socketReceptor); ///
 	printf("package->ID: %d\n",packageRecibido->ID); ///
+
+	if(packageRecibido->ID == 0){
+		return "MEMORIA_DESCONECTADA";
+	}
 
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
 	freePackage(packageRecibido);
@@ -154,6 +168,10 @@ char *opDESCRIBE(int socketReceptor, char* unNombreTabla)
 	printf("fd: %d\n",socketReceptor); ///
 	printf("package->ID: %d\n",packageRecibido->ID); ///
 
+	if(packageRecibido->ID == 0){
+		return "MEMORIA_DESCONECTADA";
+	}
+
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
 	freePackage(packageRecibido);
 
@@ -185,11 +203,30 @@ char *opDROP(int socketReceptor, char* unNombreTabla)
 	printf("fd: %d\n",socketReceptor); ///
 	printf("package->ID: %d\n",packageRecibido->ID); ///
 
+	if(packageRecibido->ID == 0){
+		return "MEMORIA_DESCONECTADA";
+	}
+
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
 	freePackage(packageRecibido);
 
 	return respuesta;
 }
 char* opJOURNAL(int socketReceptor){
+	int protocoloID = 23;
+	t_UnString* mensaje = definirT_UnString("JOURNAL");
+	char* mensaje_serializado = serializarT_UnString(mensaje);
+	int tamanioStructSerializado = (sizeof(uint32_t)) + mensaje->longString;
+	empaquetarEnviarMensaje(socketReceptor,protocoloID, tamanioStructSerializado, mensaje_serializado);
+	free(mensaje_serializado);
+	freeT_UnString(mensaje);
 
+	t_PaqueteDeDatos* packageRecibido = recibirPaquete(socketReceptor);
+	if(packageRecibido->ID == 0){
+		return "MEMORIA_DESCONECTADA";
+	}
+
+	char* respuesta = deserializarRespuesta(packageRecibido->Datos);
+	freePackage(packageRecibido);
+	return respuesta;
 }

@@ -45,6 +45,7 @@ void* ejecutar(){
 					operacion->success = true;
 					break;
 			}
+			sleep(sleep_time);
 			if(!operacion->success){
 				lcb->abortar = true;
 				break;
@@ -52,7 +53,6 @@ void* ejecutar(){
 			lcb->program_counter++;
 			lcb->abortar = false;
 			quantum--;
-			usleep(sleep_time*100);
 		}
 		if(lcb->program_counter >= list_size(lcb->operaciones) || lcb->abortar){
 			pasar_lcb_a_exit(lcb);
@@ -92,14 +92,34 @@ void lql_select(t_LQL_operacion* operacion){
 		operacion->success = false;
 		return;
 	}
+	pthread_mutex_lock(&(memoria->socket_mem_sem));
 	char* respuesta = opSELECT(memoria->socket_mem,operacion->argumentos.SELECT.nombre_tabla, operacion->argumentos.SELECT.key);
-	puts(respuesta);
+
+	if(verificar_memoria_caida(respuesta,operacion,memoria->id_mem)){
+		return;
+	}
+	pthread_mutex_unlock(&(memoria->socket_mem_sem));
+	char** valor =string_split(respuesta, " ");
+	if(string_equals_ignore_case(valor[0],"NO_EXISTE_TABLA")){
+		log_error(loggerKernel, "No se realizar SELECT %s %d ya que la tabla %s no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.nombre_tabla);
+		operacion->success = false;
+		freeParametros(valor);
+		return;
+	}
+	if(string_equals_ignore_case(valor[0],"NO_EXISTE_VALUE")){
+		log_error(loggerKernel, "No se realizar SELECT %s %d ya que la key %d no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.key);
+		operacion->success = false;
+		freeParametros(valor);
+		return;
+	}
+	freeParametros(valor);
+	log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
 	time_t tiempo_fin = time(NULL);
 	t_select_ejecutado* select = (t_select_ejecutado*)malloc(sizeof(t_select_ejecutado));
 	select->tiempo_fin = tiempo_fin;
 	select->tiempo_inicio = tiempo_inicio;
 	pthread_mutex_lock(&selects_ejecutados_sem);
-	list_add(selects_ejecutados,(void*)select);
+	list_add(selects_ejecutados,select);
 	pthread_mutex_unlock(&selects_ejecutados_sem);
 	operacion->success = true;
 	pthread_mutex_lock(&memorias_sem);
@@ -127,15 +147,30 @@ void lql_insert(t_LQL_operacion* op){
 		op->success = false;
 		return;
 	}
+	pthread_mutex_lock(&(memoria->socket_mem_sem));
 	unsigned long int timestamp = obtenerTimeStamp();
 	char* resp = opINSERT(memoria->socket_mem, op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key,op->argumentos.INSERT.valor,timestamp);
-	puts(resp);
+	if(verificar_memoria_caida(resp,op,memoria->id_mem)){
+		return;
+	}
+	pthread_mutex_unlock(&(memoria->socket_mem_sem));
+	char** valor =string_split(resp, " ");
+	if(string_equals_ignore_case(valor[0],"NO_EXISTE_TABLA")){
+		log_error(loggerKernel, "No se pudo realizar: INSERT %s %d %s ya que la tabla %s no existe.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor, op->argumentos.INSERT.nombre_tabla);
+		op->success = false;
+		freeParametros(valor);
+		return;
+	}
+	else{
+		log_info(loggerKernel, "INSERT %s %d %s realizado correctamente.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
+	}
+	freeParametros(valor);
 	time_t tiempo_fin = time(NULL);
 	t_insert_ejecutado* insert = (t_insert_ejecutado*)malloc(sizeof(t_insert_ejecutado));
 	insert->tiempo_fin = tiempo_fin;
 	insert->tiempo_inicio = tiempo_inicio;
 	pthread_mutex_lock(&inserts_ejecutados_sem);
-	list_add(inserts_ejecutados,(void*)insert);
+	list_add(inserts_ejecutados,insert);
 	pthread_mutex_unlock(&inserts_ejecutados_sem);
 	op->success = true;
 	pthread_mutex_lock(&memorias_sem);
@@ -153,8 +188,13 @@ void lql_create(t_LQL_operacion* op){
 		op->success = false;
 		return;
 	}
+	pthread_mutex_lock(&(memoria->socket_mem_sem));
 	char* resp = opCREATE(memoria->socket_mem, op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
 			op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time);
+	if(verificar_memoria_caida(resp,op,memoria->id_mem)){
+		return;
+	}
+	pthread_mutex_unlock(&(memoria->socket_mem_sem));
 	puts(resp);
 	op->success = true;
 	free(resp);
@@ -163,8 +203,15 @@ void lql_create(t_LQL_operacion* op){
 
 void lql_describe(t_LQL_operacion* op){
 	if(string_is_empty(op->argumentos.DESCRIBE.nombre_tabla)){
+		pthread_mutex_lock(&memorias_sem);
 		t_memoria* mem = random_memory(memorias);
+		pthread_mutex_unlock(&memorias_sem);
+		pthread_mutex_lock(&(mem->socket_mem_sem));
 		char* resp = opDESCRIBE(mem->socket_mem, "");
+		if(verificar_memoria_caida(resp,op,mem->id_mem)){
+			return;
+		}
+		pthread_mutex_unlock(&(mem->socket_mem_sem));
 		puts(resp);
 		free(resp);
 		op->success = true;
@@ -186,7 +233,12 @@ void lql_describe(t_LQL_operacion* op){
 			op->success = false;
 			return;
 		}
+		pthread_mutex_lock(&(memoria->socket_mem_sem));
 		char* resp = opDESCRIBE(memoria->socket_mem,op->argumentos.DESCRIBE.nombre_tabla);
+		if(verificar_memoria_caida(resp,op,memoria->id_mem)){
+			return;
+		}
+		pthread_mutex_unlock(&(memoria->socket_mem_sem));
 		puts(resp);
 		free(resp);
 		op->success = true;
@@ -210,15 +262,19 @@ void lql_drop(t_LQL_operacion* op){
 		op->success = false;
 		return;
 	}
+	pthread_mutex_lock(&(memoria->socket_mem_sem));
 	char* resp = opDROP(memoria->socket_mem, op->argumentos.DROP.nombre_tabla);
+	if(verificar_memoria_caida(resp,op,memoria->id_mem)){
+		return;
+	}
+	pthread_mutex_unlock(&(memoria->socket_mem_sem));
 	char** valor =string_split(resp, " ");
-	if(!strcasecmp(valor[0],"ERROR")){
+	if(string_equals_ignore_case(valor[0],"NO_EXISTE_TABLA")){
 		log_error(loggerKernel, "No se pudo borrar la tabla %s ya que no existe", op->argumentos.DROP.nombre_tabla);
 	}
 	else{
 		log_info(loggerKernel, "Se borro la tabla %s correctamente", op->argumentos.DROP.nombre_tabla);
 	}
-	puts(resp);
 	freeParametros(valor);
 	free(resp);
 	op->success = true;
@@ -227,20 +283,16 @@ void lql_drop(t_LQL_operacion* op){
 
 void lql_journal(t_list* list_mem, t_LQL_operacion* op){
 	for(int i = 0; i < list_size(list_mem); i++){
-		/*t_memoria* memoria = list_get(list_mem,i);
+		t_memoria* memoria = list_get(list_mem,i);
+		pthread_mutex_lock(&(memoria->socket_mem_sem));
 		char* resp = opJOURNAL(memoria->socket_mem);
-		char** valor =string_split(resp, " ");
-		if(!strcasecmp(valor[0],"ERROR")){
-			log_error(loggerKernel, "Hubo un problema al realizar el JOURNAL de la memoria numero %d", memoria->id_mem);
+		pthread_mutex_unlock(&(memoria->socket_mem_sem));
+		if(!verificar_memoria_caida(resp,op,memoria->id_mem)){
+			log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
 		}
-		else{
-			log_info(loggerKernel, "Se hizo JOURNAL de la memoria numero %d",memoria->id_mem);
-		}
-		freeParametros(valor);
-		free(resp);*/
+		free(resp);
 	}
 	op->success = true;
-
 	return;
 }
 
@@ -321,6 +373,7 @@ void lql_run(FILE* archivo, t_LQL_operacion* op){
 	        else {
 	            log_error(loggerKernel, "La linea %s no es valida", linea);
 	            op->success = false;
+	            free(linea);
 	            return;
 	        }
 	}
@@ -334,8 +387,7 @@ void lql_run(FILE* archivo, t_LQL_operacion* op){
 }
 
 double tiempoPromedioSelect(){
-	double tiempo_total, promedio;
-	pthread_mutex_lock(&selects_ejecutados_sem);
+	double tiempo_total = 0, promedio = 0;
 	if(!list_is_empty(selects_ejecutados)){
 		for(int i = 0; i < list_size(selects_ejecutados); i++){
 			t_select_ejecutado* select = list_get(selects_ejecutados,i);
@@ -346,40 +398,33 @@ double tiempoPromedioSelect(){
 	else{
 		promedio = 0;
 	}
-	pthread_mutex_unlock(&selects_ejecutados_sem);
 	return promedio;
 }
 
 double tiempoPromedioInsert(){
-	double tiempo_total, promedio;
-	pthread_mutex_lock(&inserts_ejecutados_sem);
+	double tiempo_total = 0, promedio = 0;
 	if(!list_is_empty(inserts_ejecutados)){
 		for(int i = 0; i < list_size(inserts_ejecutados); i++){
-			t_select_ejecutado* select = list_get(inserts_ejecutados,i);
-			tiempo_total += (1000*difftime(select->tiempo_fin, select->tiempo_inicio)); //Multiplico por 1000 para tener el resultado en ms ya que en seg sería muy pequeño
+			t_insert_ejecutado* insert = list_get(inserts_ejecutados,i);
+			tiempo_total += (1000*difftime(insert->tiempo_fin, insert->tiempo_inicio)); //Multiplico por 1000 para tener el resultado en ms ya que en seg sería muy pequeño
 		}
 		promedio = tiempo_total / list_size(inserts_ejecutados);
 	}
 	else{
 		promedio = 0;
 	}
-	pthread_mutex_unlock(&inserts_ejecutados_sem);
 	return promedio;
 }
 
 int cantidadSelects(){
 	int cantidad;
-	pthread_mutex_lock(&selects_ejecutados_sem);
 	cantidad = list_size(selects_ejecutados);
-	pthread_mutex_unlock(&selects_ejecutados_sem);
 	return cantidad;
 }
 
 int cantidadInserts(){
 	int cantidad;
-	pthread_mutex_lock(&inserts_ejecutados_sem);
 	cantidad = list_size(inserts_ejecutados);
-	pthread_mutex_unlock(&inserts_ejecutados_sem);
 	return cantidad;
 }
 
@@ -392,24 +437,24 @@ int porcentajeSelectsInserts(int cant_selects_inserts_ejecutados){
 }
 
 void memoryLoad(){
-	pthread_mutex_lock(&memorias_sem);
-	pthread_mutex_lock(&selects_ejecutados_sem);
-	pthread_mutex_lock(&inserts_ejecutados_sem);
 	for(int i = 0; i < list_size(memorias); i++){
-		t_memoria* mem = list_get(memorias,0);
-		log_info(loggerKernelConsola,"Memory Load: Memory %d porcentaje de uso: %d%%",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados));
+		t_memoria* mem = list_get(memorias,i);
+		log_info(loggerKernel,"Memory Load: Memory %d porcentaje de uso: %d%%",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados));
 	}
-	pthread_mutex_unlock(&inserts_ejecutados_sem);
-	pthread_mutex_unlock(&selects_ejecutados_sem);
-	pthread_mutex_unlock(&memorias_sem);
 }
 
 void lql_metrics(){
-	log_info(loggerKernelConsola,"Read Latency / 30s: %lf ms", tiempoPromedioSelect());
-	log_info(loggerKernelConsola,"Write Latency / 30s: %lf ms", tiempoPromedioInsert());
-	log_info(loggerKernelConsola,"Reads / 30s: %d", cantidadSelects());
-	log_info(loggerKernelConsola,"Writes / 30s: %d", cantidadInserts());
+	pthread_mutex_lock(&memorias_sem);
+	pthread_mutex_lock(&selects_ejecutados_sem);
+	pthread_mutex_lock(&inserts_ejecutados_sem);
+	log_info(loggerKernel,"Read Latency / 30s: %lf ms", tiempoPromedioSelect());
+	log_info(loggerKernel,"Write Latency / 30s: %lf ms", tiempoPromedioInsert());
+	log_info(loggerKernel,"Reads / 30s: %d", cantidadSelects());
+	log_info(loggerKernel,"Writes / 30s: %d", cantidadInserts());
 	memoryLoad();
+	pthread_mutex_unlock(&inserts_ejecutados_sem);
+	pthread_mutex_unlock(&selects_ejecutados_sem);
+	pthread_mutex_unlock(&memorias_sem);
 	return;
 }
 
@@ -442,11 +487,8 @@ void* refresh_metadata_timer(){
 		int refresh_metadata = configKernel.metadata_refresh;
 		pthread_mutex_unlock(&config_sem);
 		sleep(refresh_metadata);
-		pthread_mutex_lock(&memorias_sem);
-		t_memoria* mem = random_memory(memorias);
-		pthread_mutex_unlock(&memorias_sem);
-		char* respuesta = opDESCRIBE(mem->socket_mem,"");
-		free(respuesta);
+		char** parametros = string_n_split("DESCRIBE",2," ");
+		crear_lql_describe(parametros);
 	}
 	return NULL;
 }
@@ -532,3 +574,21 @@ t_memoria* random_memory(t_list* lista){
 	return list_get(lista,index);
 }
 
+bool verificar_memoria_caida(char* respuesta,t_LQL_operacion* op, int id_mem){
+	if(string_equals_ignore_case(respuesta,"MEMORIA_DESCONECTADA")){
+		log_error(loggerKernel,"La memoria %d fue desconectada.", id_mem);
+		op->success = true; //ESTE TIPO DE ERROR NO CORTA LA EJECUCIÓN DEL RESTO DE ARCHIVO LQL
+		sacar_memoria(id_mem);
+		return true;
+	}
+	return false;
+}
+
+bool verificar_memoria_caida2(char* respuesta, int id_mem){
+	if(string_equals_ignore_case(respuesta,"MEMORIA_DESCONECTADA")){
+		log_error(loggerKernel,"La memoria %d fue desconectada.", id_mem);
+		sacar_memoria(id_mem);
+		return true;
+	}
+	return false;
+}

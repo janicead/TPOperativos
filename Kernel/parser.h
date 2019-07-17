@@ -10,5 +10,9 @@
 
 t_LQL_operacion* parse(char* linea);
 t_LQL_operacion* parse_error();
+char* quitarEspacioFalso(char* value);
+
+
+
 
 #endif /* PARSER_H_ */

@@ -14,8 +14,11 @@ void* crearConsolaMemoria(){
 		operacion = string_split(linea," ");
 		uint16_t * key = malloc(sizeof(uint16_t));
 
+		if(string_is_empty(linea)){
+			log_error(loggerMemoria, "No se ingresó ningún comando.");
+		}
 
-		if(string_equals_ignore_case(operacion[0],"INSERT")){
+		else if(string_equals_ignore_case(operacion[0],"INSERT")){
 
 			int tamanio = tamanioArray((void**)operacion);
 			char*lineadup = string_new();
@@ -52,45 +55,79 @@ void* crearConsolaMemoria(){
 			free(lineadup);
 			}
 		}
-
 		if(validarComando(linea, loggerMemoria)){
 			switch(comandoDeString(operacion[0])){
 				case CMD_SELECT:
 					if (pasarAUint16(operacion[2], key)){
 					char* valor = SELECTMemoria(operacion[1], *key, 0);
-					printf("Respuesta SELECT: '%s' \n", valor);
+					if(string_equals_ignore_case(valor, "NO_EXISTE_TABLA")){
+						log_error(loggerMemoria, "La tabla '%s' no existe.", operacion[1]);
+					}else if(string_equals_ignore_case(valor, "NO_EXISTE_VALUE")){
+						log_error(loggerMemoria, "La key '%s' de la tabla '%s', no existe.", operacion[2], operacion[1]);
+					}else{
+						log_info(loggerMemoria, "La respuesta de la request SELECT %s %s -> %s", operacion[1], operacion[2], valor);
+					}
+					free(valor);
 					}
 					mostrarElementosMemoriaPrincipal();
 					mostrarElementosTablaSegmentos();
 					mostrarDatosMarcos();
+
 					break;
 				case CMD_INSERT:
 					if (pasarAUint16(operacion[2], key)){
 						char *ptr;
 						unsigned long int timestamp = strtoul(operacion[4], &ptr, 10);
-						char* value = quitarEspacioFalso(operacion[3]);
+						char* value = quitarEspacioFalsoMemoria(operacion[3]);
+						pthread_mutex_lock(&semMemoriaPrincipal);
 						INSERTMemoria(operacion[1], *key, value, timestamp);
 						free(value);
+						pthread_mutex_lock(&semConfig);
+						int retardoMemoriaPrincipal1 = configMemoria.retardoAccesoMemoriaPrincipal;
+						pthread_mutex_unlock(&semConfig);
+						sleep(retardoMemoriaPrincipal1);
+						pthread_mutex_unlock(&semMemoriaPrincipal);
 					}
 					mostrarElementosMemoriaPrincipal(memoriaPrincipal);
 					mostrarElementosTablaSegmentos();
 					mostrarDatosMarcos();
 					break;
 				case CMD_CREATE:
-					printf("COMANDO CREATE\n");
+					printf("CREATE\n");
 					int nroParticiones = atoi(operacion[3]);
 					int compactionTime = atoi(operacion[4]);
-					CREATEMemoria(operacion[1], operacion[2], nroParticiones, compactionTime);
+					char* valor = CREATEMemoria(operacion[1], operacion[2], nroParticiones, compactionTime);
+					if(string_equals_ignore_case(valor, "YA_EXISTE_TABLA")){
+						log_error(loggerMemoria, "La tabla '%s' ya existe.", operacion[1]);
+					}else if(string_equals_ignore_case(valor, "NO_HAY_ESPACIO")){
+						log_error(loggerMemoria, "En estos momentos no hay espacio suficiente.");
+					}else{
+						log_info(loggerMemoria, "La tabla '%s' fue creada correctamente.", operacion[1]);
+					}
+					free(valor);
 					break;
 				case CMD_DESCRIBE:
 					printf("COMANDO DESCRIBE\n");
 					break;
 				case CMD_DROP:
-					DROPMemoria(operacion[1]);
-					printf("COMANDO DROP\n");
+					pthread_mutex_lock(&semMemoriaPrincipal);
+					char* value = DROPMemoria(operacion[1]);
+					pthread_mutex_lock(&semConfig);
+					int retardoMemoriaPrincipal2 = configMemoria.retardoAccesoMemoriaPrincipal;
+					pthread_mutex_unlock(&semConfig);
+					sleep(retardoMemoriaPrincipal2);
+					pthread_mutex_unlock(&semMemoriaPrincipal);
+					log_info(loggerMemoria,value);
+					free(value);
 					break;
 				case CMD_JOURNAL:
+					pthread_mutex_lock(&semMemoriaPrincipal);
 					JOURNALMemoria();
+					pthread_mutex_lock(&semConfig);
+					int retardoMemoriaPrincipal3 = configMemoria.retardoAccesoMemoriaPrincipal;
+					pthread_mutex_unlock(&semConfig);
+					sleep(retardoMemoriaPrincipal3);
+					pthread_mutex_unlock(&semMemoriaPrincipal);
 					break;
 				case CMD_NOENCONTRADO:default:
 					log_error(loggerMemoria, "No se reconoce el comando.");
@@ -116,34 +153,7 @@ bool pasarAUint16(const char *str, uint16_t *res) {
     return true;
 }
 
-int buscarFinalValue(char** value){
-	char c = '"';
-	char *ptr = malloc(2*sizeof(char));
-	ptr[0] = c;
-	ptr[1] = '\0';
-
-	int cantElementos= tamanioArray((void**)value);
-	for(int i = 4; i< cantElementos; i++){
-		if(string_ends_with(value[i], ptr)){
-			free(ptr);
-			return i;
-		}
-	}
-	free(ptr);
-	return 0;
-}
-
-char* armarValue(char** value){
-	int ultimaPosicion = buscarFinalValue(value);
-	char* operacionFinal = strdup(value[3]);
-	for( int i = 4 ; i <= ultimaPosicion; i ++){
-		string_append(&operacionFinal, ";");
-		string_append(&operacionFinal, value[i]);
-
-	}
-	return operacionFinal;
-}
-char* quitarEspacioFalso(char* value){
+char* quitarEspacioFalsoMemoria(char* value){
 	char* operacionFinal = string_new();
 	char** valuearray = string_split(value, ";");
 	int tamanio = tamanioArray((void**)valuearray);
@@ -151,7 +161,8 @@ char* quitarEspacioFalso(char* value){
 		free(operacionFinal);
 		hacerFreeArray((void**)valuearray);
 		free(valuearray);
-		return quitarComillas(value);
+		char* valor = quitarComillas(value);
+		return valor;
 	}else {
 	for(int i = 0; i < tamanio; i ++){
 		string_append(&operacionFinal, valuearray[i]);
@@ -170,14 +181,4 @@ char* quitarEspacioFalso(char* value){
 	return v;
 	}
 }
-
-
-char* quitarComillas(char* valor){
-	return string_split(valor, "\"")[0];
-}
-
-
-
-
-
 

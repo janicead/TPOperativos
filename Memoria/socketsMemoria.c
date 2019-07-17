@@ -21,8 +21,8 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		uint16_t key = (uint16_t) unSELECT->KEY;
 		char* Respuesta = SELECTMemoria(unSELECT->nombreTabla,key,0);
 		enviarRespuesta(socketEmisor,id_respuesta_select,Respuesta);
-
 		freeT_SELECT(unSELECT);
+		free(Respuesta);
 	}
 
 	if(packageRecibido->ID == 15){ //15: INSERT
@@ -31,12 +31,21 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		unINSERT = deserializarT_INSERT(packageRecibido->Datos);
 		log_info(loggerMemoria,"Query recibido: INSERT [%s] [%d] [%s] [%d]",unINSERT->nombreTabla,unINSERT->KEY,unINSERT->Value,unINSERT->timeStamp);
 
-		uint16_t key = (uint16_t) unINSERT->KEY;
+		uint16_t key = unINSERT->KEY;
 
-		char* respuesta = INSERTMemoria(unINSERT->nombreTabla,key, unINSERT->Value, (unsigned long int)unINSERT->timeStamp);
+		pthread_mutex_lock(&semMemoriaPrincipal);
+
+		char* respuesta = INSERTMemoria(unINSERT->nombreTabla,key, unINSERT->Value,  (unsigned long int)unINSERT->timeStamp);
 		enviarRespuesta(socketEmisor,id_respuesta_insert,respuesta);
-
 		freeT_INSERT(unINSERT);
+
+		pthread_mutex_lock(&semConfig);
+		int retardoMemoriaPrincipal = configMemoria.retardoAccesoMemoriaPrincipal;
+		pthread_mutex_unlock(&semConfig);
+		sleep(retardoMemoriaPrincipal);
+		pthread_mutex_unlock(&semMemoriaPrincipal);
+
+
 	}
 
 	if(packageRecibido->ID == 17){ //17: CREATE
@@ -79,10 +88,18 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		unDROP = deserializarT_DROP(packageRecibido->Datos);
 		log_info(loggerMemoria, "Query recibido: DESCRIBE [%s]",unDROP->nombreTabla);
 
+		pthread_mutex_lock(&semMemoriaPrincipal);
+
 		char* respuesta = DROPMemoria(unDROP->nombreTabla);
 		enviarRespuesta(socketEmisor,id_respuesta_drop,respuesta);
 
 		freeT_DROP(unDROP);
+		pthread_mutex_lock(&semConfig);
+		int retardoMemoriaPrincipal = configMemoria.retardoAccesoMemoriaPrincipal;
+		pthread_mutex_unlock(&semConfig);
+		sleep(retardoMemoriaPrincipal);
+		pthread_mutex_unlock(&semMemoriaPrincipal);
+
 	}
 	if(packageRecibido->ID == 23){ // JOURNAL
 
@@ -90,25 +107,36 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 
 		log_info(loggerMemoria, "Query recibido: JOURNAL [%s]",packageRecibido->Datos);
 
-		//char* respuesta = DROPMemoria(unDROP->nombreTabla);
+		pthread_mutex_lock(&semMemoriaPrincipal);
+
+		JOURNALMemoria();
 		enviarRespuesta(socketEmisor,id_respuesta_journal,"Todo ok");
 
-	}
-	freePackage(packageRecibido);
-}
+		pthread_mutex_lock(&semConfig);
+		int retardoMemoriaPrincipal = configMemoria.retardoAccesoMemoriaPrincipal;
+		pthread_mutex_unlock(&semConfig);
+		sleep(retardoMemoriaPrincipal);
+		pthread_mutex_unlock(&semMemoriaPrincipal);
 
-void definirValorKernel(){
-	kernel= 0;
+	}
+	if(packageRecibido->ID ==50){ //PIDO TABLA GOSSIP
+		char* memoriasDondeEstoyConectado = memoriasTablaDeGossip(tablaDeGossipMemoria);
+		log_info(loggerMemoria, "Ya envie la TABLA DE GOSSIP a KERNEL");
+		enviarMemoriasTablaGossip(socketEmisor,KERNELOMEMORIA,memoriasDondeEstoyConectado);
+		free(memoriasDondeEstoyConectado);
+
+	}
+
 }
 
 void realizarGossip(){
 
 	clock_t start, diff;
 	int elapsedsec;
-	int sec = 10; //aca debe ir tiempoGossiping
+	int sec = configMemoria.tiempoGossiping; //aca debe ir configMemoria.tiempoGossiping
 	int iterations = 0;
 
-	while (iterations < 1000) {
+	while (iterations < 10000000) {
 	   start = clock();
 
 	   while (1) {
@@ -118,16 +146,17 @@ void realizarGossip(){
 	       if (elapsedsec >= sec) {
 	    	   pthread_create(&clienteM, NULL,(void*) hacermeClienteDeMisServers, NULL);
 
-	    	   if(kernel!=0){
-	    	   char* memoriasEnTablaDeGossip = memoriasTablaDeGossip(tablaDeGossip);
-	    	   enviarMemoriasTablaGossip(kernel,KERNELOMEMORIA,memoriasEnTablaDeGossip);
-	    	   free(memoriasEnTablaDeGossip);
-	    	   }
 	           iterations++;
 	           break;
 	       }
 	   }
 	}
+}
+
+void enviarAKernel(){
+	char* memoriasEnTablaDeGossip = memoriasTablaDeGossip(tablaDeGossipMemoria);
+	enviarMemoriasTablaGossip(kernel,KERNELOMEMORIA,memoriasEnTablaDeGossip);
+	free(memoriasEnTablaDeGossip);
 }
 
 void iniciarEscucha(){
@@ -203,7 +232,8 @@ void serCliente(char* ip , int puerto){
 	int cliente = socket(AF_INET,SOCK_STREAM,0);
 	if (connect (cliente, (void*)&dirServidorMemoria, sizeof(dirServidorMemoria))!=0){
 		log_info(loggerMemoria,"La memoria con puerto %d e ip %s no se encuentra activa",puerto,ipServidor);
-
+		borrarMemoriaSiEstaEnTablaGossip(ip, puerto);
+		mostrarmeMemoriasTablaGossip(tablaDeGossipMemoria);
 	}else{
 		int numMemoria = configMemoria.numeroDeMemoria;
 		char* soyMemoria = string_new();
@@ -216,12 +246,12 @@ void serCliente(char* ip , int puerto){
 		int nroMemoria = recibirHandShakeMemoria(cliente,KERNELOMEMORIA,loggerMemoria);
 
 		if(nroMemoria!= -1){
-			char* memoriasDondeEstoyConectado = memoriasTablaDeGossip(tablaDeGossip);
+			char* memoriasDondeEstoyConectado = memoriasTablaDeGossip(tablaDeGossipMemoria);
 			printf("Memorias donde estoy conectado %s\n", memoriasDondeEstoyConectado);
 			enviarMemoriasTablaGossip(cliente,KERNELOMEMORIA,memoriasDondeEstoyConectado);
-			agregarATablaDeGossip(puerto, ip, nroMemoria,tablaDeGossip);
-			mostrarmeMemoriasTablaGossip(tablaDeGossip);
-			recibirMemoriasTablaDeGossip(cliente,KERNELOMEMORIA,loggerMemoria, tablaDeGossip);
+			agregarATablaDeGossip(puerto, ip, nroMemoria,true, tablaDeGossipMemoria);
+			mostrarmeMemoriasTablaGossip(tablaDeGossipMemoria);
+			recibirMemoriasTablaDeGossip(cliente,KERNELOMEMORIA,loggerMemoria, tablaDeGossipMemoria);
 			free(memoriasDondeEstoyConectado);
 		}
 	free(soyMemoria);
@@ -230,6 +260,19 @@ void serCliente(char* ip , int puerto){
 	free(ipServidor);
 	close(cliente);
 }
+
+void borrarMemoriaSiEstaEnTablaGossip(char* ip, int puerto){
+	int tamanioTablaGossip = tamanioLista(tablaDeGossipMemoria);
+	for (int i = 0 ; i< tamanioTablaGossip; i++){
+		void* elemento = list_get(tablaDeGossipMemoria, i);
+		t_memoriaTablaDeGossip *memoriaConectada =(t_memoriaTablaDeGossip*)elemento;
+		if(memoriaConectada->puerto == puerto && string_equals_ignore_case(memoriaConectada->ip, ip)==1){
+			memoriaConectada->conectado=false;
+
+		}
+	}
+}
+
 
 void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger){
 
@@ -281,19 +324,19 @@ void realizarMultiplexacion(int socketEscuchando){
 					int numMemoria = configMemoria.numeroDeMemoria;
 					char* soyMemoria = string_new();
 					string_append(&soyMemoria, "SOY MEMORIA ");
-					char* numeroMemoria = malloc(sizeof(1000));
+					char* numeroMemoria = malloc(1000);
 					sprintf(numeroMemoria, "%d", numMemoria);
 					string_append(&soyMemoria, numeroMemoria);
 					realizarHandShake(newfd,KERNELOMEMORIA,soyMemoria);
 					recibirHandShakeMemoria(newfd,KERNELOMEMORIA,loggerMemoria);
 
-					char* M = memoriasTablaDeGossip(tablaDeGossip);
-					printf("El M ES %s\n", M);
-					recibirMemoriasTablaDeGossip(newfd, KERNELOMEMORIA, loggerMemoria, tablaDeGossip);
-					mostrarmeMemoriasTablaGossip(tablaDeGossip);
-					enviarMemoriasTablaGossip(newfd, KERNELOMEMORIA, M);
+					char* memoriasQueTengo = memoriasTablaDeGossip(tablaDeGossipMemoria);
+					recibirMemoriasTablaDeGossip(newfd, KERNELOMEMORIA, loggerMemoria, tablaDeGossipMemoria);
+					mostrarmeMemoriasTablaGossip(tablaDeGossipMemoria);
+					enviarMemoriasTablaGossip(newfd, KERNELOMEMORIA, memoriasQueTengo);
 					free(soyMemoria);
-					free(M);
+					free(numeroMemoria);
+					free(memoriasQueTengo);
 					FD_SET(newfd,&master);
 					fdmax = (newfd > fdmax)?newfd:fdmax;
 					FD_CLR(socketEscuchando,&copy);
@@ -303,10 +346,12 @@ void realizarMultiplexacion(int socketEscuchando){
 
 		    		if(package->ID==0){
 	                    // conexión cerrada
+		    			free(package);
 	    				printf("El socket %d se desconecto\n", i);
 	                    close(i); // bye!
 	                    FD_CLR(i, &master); // eliminar del conjunto maestro
 		    		} else if(package->ID<0){
+		    			free(package);
 	                    perror("recv");
 	                    close(i); // bye!
 	                    FD_CLR(i, &master); // eliminar del conjunto maestro
@@ -315,6 +360,7 @@ void realizarMultiplexacion(int socketEscuchando){
 
 						printf("\npackage->ID: %d\n",package->ID);
 						gestionarPaquetes(package, i);
+						freePackage(package);
 		    		}
 
 		                    }
@@ -364,3 +410,22 @@ void exitGracefully(int return_nr, t_log* logger, int servidorEscucha)
 }
 
 
+int conectarmeAlLFS() {
+	char* ipServidor = quitarComillas(configMemoria.ipDelFileSystem);
+	struct sockaddr_in dirServidorMemoria;
+	int tamanioValue;
+	dirServidorMemoria.sin_family = AF_INET;
+	dirServidorMemoria.sin_addr.s_addr = inet_addr(ipServidor);
+	dirServidorMemoria.sin_port = htons(configMemoria.puertoDelFileSystem); //puerto al que va a escuchar
+	int cliente = socket(AF_INET,SOCK_STREAM,0);
+	if (connect (cliente, (void*)&dirServidorMemoria, sizeof(dirServidorMemoria))!=0){
+		log_info(loggerMemoria,"No me he podido conectar con el LFS");
+	}else{
+		char *msjEnviado = string_from_format("Memoria %d",configMemoria.numeroDeMemoria); //ACA EN VEZ DEL 1, IRIA EL NrO Q TIENE LA MEMORIA
+		tamanioValue = realizarHandshakeAlLFS(loggerMemoria,cliente,msjEnviado);
+		free(msjEnviado);
+		}
+	socketLFS= cliente;
+	free(ipServidor);
+	return tamanioValue;
+}

@@ -55,15 +55,9 @@ void iniciar(){
 	crear_colas();
 	crear_listas();
 	verificarArchivoConfigKernel();
-	tablaDeGossip = list_create();
-
-	int t = tamanioArray((void**)configKernel.puertosDeSeeds);
+	tablaDeGossipKernel = list_create();
+	memoriasALasQueMeConecte= list_create();
 	conectarAMemoria(configKernel.ip_memoria,configKernel.puerto_memoria);
-	/*for(int i= 0; i< t; i ++){
-		printf("Ip de seeds %d es %s\n", i, configKernel.ipDeSeeds[i]);
-		printf("Ip de seeds %d es %d\n", i, configKernel.puertosDeSeeds[i]);
-		conectarAMemoria(configKernel.ipDeSeeds[i],configKernel.puertosDeSeeds[i]);
-	}*/
 	t_memoria* mem = list_get(memorias,0);
 	char* resp = opDESCRIBE(mem->socket_mem,"");
 	puts(resp);
@@ -77,7 +71,9 @@ void crear_hilos_iniciales(){
 	pthread_detach(timer_thread);
 	pthread_create(&config_observer,NULL,observer_config,NULL);
 	pthread_detach(config_observer);
-	//pthread_create(&metadata_refresh,NULL,refresh_metadata_timer,NULL);
-	//pthread_detach(metadata_refresh);
+	pthread_create(&gossipKernel,NULL,(void*)gossipDeKernel,NULL);
+	pthread_detach(gossipKernel);
+	pthread_create(&metadata_refresh,NULL,refresh_metadata_timer,NULL);
+	pthread_detach(metadata_refresh);
 	return;
 }

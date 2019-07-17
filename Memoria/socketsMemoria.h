@@ -16,33 +16,36 @@
 #include "segmentacionPaginada.h"
 #include <bibliotecaFunciones/sockets.h>
 #include <bibliotecaFunciones/lfsSerializacion.h>
+#include <bibliotecaFunciones/lfsProtocolos.h>
 
 fd_set master;   // conjunto maestro de descriptores de fichero
 fd_set copy;
 struct sockaddr_in servidorMemoria;
-pthread_t clienteM;
+pthread_t clienteM,kernelEnvio;
 struct sockaddr_in clienteMemoria; // dirección del cliente
 int servidorEscuchaMemoria;
        // para setsockopt() SO_REUSEADDR, más abajo
 int kernel;
-
-t_list * tablaDeGossip;
-
+int modificadoHacePoco;
 
 
-//t_memoriaConectada* tablaDeGossip [150];
-void definirValorKernel();
+
+t_list * tablaDeGossipMemoria;
+
 void realizarGossip();
+void enviarAKernel();
 void iniciarEscuchaMemoria();
 void serCliente(char* ip, int puerto);
+void borrarMemoriaSiEstaEnTablaGossip(char* ip, int puerto);
 void conectarmeAEsaMemoria(int puerto,char* ip, t_log* logger);
 void realizarMultiplexacion(int socketEscuchando);
 void hacermeClienteDeMisServers();
 int aceptarConexiones(int socket, t_log* logger);
 void exitGracefully(int return_nr, t_log* logger, int servidorEscucha);
+int conectarmeAlLFS();
 
 
-//AGREGAS POR ERIC
+//AGREGADAS POR ERIC
 void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor);
 void enviarRespuesta(int socketReceptor, int protocoloID, char *respuesta);
 void iniciarEscucha();

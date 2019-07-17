@@ -2,13 +2,12 @@
 
 //----------------------------------------GENERALES-------------------------------------------//
 
-void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS){
-	tamanioMaxMemoria = 52; //de archivo de config //antes 52
-	tamanioDadoPorLFS= tamanioValueDadoXLFS;
-	tamanioUnRegistro = tamanioValueDadoXLFS + sizeof(unsigned long int) + sizeof(uint16_t); //6+ tamanioValueDado
+void definirTamanioMemoriaPrincipal(int tamanioValue){
+	tamanioMaxMemoria = configMemoria.tamanioMemoria;
+	tamanioUnRegistro = tamanioDadoPorLFS + sizeof(unsigned long int) + sizeof(uint16_t); //6+ tamanioValueDado
 	obtenerValue = sizeof(unsigned long int) + sizeof(uint16_t);
 	memoriaPrincipal = malloc(tamanioMaxMemoria);
-	log_info(loggerMemoria,"El tamanio de un resgistro es de %d\n", tamanioUnRegistro);
+	log_info(loggerMemoria,"El tamanio de un registro es de %d\n", tamanioUnRegistro);
 	cantMaxMarcos = tamanioMaxMemoria/ tamanioUnRegistro;
 	cantMarcosIngresados= 0;
 	log_info(loggerMemoria,"Cant max de marcos posibles %d\n", cantMaxMarcos);
@@ -22,8 +21,11 @@ void iniciarSemaforos(){
 	pthread_mutex_init(&semCantMaxMarcos,NULL);
 	pthread_mutex_init(&semCantMarcosIngresados,NULL);
 	pthread_mutex_init(&semMarcosOcupados,NULL);
+	pthread_mutex_init(&semMP, NULL);
 	pthread_mutex_init(&semMemoriaPrincipal,NULL);
+	pthread_mutex_init(&semLfs, NULL);
 }
+
 int tamanioLista(t_list * lista){
 	return list_size(lista);
 }
@@ -69,17 +71,14 @@ void borrarTodo(){
 //------------------------------------------SEGMENTOS--------------------------------------------------------//
 
 int buscarTablaSegmentos(char* nombreTabla){
-	pthread_mutex_lock(&semTablaSegmentos);
 	int cantSegmentos =  tamanioLista(tablaDeSegmentos);
 	for(int i = 0; i<cantSegmentos ; i++){
 		void * elemento = list_get(tablaDeSegmentos, i);
 		t_segmento *segmento =(t_segmento*)elemento;
 		if(string_equals_ignore_case(nombreTabla, segmento->nombreTabla)){
-			pthread_mutex_unlock(&semTablaSegmentos);
 			return i;
 		}
 	}
-	pthread_mutex_unlock(&semTablaSegmentos);
 	return cantSegmentos+1;
 }
 
@@ -87,9 +86,9 @@ t_segmento* guardarEnTablaDeSegmentos(char* nombreTabla){
 	t_segmento* segmento = malloc(sizeof(t_segmento));
 	segmento->nombreTabla = strdup(nombreTabla);
 	segmento->tablaPaginas= list_create();
-	pthread_mutex_lock(&semTablaSegmentos);
+	//pthread_mutex_lock(&semTablaSegmentos);
 	list_add(tablaDeSegmentos, (void*)segmento);
-	pthread_mutex_unlock(&semTablaSegmentos);
+	//pthread_mutex_unlock(&semTablaSegmentos);
 	return segmento;
 }
 
@@ -117,7 +116,11 @@ char* buscarTablaPaginas(t_list* tabla, uint16_t key){
 		t_registro* registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
 		pagina->contadorVecesSolicitado++;
 		log_info(loggerMemoria, "Cantidad veces solicitado %d\n", pagina->contadorVecesSolicitado);
-		return registro->value;
+		char* valor = malloc(tamanioDadoPorLFS);
+		strcpy(valor, registro->value);
+		free(registro->value);
+		free(registro);
+		return valor;
 		}
 	}
 	return NULL; // SI retorna null significa que no esta en tabla de paginas y hay que consultarle a FS y agregarlo
@@ -159,6 +162,8 @@ int buscarEnTablaPaginasINSERT(t_list* tabla, uint16_t key,int timeStamp , char*
 				pagina->flagModificado=1;
 				log_info(loggerMemoria,"Se actualizo la MEMORIA PRINCIPAL");
 			}
+			free(registro->value);
+			free(registro);
 			return timeStamp;
 		}
 	}
@@ -177,16 +182,14 @@ void borrarTablaDePaginas(t_list* lista){
 //------------------------------------------MEMORIA------------------------------------------//
 
 t_registro* buscarEnMemoriaPrincipal( int nroMarco){
-	t_registro * registro = malloc(sizeof(t_registro));
+	t_registro * registro = malloc(tamanioUnRegistro);
 	int copiarDesde = 0;
 	registro->value = malloc(tamanioDadoPorLFS);
-	pthread_mutex_lock(&semMemoriaPrincipal);
 	memcpy(&registro->key, memoriaPrincipal + tamanioUnRegistro * nroMarco + copiarDesde,sizeof(uint16_t));
 	copiarDesde += sizeof(uint16_t);
 	memcpy(&registro->timestamp, memoriaPrincipal+tamanioUnRegistro * nroMarco+ copiarDesde, sizeof(unsigned long int));
 	copiarDesde += sizeof(unsigned long int);
 	memcpy(registro->value, memoriaPrincipal + tamanioUnRegistro * nroMarco+ copiarDesde,tamanioDadoPorLFS);
-	pthread_mutex_unlock(&semMemoriaPrincipal);
 	return registro;
 }
 
@@ -209,54 +212,56 @@ void settearMarcoEnMP(int nroMarco, int nroDeseado){
 }
 
 void actualizarMemoriaPrincipal(int nroMarco, unsigned long int timeStamp, char* value){
-	t_registro * registro = malloc(sizeof(t_registro));
-	registro->value = value;
+	t_registro * registro = malloc(tamanioUnRegistro);
+	registro->value= malloc(tamanioDadoPorLFS);
+	strcpy(registro->value, value);
 	registro->timestamp= timeStamp;
-	pthread_mutex_lock(&semMemoriaPrincipal);
+	pthread_mutex_lock(&semMP);
 	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro+sizeof(uint16_t), &registro->timestamp, sizeof(unsigned long int));
 	memcpy(memoriaPrincipal+nroMarco*tamanioUnRegistro+sizeof(uint16_t)+ sizeof(unsigned long int), registro->value, tamanioDadoPorLFS);
-	pthread_mutex_unlock(&semMemoriaPrincipal);
+	pthread_mutex_unlock(&semMP);
+	free(registro->value);
 	free(registro);
 }
 
 void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco, unsigned long int timestamp){
-	t_registro * registro = malloc(sizeof(t_registro));
+	t_registro * registro = malloc(tamanioUnRegistro);
 	registro->key = key;
-	registro->value= value;
+	registro->value= malloc(tamanioDadoPorLFS);
+	strcpy(registro->value, value);
 	registro->timestamp= timestamp;
-	pthread_mutex_lock(&semMemoriaPrincipal);
+	pthread_mutex_lock(&semMP);
 	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro, &registro->key, sizeof(uint16_t));
 	memcpy(memoriaPrincipal+ nroMarco*tamanioUnRegistro+sizeof(uint16_t), &registro->timestamp, sizeof(unsigned long int));
 	memcpy(memoriaPrincipal+nroMarco*tamanioUnRegistro+sizeof(uint16_t)+ sizeof(unsigned long int), registro->value, tamanioDadoPorLFS);
-	pthread_mutex_unlock(&semMemoriaPrincipal);
+	pthread_mutex_unlock(&semMP);
 	pthread_mutex_lock(&semCantMarcosIngresados);
 	cantMarcosIngresados++;
 	pthread_mutex_unlock(&semCantMarcosIngresados);
 	settearMarcoEnMP(nroMarco, 1);
+	free(registro->value);
 	free(registro);
 }
 
 int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long int timestamp){
 	int nroMarco = buscarEspacioLibreEnMP();
-	puts("aca entre 1\n");
 	pthread_mutex_lock(&semCantMaxMarcos);
-	puts("aca entre 1\n");
 	if(nroMarco!=cantMaxMarcos){
-		puts("aca entre 1\n");
 		guardarEnMPLugarEspecifico(key, value, nroMarco, timestamp);
-		puts("aca entre 2 \n");
 		pthread_mutex_unlock(&semCantMaxMarcos);
 			return nroMarco;
 	}
 	else{
 		t_LRU * lru = LRU();
 		if(lru->numeroPag != cantMaxMarcos){
-
+			pthread_mutex_unlock(&semCantMaxMarcos);
 			void * elemento = list_remove(lru->tablaPaginas, lru->numeroPag);
 			t_pagina *pagina =(t_pagina*)elemento;
 			int t = tamanioLista(lru->tablaPaginas);
 			if(t==0){
+				pthread_mutex_unlock(&semTablaSegmentos);
 				DROPMemoria(lru->nombreTabla);
+				pthread_mutex_lock(&semTablaSegmentos);
 			}
 			log_info(loggerMemoria,"La PAGINA que voy a reemplazar es la nro %d del SEGMENTO '%s' \n", lru->numeroPag, lru->nombreTabla);
 			settearMarcoEnMP(pagina->numeroMarco, 0);
@@ -264,17 +269,16 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 			free(lru);
 			int nroMarco = pagina->numeroMarco;
 			free(pagina);
-			pthread_mutex_unlock(&semCantMaxMarcos);
 			return nroMarco;
 		}
 		else {
+			pthread_mutex_unlock(&semCantMaxMarcos);
 			log_info(loggerMemoria,"Tengo que realizar JOURNAL\n");
 			iniciarJournal();// se inicia journal, osea que queda vacia la memoria entonces tiene si o si espacio
 			//luego de realizar journal, se terminaria guardando el dato :D
 			nroMarco = buscarEspacioLibreEnMP();
 			guardarEnMPLugarEspecifico(key, value, nroMarco, timestamp);
 			free(lru);
-			pthread_mutex_unlock(&semCantMaxMarcos);
 			return 0;
 		}
 	}
@@ -321,9 +325,9 @@ void borrarTodaMemoria(){
 		settearMarcoEnMP(i, 0);
 	}
 	pthread_mutex_unlock(&semCantMaxMarcos);
-	pthread_mutex_lock(&semMemoriaPrincipal);
+	pthread_mutex_lock(&semMP);
 	memset(memoriaPrincipal, 0, tamanioMaxMemoria);
-	pthread_mutex_unlock(&semMemoriaPrincipal);
+	pthread_mutex_unlock(&semMP);
 }
 //---------------------------------------LRU-------------------------------------------------------//
 
@@ -333,9 +337,7 @@ t_LRU * LRU (){
 	int esElPrimerElemento = 0;
 	t_LRU * lru = malloc (sizeof(t_LRU));
 	lru->numeroPag= cantMaxMarcos;
-	pthread_mutex_unlock(&semCantMaxMarcos);
 	int tamanioTablaPaginas = 0;
-	pthread_mutex_lock(&semTablaSegmentos);
 	int tamanioTablaSegmentos = tamanioLista(tablaDeSegmentos);
 	for(int i = 0; i< tamanioTablaSegmentos; i++){
 
@@ -368,7 +370,6 @@ t_LRU * LRU (){
 			}
 		}
 	}
-	pthread_mutex_unlock(&semTablaSegmentos);
 	return lru;
 }
 
@@ -401,10 +402,26 @@ char* convertirAStringListaJournal(){
 	return elementoEnviar;
 }
 
-void iniciarJournal(){
-	pthread_mutex_lock(&semTablaSegmentos);
+t_INSERTJOURNAL datoTipoInsertJournal(char* valorObtenido, char* nombreTabla, t_JOURNAL* j){
+	t_INSERTJOURNAL * ij = malloc(sizeof(t_INSERTJOURNAL));
+	ij->datosJOURNAL.nombreTabla= malloc(strlen(nombreTabla)+1);
+	strcpy(ij->datosJOURNAL.nombreTabla, nombreTabla);
+	ij->datosJOURNAL.registro->key= j->registro->key;
+	ij->datosJOURNAL.registro->timestamp = j->registro->timestamp;
+	ij->datosJOURNAL.registro->value = malloc(strlen(j->registro->value)+1);
+	strcpy(ij->datosJOURNAL.registro->value, j->registro->value);
+	ij->valorObtenido = malloc(strlen(valorObtenido)+1);
+	strcpy(ij->valorObtenido,valorObtenido);
+	return ij;
+}
+
+
+
+
+t_list* iniciarJournal(){
 	int tamanioTablaSegmentos = tamanioLista(tablaDeSegmentos);
 	char* elementoEnviar = string_new();
+	journalRespuestas = list_create();
 	for(int i = 0 ; i < tamanioTablaSegmentos; i ++){
 		void * elemento = list_get(tablaDeSegmentos, i);
 		t_segmento *segmento =(t_segmento*)elemento;
@@ -414,17 +431,23 @@ void iniciarJournal(){
 			t_pagina * pagina = (t_pagina *) elemento;
 			if(pagina->flagModificado ==1){
 			t_registro* registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
-			char* unRegistro= string_from_format("%s %d %s %lu/",segmento->nombreTabla,registro->key,registro->value,registro->timestamp);
-			string_append(&elementoEnviar, unRegistro);
-			free(unRegistro);
+			int keyEnINT = pasarUINT16AInt(registro->key);
+			char* valor = opINSERT(socketLFS,segmento->nombreTabla, keyEnINT, registro->value, (int)registro->timestamp);
+
+			t_JOURNAL * j = malloc(sizeof(t_JOURNAL));
+			j->nombreTabla= malloc(strlen(segmento->nombreTabla)+1);
+			strcpy(j->nombreTabla, segmento->nombreTabla);
+			j->registro->key= registro->key;
+			j->registro->timestamp = registro->timestamp;
+			j->registro->value = malloc(strlen(registro->value)+1);
+			strcpy(j->registro->value, registro->value);
+			t_INSERTJOURNAL* ij = datoTipoInsertJournal(valor, segmento->nombreTabla, j);
+			list_add(journalRespuestas, (void*)ij);
 			free(registro->value);
 			free(registro);
 			}
 		}
 	}
-	puts("-------------------------------------------------------------------");
-	log_info(loggerMemoria, "JOURNAL: lista a enviar es---> %s\n", elementoEnviar);
-	puts("-------------------------------------------------------------------");
 
 	int t= tamanioLista(tablaDeSegmentos);
 	for(int j = 0; j < t ; j++){
@@ -436,23 +459,36 @@ void iniciarJournal(){
 		free(s);
 	}
 	list_clean(tablaDeSegmentos);
-	pthread_mutex_unlock(&semTablaSegmentos);
 	borrarTodaMemoria();
 	pthread_mutex_lock(&semCantMarcosIngresados);
 	cantMarcosIngresados=0;
 	pthread_mutex_unlock(&semCantMarcosIngresados);
 	//empaquetarEnviarMensaje(socketLFS,22,strlen(msjEnviado),msjEnviado);
 	free(elementoEnviar);
+	return journalRespuestas;
 }
+
+void retardoMemoriaAplicado(){
+	pthread_mutex_lock(&semMemoriaPrincipal);
+	pthread_mutex_lock(&semConfig);
+	int retardoMemoriaPrincipal = configMemoria.retardoAccesoMemoriaPrincipal;
+	pthread_mutex_unlock(&semConfig);
+	sleep(retardoMemoriaPrincipal);
+	pthread_mutex_unlock(&semMemoriaPrincipal);
+}
+
+
+
 
 //----------------------------------------------------REQUESTS-------------------------------------------------//
 
-
+//-----------------------------------------------------SELECT-------------------------------------------------//
 char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
-	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	pthread_mutex_lock(&semTablaSegmentos);
+	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
 	pthread_mutex_unlock(&semTablaSegmentos);
+	retardoMemoriaAplicado();
 	if(ubicacionSegmento!=(cantSegmentos+1)){ //esta en tabla de segmentos
 		log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
 		pthread_mutex_lock(&semTablaSegmentos);
@@ -462,50 +498,77 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		pthread_mutex_unlock(&semTablaSegmentos);
 		if(value!= NULL){ //lo encontro en tabla de paginas, lo busca en memoria principal y devuelve lo que vale
 			log_info(loggerMemoria,"Esta en la tabla de PAGINAS");
-			mostrarDatosMarcos();
-			mostrarElementosTablaSegmentos();
-			mostrarElementosMemoriaPrincipal();
 			return value;
 		}
 		else{ //no lo encontro en tabla de paginas
 			//tengo que consultarle a LFS PERO solo guardo en tabla de paginas
-			//consultaSELECTMemoriaLfs();// esto va a mandarle SELECT nombreTabla key con SOCKETS
+			pthread_mutex_lock(&semLfs);
+			int keyEnINT = pasarUINT16AInt(key);
+			char* value = malloc(tamanioDadoPorLFS);
+			value = opSELECT(socketLFS,nombreTabla, keyEnINT);
+			if(string_equals_ignore_case(value, "NO_EXISTE_TABLA")||string_equals_ignore_case(value, "NO_EXISTE_VALUE")){
+				return value;
+			} else{
 			log_info(loggerMemoria,"No esta en la tabla de PAGINAS");
-			char* value = recibirRespuestaSELECTMemoriaLfs(); //con SOCKETS
 			unsigned long int t = obtenerTimeStamp();
-			int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
 			pthread_mutex_lock(&semTablaSegmentos);
+			int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
 			guardarEnTablaDePaginas(segmento, nroMarco, key, flagModificado);
 			pthread_mutex_unlock(&semTablaSegmentos);
-			mostrarDatosMarcos();
-			mostrarElementosTablaSegmentos();
-			mostrarElementosMemoriaPrincipal();
+
+			pthread_mutex_lock(&semConfig);
+			int retardoLFS= configMemoria.retardoAccesoFileSystem;
+			pthread_mutex_unlock(&semConfig);
+			sleep(retardoLFS);
+
+			pthread_mutex_unlock(&semLfs);
+			retardoMemoriaAplicado();
 			return value;
+			}
 		}
 	}
-	else{// no esta en tabla de segmentos
+	else{
+		// no esta en tabla de segmentos
 		//pedirle a lfs y guardar datos en tabla segmentos y tabla paginas
 		//consultaSELECTMemoriaLfs();
+		pthread_mutex_lock(&semLfs);
 		log_info(loggerMemoria,"No se encontro en la tabla de SEGMENTOS");
-		char* value = recibirRespuestaSELECTMemoriaLfs();
-		t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
-		segmento->tablaPaginas= list_create();
-		unsigned long int t = obtenerTimeStamp();
-		int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
-		pthread_mutex_lock(&semTablaSegmentos);
-		guardarEnTablaDePaginas(segmento, nroMarco, key, flagModificado);
-		pthread_mutex_unlock(&semTablaSegmentos);
-		log_info(loggerMemoria,"Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
-		mostrarDatosMarcos();
-		mostrarElementosTablaSegmentos();
-		mostrarElementosMemoriaPrincipal();
-		return value;
+		int keyEnINT = pasarUINT16AInt(key);
+		char* value = malloc(tamanioDadoPorLFS);
+		value = opSELECT(socketLFS,nombreTabla, keyEnINT);
+		if(string_equals_ignore_case(value, "NO_EXISTE_TABLA")||string_equals_ignore_case(value, "NO_EXISTE_VALUE")){
+			pthread_mutex_unlock(&semLfs);
+			return value;
+		} else{
+			t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
+			segmento->tablaPaginas= list_create();
+			unsigned long int t = obtenerTimeStamp();
+			pthread_mutex_lock(&semTablaSegmentos);
+			int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
+			guardarEnTablaDePaginas(segmento, nroMarco, key, flagModificado);
+			pthread_mutex_unlock(&semTablaSegmentos);
+
+			pthread_mutex_lock(&semConfig);
+			int retardoLFS= configMemoria.retardoAccesoFileSystem;
+			pthread_mutex_unlock(&semConfig);
+			sleep(retardoLFS);
+
+			pthread_mutex_unlock(&semLfs);
+			log_info(loggerMemoria,"Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
+			//mostrarDatosMarcos();
+			//mostrarElementosTablaSegmentos();
+			//mostrarElementosMemoriaPrincipal();
+			retardoMemoriaAplicado();
+			return value;
+		}
+
 	}
 }
+//----------------------------------------------------INSERT--------------------------------------------------//
 
 char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long int timeStamp){
-	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	pthread_mutex_lock(&semTablaSegmentos);
+	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
 	pthread_mutex_unlock(&semTablaSegmentos);
 	if(ubicacionSegmento!=(cantSegmentos+1)){ //esta en tabla de SEGMENTOS
@@ -522,8 +585,8 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 		}
 		else{ //no lo encontro en tabla de paginas
 			log_info(loggerMemoria,"No esta en la tabla de PAGINAS");
-			int indice = guardarEnMemoria(nombreTabla, key, value, timeStamp);
 			pthread_mutex_lock(&semTablaSegmentos);
+			int indice = guardarEnMemoria(nombreTabla, key, value, timeStamp);
 			int t = tamanioLista(tablaDeSegmentos);
 			pthread_mutex_unlock(&semTablaSegmentos);
 			if(t==0){
@@ -538,10 +601,11 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 	}
 	else{ // no esta en tabla de SEGMENTOS
 		log_info(loggerMemoria,"No se encontro en la tabla de SEGMENTOS");
+		pthread_mutex_lock(&semTablaSegmentos);
 		int indice = guardarEnMemoria(nombreTabla, key, value, timeStamp);
 		t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
 		segmento->tablaPaginas= list_create();
-		pthread_mutex_lock(&semTablaSegmentos);
+
 		guardarEnTablaDePaginas(segmento, indice, key, 1);
 		pthread_mutex_unlock(&semTablaSegmentos);
 		log_info(loggerMemoria, "Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
@@ -551,8 +615,8 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 }
 
 char* DROPMemoria(char* nombreTabla){
-	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	pthread_mutex_lock(&semTablaSegmentos);
+	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
 	pthread_mutex_unlock(&semTablaSegmentos);
 		if(ubicacionSegmento!=(cantSegmentos+1)){
@@ -570,29 +634,70 @@ char* DROPMemoria(char* nombreTabla){
 		else{
 			log_info(loggerMemoria,"Dicha tabla no se encuentra en la tabla de SEGMENTOS");
 		}
-		int existe = 1; // esto es para q quede lindo despues se modifica de acuerdo a la rsta del lfs
-		//aca tengo que avisarle al FS que borre la tabla
+		pthread_mutex_lock(&semLfs);
+		//ACA le paso al LFS los datos del drop
+
+		pthread_mutex_lock(&semConfig);
+		int retardoLFS= configMemoria.retardoAccesoFileSystem;
+		pthread_mutex_unlock(&semConfig);
+		sleep(retardoLFS);
+
+		int existe = 1; //esto es lo que me devuelve el LFS cuando hago DROP, si existe va a devolver 1 sino devuelve 0.
 		if(existe == 1){
+			pthread_mutex_unlock(&semLfs);
 			return  "INFO: Se borro correctamente la tabla";
 		}
 		else{ // si la encuentra, la borra y sino tiro mensaje de error de que no existe
+			pthread_mutex_unlock(&semLfs);
 			return "ERROR: Dicha tabla no se encuentra en la tabla de SEGMENTOS";
 		}
 
+
 }
 void JOURNALMemoria(){
+	pthread_mutex_lock(&semLfs);
+	//ACA le paso al LFS los datos del JOURNAL
+	pthread_mutex_lock(&semTablaSegmentos);
 	iniciarJournal();
+	pthread_mutex_unlock(&semTablaSegmentos);
+	pthread_mutex_lock(&semConfig);
+	int retardoLFS= configMemoria.retardoAccesoFileSystem;
+	pthread_mutex_unlock(&semConfig);
+	sleep(retardoLFS);
+	pthread_mutex_unlock(&semLfs);
+
+
 }
 char* DESCRIBETodasLasTablasMemoria(){
+	pthread_mutex_lock(&semLfs);
 	//aca le mando a lfs para q me de metadata de todas las tablas
+	pthread_mutex_lock(&semConfig);
+	int retardoLFS= configMemoria.retardoAccesoFileSystem;
+	pthread_mutex_unlock(&semConfig);
+	sleep(retardoLFS);
+	pthread_mutex_unlock(&semLfs);
+
 	return "DESCRIBE TOTAL OK";
 }
 char* DESCRIBEMemoria( char* nombreTabla){
+	pthread_mutex_lock(&semLfs);
 	 //aca tengo q mandarle mensaje a LFS para q me de la metada de esa tabla
+	pthread_mutex_lock(&semConfig);
+	int retardoLFS= configMemoria.retardoAccesoFileSystem;
+	pthread_mutex_unlock(&semConfig);
+	sleep(retardoLFS);
+	pthread_mutex_unlock(&semLfs);
 	return "DESCRIBE OK";
 }
 
 char* CREATEMemoria(char* nombreTabla, char* tipoConsistencia, int nroParticiones, int compactionTime){
-	 return "CREATE OK";
+	pthread_mutex_lock(&semLfs);
+	char* value = opCREATE(socketLFS,nombreTabla, tipoConsistencia, nroParticiones, compactionTime);
+	pthread_mutex_lock(&semConfig);
+	int retardoLFS= configMemoria.retardoAccesoFileSystem;
+	pthread_mutex_unlock(&semConfig);
+	sleep(retardoLFS);
+	pthread_mutex_unlock(&semLfs);
+	 return value;
 }
 

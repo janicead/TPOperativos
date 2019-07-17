@@ -111,10 +111,15 @@ typedef struct{
 	char* ip;
 	bool valida;
 	int cant_selects_inserts_ejecutados;
+	pthread_mutex_t socket_mem_sem;
 }t_memoria;
 
 char* puertoMemoria;
 int idLCB;
+
+//Listas necesarias
+t_list* tablaDeGossipKernel;
+t_list * memoriasALasQueMeConecte;
 
 //ESTRUCTURAS PARA LAS MÉTRICAS
 typedef struct{
@@ -158,6 +163,7 @@ pthread_mutex_t tablas_sem;
 pthread_mutex_t log_sem;
 pthread_mutex_t selects_ejecutados_sem;
 pthread_mutex_t inserts_ejecutados_sem;
+pthread_mutex_t id_lcb_sem;
 sem_t execute_sem;
 
 //HILOS
@@ -166,6 +172,7 @@ pthread_t consola;
 pthread_t timer_thread;
 pthread_t config_observer;
 pthread_t metadata_refresh;
+pthread_t gossipKernel;
 
 //FUNCIONES DE CONFIGURACIÓN INICIAL
 void crear_colas();
@@ -187,6 +194,9 @@ void agregar_tabla(t_tabla* tabla);
 void agregar_memoria(int puerto, char* ip, int nro_memoria);
 bool memoria_existente(t_list* l_memorias,int id);
 void agregar_socket_mem(int nro_memoria, int socket);
+void sacar_memoria(int nro_memoria);
+void free_memoria_gossip(t_memoriaTablaDeGossip* memoria);
+bool validar_consistencia(char* consistencia);
 
 //FUNCIONES DE LIBERAR MEMORIA
 void destruir_operacion(t_LQL_operacion* op);
