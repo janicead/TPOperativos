@@ -60,11 +60,19 @@ void* crearConsolaMemoria(){
 				case CMD_SELECT:
 					if (pasarAUint16(operacion[2], key)){
 					char* valor = SELECTMemoria(operacion[1], *key, 0);
-					printf("Respuesta SELECT: '%s' \n", valor);
+					if(string_equals_ignore_case(valor, "NO_EXISTE_TABLA")){
+						log_error(loggerMemoria, "La tabla '%s' no existe.", operacion[1]);
+					}else if(string_equals_ignore_case(valor, "NO_EXISTE_VALUE")){
+						log_error(loggerMemoria, "La key '%s' de la tabla '%s', no existe.", operacion[2], operacion[1]);
+					}else{
+						log_info(loggerMemoria, "La respuesta de la request SELECT %s %s -> %s", operacion[1], operacion[2], valor);
+					}
+					free(valor);
 					}
 					mostrarElementosMemoriaPrincipal();
 					mostrarElementosTablaSegmentos();
 					mostrarDatosMarcos();
+
 					break;
 				case CMD_INSERT:
 					if (pasarAUint16(operacion[2], key)){
@@ -85,10 +93,18 @@ void* crearConsolaMemoria(){
 					mostrarDatosMarcos();
 					break;
 				case CMD_CREATE:
-					printf("COMANDO CREATE\n");
+					printf("CREATE\n");
 					int nroParticiones = atoi(operacion[3]);
 					int compactionTime = atoi(operacion[4]);
-					CREATEMemoria(operacion[1], operacion[2], nroParticiones, compactionTime);
+					char* valor = CREATEMemoria(operacion[1], operacion[2], nroParticiones, compactionTime);
+					if(string_equals_ignore_case(valor, "YA_EXISTE_TABLA")){
+						log_error(loggerMemoria, "La tabla '%s' ya existe.", operacion[1]);
+					}else if(string_equals_ignore_case(valor, "NO_HAY_ESPACIO")){
+						log_error(loggerMemoria, "En estos momentos no hay espacio suficiente.");
+					}else{
+						log_info(loggerMemoria, "La tabla '%s' fue creada correctamente.", operacion[1]);
+					}
+					free(valor);
 					break;
 				case CMD_DESCRIBE:
 					printf("COMANDO DESCRIBE\n");
