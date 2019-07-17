@@ -22,6 +22,7 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		char* Respuesta = SELECTMemoria(unSELECT->nombreTabla,key,0);
 		enviarRespuesta(socketEmisor,id_respuesta_select,Respuesta);
 		freeT_SELECT(unSELECT);
+		free(Respuesta);
 	}
 
 	if(packageRecibido->ID == 15){ //15: INSERT

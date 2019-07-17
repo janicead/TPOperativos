@@ -70,7 +70,7 @@ void* crearConsolaMemoria(){
 					if (pasarAUint16(operacion[2], key)){
 						char *ptr;
 						unsigned long int timestamp = strtoul(operacion[4], &ptr, 10);
-						char* value = quitarEspacioFalso(operacion[3]);
+						char* value = quitarEspacioFalsoMemoria(operacion[3]);
 						pthread_mutex_lock(&semMemoriaPrincipal);
 						INSERTMemoria(operacion[1], *key, value, timestamp);
 						free(value);
@@ -137,34 +137,7 @@ bool pasarAUint16(const char *str, uint16_t *res) {
     return true;
 }
 
-int buscarFinalValue(char** value){
-	char c = '"';
-	char *ptr = malloc(2*sizeof(char));
-	ptr[0] = c;
-	ptr[1] = '\0';
-
-	int cantElementos= tamanioArray((void**)value);
-	for(int i = 4; i< cantElementos; i++){
-		if(string_ends_with(value[i], ptr)){
-			free(ptr);
-			return i;
-		}
-	}
-	free(ptr);
-	return 0;
-}
-
-char* armarValue(char** value){
-	int ultimaPosicion = buscarFinalValue(value);
-	char* operacionFinal = strdup(value[3]);
-	for( int i = 4 ; i <= ultimaPosicion; i ++){
-		string_append(&operacionFinal, ";");
-		string_append(&operacionFinal, value[i]);
-
-	}
-	return operacionFinal;
-}
-char* quitarEspacioFalso(char* value){
+char* quitarEspacioFalsoMemoria(char* value){
 	char* operacionFinal = string_new();
 	char** valuearray = string_split(value, ";");
 	int tamanio = tamanioArray((void**)valuearray);

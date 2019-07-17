@@ -58,3 +58,31 @@ unsigned long int obtenerTimeStamp(){
 	return time(NULL);
 }
 
+
+int buscarFinalValue(char** value){
+	char c = '"';
+	char *ptr = malloc(2*sizeof(char));
+	ptr[0] = c;
+	ptr[1] = '\0';
+
+	int cantElementos= tamanioArray((void**)value);
+	for(int i = 4; i< cantElementos; i++){
+		if(string_ends_with(value[i], ptr)){
+			free(ptr);
+			return i;
+		}
+	}
+	free(ptr);
+	return 0;
+}
+
+char* armarValue(char** value){
+	int ultimaPosicion = buscarFinalValue(value);
+	char* operacionFinal = strdup(value[3]);
+	for( int i = 4 ; i <= ultimaPosicion; i ++){
+		string_append(&operacionFinal, ";");
+		string_append(&operacionFinal, value[i]);
+
+	}
+	return operacionFinal;
+}
