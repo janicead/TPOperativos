@@ -606,7 +606,3 @@ int revisarQueNoEsteEnLaLista(int nroMemoria, t_list* tablaDeGossip){
 	return 1;
 }
 
-
-char * quitarComillas(char* ip){
-	return string_substring(ip,1,(string_length(ip)-2));
-}

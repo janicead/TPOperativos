@@ -64,6 +64,7 @@ char** cortaPalabra(char* mensaje);
 int verificarMensajeDeKernel(char* mensaje,t_identidad identidad);
 t_PaqueteDeDatos *recibirPaquete(int socketEmisor);
 t_handShake* deserializarHandShake(char *handShakeSerializado);
+
 /////////////////////////////CONEXION KERNEL Y MEMORIA///////////////////////////
 
 void mostrarmeMemoriasTablaGossip(t_list* tablaDeGossip);
@@ -77,10 +78,5 @@ void agregarATablaDeGossip(int puerto, char* ipServidor, int memoria,bool boolea
 void agregarATablaDeGossipUnicoElemento(int puerto, char* ipServidor, int nroMemoria, t_list* tablaDeGossip);
 void actualizarMemoriaEspecifica(int nroMemoria, t_list* tablaDeGossip, bool nuevoBool);
 int revisarQueNoEsteEnLaLista(int nroMemoria, t_list* tablaDeGossip);
-char * quitarComillas(char* ip);
-
-
-
-
 
 #endif /* BIBLIOTECAFUNCIONES_SOCKETS_H_ */

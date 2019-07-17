@@ -29,9 +29,8 @@ pthread_t hacerJournal;
 pthread_t consola;
 pthread_t gossip;
 
+int socketLFS;
 
-
-void test();
 void crearTablaGossip();
 void crearHilos();
 #endif /* MEMORIA_H_ */

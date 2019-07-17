@@ -73,7 +73,7 @@ int tamanioMemoriaPrincipal;
 int tamanioMaxMemoria;
 
 //----------------------------------------GENERALES--------------------------------------------------------------//
-void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS);
+void definirTamanioMemoriaPrincipal();
 void iniciarSemaforos();
 int tamanioLista(t_list * lista);
 char* recibirRespuestaSELECTMemoriaLfs();

@@ -10,6 +10,8 @@
 #include <commons/config.h>
 #include <bibliotecaFunciones/usoVariado.h>
 #include <sys/inotify.h>
+#include <pthread.h>
+#include <semaphore.h>
 
 #define configMemoriaDir "/home/utnso/workspace/tp-2019-1c-BEFGN/Memoria/Config/memoria.conf"
 t_log *loggerMemoria;

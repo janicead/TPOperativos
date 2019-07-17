@@ -145,7 +145,8 @@ char* quitarEspacioFalsoMemoria(char* value){
 		free(operacionFinal);
 		hacerFreeArray((void**)valuearray);
 		free(valuearray);
-		return quitarComillas(value);
+		char* valor = quitarComillas(value);
+		return valor;
 	}else {
 	for(int i = 0; i < tamanio; i ++){
 		string_append(&operacionFinal, valuearray[i]);

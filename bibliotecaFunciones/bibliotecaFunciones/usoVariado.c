@@ -86,3 +86,7 @@ char* armarValue(char** value){
 	}
 	return operacionFinal;
 }
+
+char * quitarComillas(char* ip){
+	return string_substring(ip,1,(string_length(ip)-2));
+}

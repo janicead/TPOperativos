@@ -16,6 +16,7 @@
 #include "segmentacionPaginada.h"
 #include <bibliotecaFunciones/sockets.h>
 #include <bibliotecaFunciones/lfsSerializacion.h>
+#include <bibliotecaFunciones/lfsProtocolos.h>
 
 fd_set master;   // conjunto maestro de descriptores de fichero
 fd_set copy;
@@ -41,6 +42,7 @@ void realizarMultiplexacion(int socketEscuchando);
 void hacermeClienteDeMisServers();
 int aceptarConexiones(int socket, t_log* logger);
 void exitGracefully(int return_nr, t_log* logger, int servidorEscucha);
+void conectarmeAlLFS();
 
 
 //AGREGADAS POR ERIC

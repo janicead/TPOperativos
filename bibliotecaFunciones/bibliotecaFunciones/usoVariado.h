@@ -44,5 +44,6 @@ char* int_to_string(int numero);
 unsigned long int obtenerTimeStamp();
 int buscarFinalValue(char** value);
 char* armarValue(char** value);
+char * quitarComillas(char* ip);
 
 #endif /* BIBLIOTECAFUNCIONES_USOVARIADO_H_ */

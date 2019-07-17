@@ -2,14 +2,12 @@
 
 //----------------------------------------GENERALES-------------------------------------------//
 
-void definirTamanioMemoriaPrincipal( int tamanioValueDadoXLFS){
-	tamanioMaxMemoria = configMemoria.tamanioMemoria;//antes 52
-	tamanioDadoPorLFS= tamanioValueDadoXLFS;
-	tamanioUnRegistro = tamanioValueDadoXLFS + sizeof(unsigned long int) + sizeof(uint16_t); //6+ tamanioValueDado
+void definirTamanioMemoriaPrincipal(){
+	tamanioMaxMemoria = configMemoria.tamanioMemoria;
+	tamanioUnRegistro = tamanioDadoPorLFS + sizeof(unsigned long int) + sizeof(uint16_t); //6+ tamanioValueDado
 	obtenerValue = sizeof(unsigned long int) + sizeof(uint16_t);
 	memoriaPrincipal = malloc(tamanioMaxMemoria);
-	log_info(loggerMemoria,"El tamanio de un resgistro es de %d\n", tamanioUnRegistro);
-	log_info(loggerMemoria,"El tamanio de un resgistro2 es de %d\n", sizeof(t_registro));
+	log_info(loggerMemoria,"El tamanio de un registro es de %d\n", tamanioUnRegistro);
 	cantMaxMarcos = tamanioMaxMemoria/ tamanioUnRegistro;
 	cantMarcosIngresados= 0;
 	log_info(loggerMemoria,"Cant max de marcos posibles %d\n", cantMaxMarcos);

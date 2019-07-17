@@ -8,7 +8,6 @@ int realizarHandshakeAlLFS(t_log *logger,int socketServer, char *msjEnviado)
 	int protocoloID = 11; // 11: Handshake
 	int tamanioPagina;
 
-	printf("Enviando '%s'...\n",msjEnviado);
 	empaquetarEnviarMensaje(socketServer,protocoloID,strlen(msjEnviado),msjEnviado);
 	//printf("\nPAQUETE ENVIADO\n");
 
@@ -24,7 +23,7 @@ int realizarHandshakeAlLFS(t_log *logger,int socketServer, char *msjEnviado)
 	else
 	{
 		tamanioPagina = atoi(package->Datos);
-		log_info(logger,"LISSANDRA: Tamanio de pagina = %d",tamanioPagina);
+		log_info(logger,"LISSANDRA: Tamanio de VALUE = %d",tamanioPagina);
 		log_info(logger,"Handshake  con socket %d: DONE!", socketServer);
 
 	}
