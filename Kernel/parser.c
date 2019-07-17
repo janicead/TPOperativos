@@ -32,7 +32,6 @@ t_LQL_operacion* parse(char* linea){
 	}
 	else if(string_equals_ignore_case(keyword, "INSERT")){
 
-		int tamanio = tamanioArray((void**)split);
 		char*lineadup = string_new();
 		char* value= armarValue(split);
 		char* stringFinal= string_new();
@@ -43,7 +42,7 @@ t_LQL_operacion* parse(char* linea){
 		string_append(&stringFinal,split[2]);
 		string_append(&stringFinal," ");
 		string_append(&stringFinal, value);
-		hacerFreeArray(split);
+		hacerFreeArray((void**)split);
 		free(split);
 		split = string_split(stringFinal, " ");
 		int tamanio2 = tamanioArray((void**)split);

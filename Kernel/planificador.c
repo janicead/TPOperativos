@@ -96,7 +96,6 @@ void lql_select(t_LQL_operacion* operacion){
 	char* respuesta = opSELECT(memoria->socket_mem,operacion->argumentos.SELECT.nombre_tabla, operacion->argumentos.SELECT.key);
 
 	if(verificar_memoria_caida(respuesta,operacion,memoria->id_mem)){
-		pthread_mutex_unlock(&(memoria->socket_mem_sem));
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
@@ -137,7 +136,6 @@ void lql_insert(t_LQL_operacion* op){
 	unsigned long int timestamp = obtenerTimeStamp();
 	char* resp = opINSERT(memoria->socket_mem, op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key,op->argumentos.INSERT.valor,timestamp);
 	if(verificar_memoria_caida(resp,op,memoria->id_mem)){
-		pthread_mutex_unlock(&(memoria->socket_mem_sem));
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
@@ -169,7 +167,6 @@ void lql_create(t_LQL_operacion* op){
 	char* resp = opCREATE(memoria->socket_mem, op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
 			op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time);
 	if(verificar_memoria_caida(resp,op,memoria->id_mem)){
-		pthread_mutex_unlock(&(memoria->socket_mem_sem));
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
@@ -187,7 +184,6 @@ void lql_describe(t_LQL_operacion* op){
 		pthread_mutex_lock(&(mem->socket_mem_sem));
 		char* resp = opDESCRIBE(mem->socket_mem, "");
 		if(verificar_memoria_caida(resp,op,mem->id_mem)){
-			pthread_mutex_unlock(&(mem->socket_mem_sem));
 			return;
 		}
 		pthread_mutex_unlock(&(mem->socket_mem_sem));
@@ -215,7 +211,6 @@ void lql_describe(t_LQL_operacion* op){
 		pthread_mutex_lock(&(memoria->socket_mem_sem));
 		char* resp = opDESCRIBE(memoria->socket_mem,op->argumentos.DESCRIBE.nombre_tabla);
 		if(verificar_memoria_caida(resp,op,memoria->id_mem)){
-			pthread_mutex_unlock(&(memoria->socket_mem_sem));
 			return;
 		}
 		pthread_mutex_unlock(&(memoria->socket_mem_sem));
@@ -245,7 +240,6 @@ void lql_drop(t_LQL_operacion* op){
 	pthread_mutex_lock(&(memoria->socket_mem_sem));
 	char* resp = opDROP(memoria->socket_mem, op->argumentos.DROP.nombre_tabla);
 	if(verificar_memoria_caida(resp,op,memoria->id_mem)){
-		pthread_mutex_unlock(&(memoria->socket_mem_sem));
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
@@ -390,8 +384,8 @@ double tiempoPromedioInsert(){
 	double tiempo_total = 0, promedio = 0;
 	if(!list_is_empty(inserts_ejecutados)){
 		for(int i = 0; i < list_size(inserts_ejecutados); i++){
-			t_select_ejecutado* select = list_get(inserts_ejecutados,i);
-			tiempo_total += (1000*difftime(select->tiempo_fin, select->tiempo_inicio)); //Multiplico por 1000 para tener el resultado en ms ya que en seg sería muy pequeño
+			t_insert_ejecutado* insert = list_get(inserts_ejecutados,i);
+			tiempo_total += (1000*difftime(insert->tiempo_fin, insert->tiempo_inicio)); //Multiplico por 1000 para tener el resultado en ms ya que en seg sería muy pequeño
 		}
 		promedio = tiempo_total / list_size(inserts_ejecutados);
 	}
@@ -423,7 +417,7 @@ int porcentajeSelectsInserts(int cant_selects_inserts_ejecutados){
 
 void memoryLoad(){
 	for(int i = 0; i < list_size(memorias); i++){
-		t_memoria* mem = list_get(memorias,0);
+		t_memoria* mem = list_get(memorias,i);
 		log_info(loggerKernel,"Memory Load: Memory %d porcentaje de uso: %d%%",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados));
 	}
 }

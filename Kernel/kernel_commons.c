@@ -264,8 +264,8 @@ void free_tabla(t_tabla* tabla){
 void free_memoria(t_memoria* memoria){
 	if(memoria->valida){
 		free(memoria->ip);
+		pthread_mutex_destroy(&(memoria->socket_mem_sem));
 	}
-	pthread_mutex_destroy(&(memoria->socket_mem_sem));
 	free(memoria);
 	return;
 }

@@ -65,7 +65,7 @@ void pedirTablaGossip(int socketReceptor, int protocoloID, char *respuesta, int 
 
 	stringSerializado = serializarT_UnString(unString);
 	int tamanioStructSerializado = sizeof(uint32_t) + unString->longString;
-	int valor = empaquetarEnviarMensaje2(socketReceptor,protocoloID,tamanioStructSerializado,stringSerializado, loggerKernel);
+	empaquetarEnviarMensaje2(socketReceptor,protocoloID,tamanioStructSerializado,stringSerializado, loggerKernel);
 	free(stringSerializado);
 	freeT_UnString(unString);
 }
@@ -74,11 +74,11 @@ void gossipDeKernel(){
 	while(1){
 		sleep(configKernel.tiempoGossiping);// aca deberia ir configKernel.tiempoGossiping
 
-		//pthread_mutex_lock(&memorias_sem);
+		pthread_mutex_lock(&memorias_sem);
 		int cantMemorias = list_size(memorias);
 		log_info(loggerKernel, "GOSSIP KERNEL");
 		log_info(loggerKernel, "La cantidad de memorias es de %d \n", cantMemorias);
-		//pthread_mutex_unlock(&memorias_sem);
+		pthread_mutex_unlock(&memorias_sem);
 		if(cantMemorias!=0){
 			pthread_mutex_lock(&memorias_sem);
 			t_memoria * memoria = random_memory(memorias);
