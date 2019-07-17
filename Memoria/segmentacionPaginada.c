@@ -27,6 +27,7 @@ void iniciarSemaforos(){
 	pthread_mutex_init(&semMemoriaPrincipal,NULL);
 	pthread_mutex_init(&semLfs, NULL);
 }
+
 int tamanioLista(t_list * lista){
 	return list_size(lista);
 }

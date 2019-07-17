@@ -339,6 +339,7 @@ void lql_run(FILE* archivo, t_LQL_operacion* op){
 	        else {
 	            log_error(loggerKernel, "La linea %s no es valida", linea);
 	            op->success = false;
+	            free(linea);
 	            return;
 	        }
 	}

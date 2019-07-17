@@ -193,6 +193,9 @@ void free_lcb(t_lcb* lcb){
 }
 
 void destruir_operacion(t_LQL_operacion* op){
+	if(op->keyword == INSERT){
+		free(op->argumentos.INSERT.valor);
+	}
 	if(op->_raw){
 		string_iterate_lines(op->_raw, (void*) free);
 		free(op->_raw);

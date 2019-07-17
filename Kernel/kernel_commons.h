@@ -116,7 +116,6 @@ typedef struct{
 char* puertoMemoria;
 int idLCB;
 
-
 //Listas necesarias
 t_list* tablaDeGossipKernel;
 t_list * memoriasALasQueMeConecte;
