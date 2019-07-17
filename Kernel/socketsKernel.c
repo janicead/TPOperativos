@@ -80,12 +80,17 @@ void gossipDeKernel(){
 		log_info(loggerKernel, "La cantidad de memorias es de %d \n", cantMemorias);
 		//pthread_mutex_unlock(&memorias_sem);
 		if(cantMemorias!=0){
+			pthread_mutex_lock(&memorias_sem);
 			t_memoria * memoria = random_memory(memorias);
+			pthread_mutex_unlock(&memorias_sem);
+			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			pedirTablaGossip(memoria->socket_mem, 50, "Dame tabla gossip", memoria->id_mem);
 			char* respuesta = recibirMemoriasTablaDeGossipKernel(memoria->socket_mem,KERNELOMEMORIA,loggerKernel);
 			if(verificar_memoria_caida2(respuesta,memoria->id_mem)){
+				pthread_mutex_unlock(&(memoria->socket_mem_sem));
 			}
 			conectarmeAMemorias();
+			pthread_mutex_unlock(&(memoria->socket_mem_sem));
 		}
 	}
 }

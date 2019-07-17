@@ -69,6 +69,7 @@ void agregar_memoria(int puerto, char* ip, int nro_memoria){
 	strcpy(memoria->ip,ip);
 	memoria->valida = true;
 	memoria->cant_selects_inserts_ejecutados = 0;
+	pthread_mutex_init(&(memoria->socket_mem_sem),NULL);
 	pthread_mutex_lock(&memorias_sem);
 	if(!list_any_satisfy(memorias,(void*) sameID)){
 		list_add(memorias,memoria);
@@ -264,6 +265,7 @@ void free_memoria(t_memoria* memoria){
 	if(memoria->valida){
 		free(memoria->ip);
 	}
+	pthread_mutex_destroy(&(memoria->socket_mem_sem));
 	free(memoria);
 	return;
 }

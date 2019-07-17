@@ -92,11 +92,14 @@ void lql_select(t_LQL_operacion* operacion){
 		operacion->success = false;
 		return;
 	}
+	pthread_mutex_lock(&(memoria->socket_mem_sem));
 	char* respuesta = opSELECT(memoria->socket_mem,operacion->argumentos.SELECT.nombre_tabla, operacion->argumentos.SELECT.key);
 
 	if(verificar_memoria_caida(respuesta,operacion,memoria->id_mem)){
+		pthread_mutex_unlock(&(memoria->socket_mem_sem));
 		return;
 	}
+	pthread_mutex_unlock(&(memoria->socket_mem_sem));
 	log_info(loggerKernel,"SELECT %s %d -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
 	time_t tiempo_fin = time(NULL);
 	t_select_ejecutado* select = (t_select_ejecutado*)malloc(sizeof(t_select_ejecutado));
@@ -134,8 +137,10 @@ void lql_insert(t_LQL_operacion* op){
 	unsigned long int timestamp = obtenerTimeStamp();
 	char* resp = opINSERT(memoria->socket_mem, op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key,op->argumentos.INSERT.valor,timestamp);
 	if(verificar_memoria_caida(resp,op,memoria->id_mem)){
+		pthread_mutex_unlock(&(memoria->socket_mem_sem));
 		return;
 	}
+	pthread_mutex_unlock(&(memoria->socket_mem_sem));
 	puts(resp);
 	time_t tiempo_fin = time(NULL);
 	t_insert_ejecutado* insert = (t_insert_ejecutado*)malloc(sizeof(t_insert_ejecutado));
@@ -160,11 +165,14 @@ void lql_create(t_LQL_operacion* op){
 		op->success = false;
 		return;
 	}
+	pthread_mutex_lock(&(memoria->socket_mem_sem));
 	char* resp = opCREATE(memoria->socket_mem, op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
 			op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time);
 	if(verificar_memoria_caida(resp,op,memoria->id_mem)){
+		pthread_mutex_unlock(&(memoria->socket_mem_sem));
 		return;
 	}
+	pthread_mutex_unlock(&(memoria->socket_mem_sem));
 	puts(resp);
 	op->success = true;
 	free(resp);
@@ -173,11 +181,16 @@ void lql_create(t_LQL_operacion* op){
 
 void lql_describe(t_LQL_operacion* op){
 	if(string_is_empty(op->argumentos.DESCRIBE.nombre_tabla)){
+		pthread_mutex_lock(&memorias_sem);
 		t_memoria* mem = random_memory(memorias);
+		pthread_mutex_unlock(&memorias_sem);
+		pthread_mutex_lock(&(mem->socket_mem_sem));
 		char* resp = opDESCRIBE(mem->socket_mem, "");
 		if(verificar_memoria_caida(resp,op,mem->id_mem)){
+			pthread_mutex_unlock(&(mem->socket_mem_sem));
 			return;
 		}
+		pthread_mutex_unlock(&(mem->socket_mem_sem));
 		puts(resp);
 		free(resp);
 		op->success = true;
@@ -199,10 +212,13 @@ void lql_describe(t_LQL_operacion* op){
 			op->success = false;
 			return;
 		}
+		pthread_mutex_lock(&(memoria->socket_mem_sem));
 		char* resp = opDESCRIBE(memoria->socket_mem,op->argumentos.DESCRIBE.nombre_tabla);
 		if(verificar_memoria_caida(resp,op,memoria->id_mem)){
+			pthread_mutex_unlock(&(memoria->socket_mem_sem));
 			return;
 		}
+		pthread_mutex_unlock(&(memoria->socket_mem_sem));
 		puts(resp);
 		free(resp);
 		op->success = true;
@@ -226,10 +242,13 @@ void lql_drop(t_LQL_operacion* op){
 		op->success = false;
 		return;
 	}
+	pthread_mutex_lock(&(memoria->socket_mem_sem));
 	char* resp = opDROP(memoria->socket_mem, op->argumentos.DROP.nombre_tabla);
 	if(verificar_memoria_caida(resp,op,memoria->id_mem)){
+		pthread_mutex_unlock(&(memoria->socket_mem_sem));
 		return;
 	}
+	pthread_mutex_unlock(&(memoria->socket_mem_sem));
 	char** valor =string_split(resp, " ");
 	if(!strcasecmp(valor[0],"ERROR")){
 		log_error(loggerKernel, "No se pudo borrar la tabla %s ya que no existe", op->argumentos.DROP.nombre_tabla);
@@ -453,11 +472,12 @@ void* refresh_metadata_timer(){
 		int refresh_metadata = configKernel.metadata_refresh;
 		pthread_mutex_unlock(&config_sem);
 		sleep(refresh_metadata);
-		pthread_mutex_lock(&memorias_sem);
-		t_memoria* mem = random_memory(memorias);
-		pthread_mutex_unlock(&memorias_sem);
-		char* respuesta = opDESCRIBE(mem->socket_mem,"");
-		free(respuesta);
+		t_LQL_operacion* op = (t_LQL_operacion*)malloc(sizeof(t_LQL_operacion));
+		op->_raw = NULL;
+		op->keyword = DESCRIBE;
+		op->argumentos.DESCRIBE.nombre_tabla = "";
+		lql_describe(op);
+		destruir_operacion(op);
 	}
 	return NULL;
 }

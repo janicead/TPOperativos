@@ -111,6 +111,7 @@ typedef struct{
 	char* ip;
 	bool valida;
 	int cant_selects_inserts_ejecutados;
+	pthread_mutex_t socket_mem_sem;
 }t_memoria;
 
 char* puertoMemoria;
