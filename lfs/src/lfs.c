@@ -13,64 +13,14 @@ int main(void) {
 
 	iniciarFileSystemLISSANDRA();
 
-	/*char * tabla = string_from_format("tabla1");
-	char *r = existeTablaEnFS(tabla);
-	printf("\nr: %s\n",r);
-	free(r);
-	free(tabla);*/
-
-//############################
-/*	t_CREATE *unCREATE = definirT_CREATE("TablaX","SC",2,300);
-
-	printf("\nQuery:\n	CREATE [%s] [%s] [%d] [%d]\n",unCREATE->nombreTabla,unCREATE->tipoConsistencia,unCREATE->nParticiones,unCREATE->tiempoCompactacion);
-
-	r = crearTablaEnFS(unCREATE);
-	printf("\nr: %s\n",r);
-	mostrarBitsDeBloques(8);
-	freeT_CREATE(unCREATE);
-*/
-
-/*
-	r = eliminarArchivoEnFS("TablaA/23.bin");
-	printf("\nr: %s\n",r);
-	free(r);
-	mostrarBitsDeBloques(8);
-*/
-	/*char *todoElArchivo = string_from_format("%s","12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901");
-	r = guardarDatosEnArchivoEnFS("TablaA/29.bin",todoElArchivo);
-	printf("\nr: %s\n",r);
-	free(r);
-	//mostrarBitsDeBloques(8);
-*/
-
-	/*char *unPath = string_from_format("%s","TablaA/20.bin");
-	r = obtenerDatosDeArchivoEnFS(unPath);
-	printf("\nr: [%s]\n",r);
-	free(r);
-	free(unPath);*/
-
-/*
-	t_MetadataTabla *unMetaTabla;
-	unMetaTabla = obtenerMetadataTabla("TablaFULL");
-	printf("\nConsistencia: %s\nParticiones: %d\nTiempoCompactavion: %d\n",unMetaTabla->Consistency,unMetaTabla->Partitions,unMetaTabla->Compaction_Time);
-	freeT_MetadataTabla(unMetaTabla);
-
-	unMetaTabla = obtenerMetadataTabla("TablaX");
-	printf("\nConsistencia: [%s]\nParticiones: %d\nTiempoCompactavion: %d\n",unMetaTabla->Consistency,unMetaTabla->Partitions,unMetaTabla->Compaction_Time);
-	freeT_MetadataTabla(unMetaTabla);
-
-
-	unMetaTabla = obtenerMetadataTabla("TablaA");
-	printf("\nConsistencia: %s\nParticiones: %d\nTiempoCompactavion: %d\n",unMetaTabla->Consistency,unMetaTabla->Partitions,unMetaTabla->Compaction_Time);
-	freeT_MetadataTabla(unMetaTabla);
-*/
 
 	iniciarEscucha();
 	pthread_t hiloIDAsignador;
 	pthread_create( &hiloIDAsignador , NULL ,  asignadorLISSANDRA , NULL);
 
+	cargarTablasPersistidasEnMEMTABLE();
 
-	printf("CONSOLA...\n");
+	printf("\nCONSOLA...\n");
 	consolaAPI();
 
 	destruirListasGenerales();
@@ -171,12 +121,12 @@ void consolaAPI()
 
 	    //operacion = string_split(linea," ");
 	    operacion = splitDeOperaciones(linea);
-	   //char **operacion2 = splitDeOperaciones(linea);
-	   //log_info(logger,"\n>INSERT2 [%s][%s][%s][%s]",operacion2[1],operacion2[2],operacion2[3],operacion2[4]);
 
 	    free(linea); //ES NECESARIO
 	    cantArgumentos = longitudArrayDePunteros(operacion) - 1; //XQ LA OPERACION CUENTA
 	    string_to_upper(operacion[0]);
+
+	    //realiarRetardo(configLFS.retardo);
 
 	    if(!strcmp(operacion[0], "EXIT")) //###
 	    {
@@ -219,7 +169,7 @@ void consolaAPI()
 	    		//IMPRIMO POR PANTALLA EL RESULTADO DE LA OPERACION
 	    		t_INSERT *unINSERT = definirT_INSERT(operacion[1],atoi(operacion[2]),operacion[3],0);
 	    		printf("\ntamanioLISTA: %d  (before memtable)\n",list_size(memTable)); ///
-	    		char* respuesta = realizarINSERT(unINSERT);  ///TESTEAR
+	    		char* respuesta = realizarINSERT(unINSERT);  //TESTEAR
 	    		printf("tamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
 	    		printf("Respuesta: %s\n",respuesta);
 	    		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
@@ -232,7 +182,7 @@ void consolaAPI()
 	    		//IMPRIMO POR PANTALLA EL RESULTADO DE LA OPERACION
 	    		t_INSERT *unINSERT = definirT_INSERT(operacion[1],atoi(operacion[2]),operacion[3],atoi(operacion[4]));
 	    		printf("\ntamanioLISTA: %d  (before memtable)\n",list_size(memTable)); ///
-	    		char* respuesta = realizarINSERT(unINSERT);  ///TESTEAR
+	    		char* respuesta = realizarINSERT(unINSERT);  //TESTEAR
 	    		printf("tamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
 	    		printf("Respuesta: %s\n",respuesta);
 	    		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
@@ -325,8 +275,15 @@ void consolaAPI()
 	    {
 	    	if(cantArgumentos == 1)
 	    	{
-	    		log_info(logger,"Operacion DROP");
-	    		printf("[%s]\n",operacion[1]);
+	    		log_info(logger,"\n>DROP [%s]\n",operacion[1]);
+
+	    		t_DROP *unDROP = definirT_DROP(operacion[1]);
+	    		char *respuesta = realizarDROP(unDROP);
+
+	    		printf("Respuesta: %s\n",respuesta);
+	    		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
+	    		free(respuesta);
+	    		freeT_DROP(unDROP);
 	    	}
 	    	else
 	    	{
@@ -342,13 +299,34 @@ void consolaAPI()
 	    	unArchivoComoLista = obtenerArchivoComoLista("t4/dump0.tmp");
 	    	printf("\nlist_size(unArchivoComoLista): %d\n",list_size(unArchivoComoLista));
 	    	*/
-	    	char *unPath = string_from_format("%s/Tables",configLFS.puntoMontaje);
-	    	char **listado = enlistarElPath(unPath);
+
+	    	//char *unPath = string_from_format("%s/Tables",configLFS.puntoMontaje);
+	    	//char **listado = enlistarElPath(unPath);
+
+	    	/*char *unPath = string_from_format("t1");
+	    	char **listado = enlistarCarpetaTabla(unPath);
 	    	int j;
 	    	for(j=0;listado[j]!=NULL;j++)
 	    		printf("%s\n",listado[j]);
 	    	free(unPath);
-	    	freeArrayDePunteros(listado);
+	    	freeArrayDePunteros(listado);*/
+
+	    	//t_Tabla *tablaEncontrada = existeEnMemtable("t1");
+	    	//realizarCOMPACTAR(tablaEncontrada,2);
+
+	    	/*char *nombreActual = string_from_format("%s/Tables/%s/antes.before",configLFS.puntoMontaje,"t1");
+	    	char *nombreNuevo = string_from_format("%sc",nombreActual);
+
+	    	rename(nombreActual,nombreNuevo);*/
+
+	    	/*unsigned  long int ini = 4000000000;
+	    	uint32_t fin;
+
+	    	fin = ini;
+	    	printf("\nini: %lu\n",ini);
+	    	printf("\nfin (lu): %lu\n",fin);
+	    	printf("\nfin (d): %d\n",fin);*/
+
 
 	    }
 
@@ -465,7 +443,7 @@ void realizarProtocoloDelPackage(t_PaqueteDeDatos *packageRecibido, int socketEm
 		char *tamanioValue = string_from_format("%d",configLFS.tamanioValue);
 		realizarHandshakeAMemoria(logger,socketEmisor,packageRecibido,tamanioValue);
 	}
-
+	//realiarRetardo(configLFS.retardo);
 	if(packageRecibido->ID == 13) //13: SELECT, osea q DATOS es una structura t_SELECT
 	{
 		t_SELECT *unSELECT;
@@ -543,15 +521,15 @@ void realizarProtocoloDelPackage(t_PaqueteDeDatos *packageRecibido, int socketEm
 		t_DROP *unDROP;
 
 		unDROP = deserializarT_DROP(packageRecibido->Datos);
-		printf("Query recibido: DESCRIBE [%s]",unDROP->nombreTabla);
+		log_info(logger,"\nQuery recibido: DROP [%s]",unDROP->nombreTabla);
+
+		char* respuesta = realizarDROP(unDROP);
+		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
+
+		enviarRespuesta(socketEmisor,22,respuesta); //22: RESPUESTA DE UN PROTOCOLO = 21
 
 
-		//char *Respuesta = realizarDESCRIBE();
-		char* Respuesta = string_from_format("SUCCESSFUL_DROP");
-		enviarRespuesta(socketEmisor,22,Respuesta); //22: RESPUESTA DE UN PROTOCOLO = 21
-
-
-		free(Respuesta);
+		free(respuesta);
 		freeT_DROP(unDROP); //HAY Q LIBERAR EL PAYLOAD SEGUN EL PROTOCOLO, particularmente en cada caso.
 	}
 
@@ -578,7 +556,7 @@ char *realizarSELECT(t_SELECT *unSELECT)
 
 		listaAUX = obtenerArchivoComoLista(unNombreTablaArchivo);
 		free(unNombreTablaArchivo);
-printf("\nlist_size(listaAUX): %d\n",list_size(listaAUX));
+printf("\nlist_size(listaAUX): %d\n",list_size(listaAUX)); ///
 		if(list_size(listaAUX) != 0)
 		{
 			bool conLaMismaKEY(void *elemento)
@@ -635,10 +613,10 @@ printf("\nlist_size(listaAUX): %d\n",list_size(listaAUX));
 		}
 
 		free(respuesta);
-		printf("list_size(listaRegistrosDeKEY): %d\n",list_size(listaRegistrosDeKEY));
+		printf("list_size(listaRegistrosDeKEY): %d\n",list_size(listaRegistrosDeKEY)); ///
 		if (list_size(listaRegistrosDeKEY) == 0)
 		{
-			respuesta = string_from_format("NO_EXISTE_VALUE");
+			respuesta = string_from_format("NO_EXISTE_KEY");
 		}
 		else
 		{
@@ -728,6 +706,7 @@ t_Tabla *crearTablaEnMEMTABLE(char *nombreTabla)
 	nuevaTabla->registros = list_create();
 	nuevaTabla->temporales = list_create();
 
+	//OBTENER LA METADATA PARA SABER TIMEPO DE COMPACTACION
 	//CREARIA EL HILO COMPACTADOR Y GUARDO EL hiloID en nuevaTabla->hiloIDCompactador
 
 	list_add(memTable,nuevaTabla);
@@ -735,6 +714,25 @@ t_Tabla *crearTablaEnMEMTABLE(char *nombreTabla)
 	return nuevaTabla;
 }
 
+void borrarTablaEnMEMTABLE(char *unNombreTabla)
+{
+	//list_remove_by_condition
+	bool existeTabla(void * elemento)
+	{
+		return (strcmp(((t_Tabla*)elemento)->nombreTabla,unNombreTabla) == 0);
+	}
+
+	t_Tabla *tablaEncontrada = (t_Tabla *)list_remove_by_condition(memTable,existeTabla);
+
+	if(tablaEncontrada != NULL)
+	{
+		freeT_Tabla(tablaEncontrada);
+	}
+	else
+	{
+		printf("\nNo se encontro [%s] en MEMTABLE\n",unNombreTabla); ///
+	}
+}
 
 t_Tabla *existeEnMemtable(char *nombreTabla)
 {
@@ -799,6 +797,49 @@ char *realizarDESCRIBE(t_DESCRIBE *unDESCRIBE)
 
 			freeT_MetadataTabla(unMetadataTabla);
 		}
+	}
+
+	return r;
+}
+/* NO BORRA A NIVEL MEMTABLE */
+char *realizarDROP(t_DROP *unDROP)
+{
+	char *r;
+
+	//char *pathTabla = string_from_format("%s/Tables/%s",configLFS.puntoMontaje,unNombreTabla);
+	r = existeTablaEnFS(unDROP->nombreTabla);
+
+	if(strcmp(r,"YA_EXISTE_TABLA") == 0)
+	{
+		free(r);
+		char *pathTabla = string_from_format("%s/Tables/%s",configLFS.puntoMontaje,unDROP->nombreTabla);
+		char **listaArchivos  = enlistarCarpetaTabla(pathTabla);
+		int i;
+		char *unPathArchivo;
+
+		for(i=0; listaArchivos[i] != NULL;i++)
+		{
+			unPathArchivo = string_from_format("%s/%s",unDROP->nombreTabla,listaArchivos[i]);
+			mostrarBitsDeBloques(8);///
+			borrarArchivoEnFS(unPathArchivo);
+			mostrarBitsDeBloques(8);///
+			free(unPathArchivo);
+
+		}
+
+		unPathArchivo = string_from_format("%s/Metadata",pathTabla);
+		remove(unPathArchivo);
+		free(unPathArchivo);
+		freeArrayDePunteros(listaArchivos);
+
+		remove(pathTabla); //LA CARPETA DEBE ESTAR VACIA PARA Q SE BORRE
+
+		printf("\ntamanioLISTA: %d  (before memtable)\n",list_size(memTable)); ///
+		borrarTablaEnMEMTABLE(unDROP->nombreTabla);
+		printf("\ntamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
+
+		r = string_from_format("SUCCESSFUL_DROP");
+
 	}
 
 	return r;
@@ -959,6 +1000,25 @@ void freeT_ArchivoTemp(t_ArchivoTemp *unArchivoTemp)
 	free(unArchivoTemp->nombre);
 	free(unArchivoTemp);
 }
+
+void freeT_Tabla(t_Tabla *unaTabla)
+{
+	free(unaTabla->nombreTabla);
+	freeListaDeRegistros(unaTabla->registros);
+	freeListaDeTemporales(unaTabla->temporales);
+
+
+	//MATAR EL RESPECTIVO HILO COMPACTADOR  unaTabla->hiloIDCompactador
+	//pthread_kill(unaTabla->hiloIDCompactador); //???
+
+	free(unaTabla);
+}
+
+void realiarRetardo(int cantSegundos)
+{
+	sleep(cantSegundos);
+}
+
 
 //####################################
 //compactador.c

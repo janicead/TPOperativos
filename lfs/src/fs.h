@@ -173,5 +173,8 @@ void freeT_MetadataTabla(t_MetadataTabla *unStruct);
 
 //##########################
 char **enlistarElPath(char *unPath);
+char **enlistarCarpetaTabla(char *unNombreTabla);
+
+void cargarTablasPersistidasEnMEMTABLE(void);
 
 #endif /* FS_H_ */

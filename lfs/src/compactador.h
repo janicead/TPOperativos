@@ -28,19 +28,18 @@
 #include "lfs.h"
 #include "varios.h"
 #include "fs.h"
-/*
+
 typedef struct
 {
-	char *nombreTabla;
+	int particion;
 	t_list *registros;
-	t_list *temporales; //NOMBRES DE ARCHIVOS .tmp .tmpc
-	pthread_t hiloIDCompactador; //o un bool SW de un break en el hilo
-}t_Tabla;*/
+}t_ParticionBIN;
 
 //#############################################
 t_list *obtenerArchivoComoLista(char *unNombreTablaArchivo);
 char *dumpearUnaListaDeRegistros(t_list *unaLista);
 void freeListaDeRegistros(t_list *unaListaRegistros);
+void freeListaDeTemporales(t_list *unaListaTemporales);
 void hiloDUMP(void);
 void realizarDUMP(void);
 void persistirRegistrarDUMP(t_Tabla *unaTabla,char *laTablaDUMPEADA);
@@ -51,5 +50,9 @@ void agregarArchivoTempALista(t_list *unaLista,char *nombreArchivo, int unTipo);
 int numeroDeParticion(int cantParticiones, int unaKey);
 
 //#############################################
+void hiloCOMPACTADOR(t_Tabla *unaTabla);
+void realizarCOMPACTAR(t_Tabla *unaTabla, int cantParticiones);
+void analizadorDelRegistro(t_Registro *unRegistroTMPC,t_list *particionesDeTabla,int cantParticiones);
+void persistirParticionBIN(t_Tabla *unaTabla,char *laBINDUMPEADA,int indexBIN);
 
 #endif /* COMPACTADOR_H_ */

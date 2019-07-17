@@ -64,6 +64,7 @@ typedef struct
 	t_list *registros;
 	t_list *temporales; //NOMBRES DE ARCHIVOS .tmp .tmpc
 	pthread_t hiloIDCompactador; //o un bool SW de un break en el hilo
+	sem_t noBloqueado;
 }t_Tabla;
 
 t_list* memTable;
@@ -82,6 +83,8 @@ typedef struct
 }t_ArchivoTemp;
 
 void freeT_Registro(t_Registro *unRegistro);
+void freeT_ArchivoTemp(t_ArchivoTemp *unArchivoTemp);
+void freeT_Tabla(t_Tabla *unaTabla);
 //##########################
 //##########################
 
@@ -120,7 +123,10 @@ char *realizarCREATE(t_CREATE *unCREATE);
 
 char *realizarDESCRIBE(t_DESCRIBE *unDESCRIBE);
 
+char *realizarDROP(t_DROP *unDROP);
+
 //####################################
+void realiarRetardo(int cantSegundos);
 //####################################
 //compactador.h  NO ME RECONCE t_Tabla  SI ESTA AHI,  NI IDEA
 //char *getNombreArchivoTEMP(t_Tabla *unaTabla);
