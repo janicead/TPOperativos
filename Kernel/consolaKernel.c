@@ -83,10 +83,10 @@ void* setConsole(){
 			cantidadParametros = 1;
 			char** parametros = obtenerParametros(linea,cantidadParametros + 1);
 			if(parametros[1] == NULL || string_is_empty(parametros[1])){
-				crear_lql_describe(parametros);
+				crear_lql_describe(parametros,true);
 			}
 			else{
-				crear_lql_describe(parametros);
+				crear_lql_describe(parametros,true);
 				log_info(loggerKernel,"La operación describe fue ingresada la cola de ready");
 			}
 		}
@@ -215,12 +215,12 @@ void crear_lql_create(char** parametros){
 	return;
 }
 
-void crear_lql_describe(char** parametros){
+void crear_lql_describe(char** parametros, bool consola){
 	t_lcb* lcb = crear_lcb();
 	t_LQL_operacion* op = (t_LQL_operacion*) malloc(sizeof(t_LQL_operacion));
 	op->keyword = DESCRIBE;
 	op->success = true;
-	op->consola = true;
+	op->consola = consola;
 	op->_raw = parametros;
 	if(parametros[1] == NULL || string_is_empty(parametros[1])){
 		op->argumentos.DESCRIBE.nombre_tabla = "";

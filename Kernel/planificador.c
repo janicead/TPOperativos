@@ -301,7 +301,7 @@ void lql_describe(t_LQL_operacion* op){
 			return;
 		}
 		pthread_mutex_unlock(&(mem->socket_mem_sem));
-		puts(resp);
+		describe_global(resp,op->consola);
 		free(resp);
 		op->success = true;
 	}
@@ -643,7 +643,7 @@ void* refresh_metadata_timer(){
 		pthread_mutex_unlock(&config_sem);
 		sleep(refresh_metadata);
 		char** parametros = string_n_split("DESCRIBE",2," ");
-		crear_lql_describe(parametros);
+		crear_lql_describe(parametros,false);
 	}
 	return NULL;
 }
@@ -731,6 +731,9 @@ t_memoria* random_memory(t_list* lista){
 
 bool verificar_memoria_caida(char* respuesta,t_LQL_operacion* op, int id_mem){
 	if(string_equals_ignore_case(respuesta,"MEMORIA_DESCONECTADA")){
+		if(op->consola){
+			printf("La memoria %d fue desconectada.\n", id_mem);
+		}
 		log_error(loggerKernel,"La memoria %d fue desconectada.", id_mem);
 		op->success = true; //ESTE TIPO DE ERROR NO CORTA LA EJECUCIÓN DEL RESTO DE ARCHIVO LQL
 		sacar_memoria(id_mem);
@@ -747,3 +750,54 @@ bool verificar_memoria_caida2(char* respuesta, int id_mem){
 	}
 	return false;
 }
+
+void describe_global(char* data, bool mostrarPorConsola){
+	char** metadata = string_split(data,"#");
+	char** metadata_final;
+	t_list* lista_aux = list_create();
+	for(int i = 0;metadata[i] != NULL;i++){
+		metadata_final = string_split(metadata[i],";");
+		t_tabla* tabla = malloc(sizeof(t_tabla));
+		tabla->nombre_tabla = metadata_final[0];
+		tabla->consistencia = metadata_final[1];
+		list_add(lista_aux,tabla);
+	}
+	freeParametros(metadata);
+	pthread_mutex_lock(&tablas_sem);
+	for(int i = 0; i < list_size(tablas); i++){
+		t_tabla* tabla = list_get(tablas,i);
+		int veces_repetida = 0;
+		for(int j = 0; j < list_size(lista_aux); j++){
+			t_tabla* tabla_aux = list_get(lista_aux,j);
+			if(string_equals_ignore_case(tabla->nombre_tabla,tabla_aux->nombre_tabla)){
+				veces_repetida++;
+			}
+		}
+		if(veces_repetida==0){
+			if(mostrarPorConsola){
+				printf("La tabla %s fue removida de la metadata del Kernel.\n",tabla->nombre_tabla);
+			}
+			log_info(loggerKernel,"La tabla %s fue removida de la metadata del Kernel",tabla->nombre_tabla);
+			list_remove_and_destroy_element(tablas,i,(void*)free_tabla);
+		}
+	}
+	for(int i = 0; i < list_size(lista_aux); i++){
+		t_tabla* tabla_aux = list_get(lista_aux,i);
+		if(!existe_tabla(tabla_aux->nombre_tabla)){
+			t_tabla* tabla_aux2 = list_remove(lista_aux,i);
+			list_add(tablas,tabla_aux2);
+			if(mostrarPorConsola){
+				printf("La tabla %s fue agregada a la metadata del Kernel.\n",tabla_aux2->nombre_tabla);
+			}
+			log_info(loggerKernel,"La tabla %s fue agregada a la metadata del Kernel",tabla_aux2->nombre_tabla);
+		}
+	}
+	freeParametros(metadata_final);
+	list_destroy_and_destroy_elements(lista_aux,(void*)free_tabla);
+	pthread_mutex_unlock(&tablas_sem);
+}
+
+
+
+
+

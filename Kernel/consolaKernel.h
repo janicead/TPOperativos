@@ -19,7 +19,7 @@ void freeParametros(char** parametros);
 void crear_lql_select(char** parametros);
 void crear_lql_insert(char** parametros);
 void crear_lql_create(char** parametros);
-void crear_lql_describe(char** parametros);
+void crear_lql_describe(char** parametros, bool consola);
 void crear_lql_drop(char** parametros);
 void crear_lql_journal();
 void crear_lql_add(char* criterio, int nro_memoria);

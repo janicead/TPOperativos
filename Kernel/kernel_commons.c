@@ -184,6 +184,13 @@ void agregar_tabla(t_tabla* tabla){
 	return;
 }
 
+bool existe_tabla(char* nombre_tabla){
+	bool sameTable(t_tabla* tabla){
+		return string_equals_ignore_case(tabla->nombre_tabla, nombre_tabla);
+	}
+	return list_any_satisfy(tablas,(void*)sameTable);
+}
+
 bool validar_consistencia(char* consistencia){
 	return string_equals_ignore_case(consistencia,"sc") || string_equals_ignore_case(consistencia,"shc") || string_equals_ignore_case(consistencia,"ec");
 }

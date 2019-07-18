@@ -60,6 +60,7 @@ void iniciar(){
 	conectarAMemoria(configKernel.ip_memoria,configKernel.puerto_memoria);
 	t_memoria* mem = list_get(memorias,0);
 	char* resp = opDESCRIBE(mem->socket_mem,"");
+	describe_global(resp,true);
 	puts(resp);
 	free(resp);
 	return;
