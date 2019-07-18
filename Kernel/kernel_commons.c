@@ -68,6 +68,7 @@ void agregar_memoria(int puerto, char* ip, int nro_memoria){
 	strcpy(memoria->ip,ip);
 	memoria->valida = true;
 	memoria->cant_selects_inserts_ejecutados = 0;
+	memoria->asociada = false;
 	pthread_mutex_init(&(memoria->socket_mem_sem),NULL);
 	pthread_mutex_lock(&memorias_sem);
 	if(!list_any_satisfy(memorias,(void*) sameID)){
@@ -269,11 +270,6 @@ void destruir_semaforos(){
 }
 
 void free_tabla(t_tabla* tabla){
-	free(tabla);
-	return;
-}
-
-void free_tabla2(t_tabla* tabla){
 	free(tabla->consistencia);
 	free(tabla->nombre_tabla);
 	free(tabla);

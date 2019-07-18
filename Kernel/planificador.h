@@ -46,5 +46,6 @@ void memoryLoad(bool mostrarEnConsola);
 FILE* abrirArchivo(char* path);
 t_tabla* devuelve_tabla(char* nombre);
 void describe_global(char* data, bool mostrarPorConsola);
+void describe(char* data, bool mostrarPorConsola);
 
 #endif /* PLANIFICADOR_H_ */

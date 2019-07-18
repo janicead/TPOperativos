@@ -84,7 +84,6 @@ void lql_select(t_LQL_operacion* operacion){
 			printf("ERROR: La tabla de nombre:  %s no existe.\n",operacion->argumentos.SELECT.nombre_tabla);
 		}
 		log_error(loggerKernel,"La tabla de nombre:  %s no existe",operacion->argumentos.SELECT.nombre_tabla);
-		free_tabla(tabla);
 		operacion->success = false;
 		return;
 	}
@@ -161,7 +160,6 @@ void lql_insert(t_LQL_operacion* op){
 			printf("ERROR: La tabla de nombre:  %s no existe.\n",op->argumentos.INSERT.nombre_tabla);
 		}
 		log_error(loggerKernel,"La tabla de nombre:  %s no existe",op->argumentos.INSERT.nombre_tabla);
-		free_tabla(tabla);
 		op->success = false;
 		return;
 	}
@@ -291,44 +289,66 @@ void lql_create(t_LQL_operacion* op){
 }
 
 void lql_describe(t_LQL_operacion* op){
+	bool memoria_asociada(t_memoria* mem){
+		return mem->asociada;
+	}
 	if(string_is_empty(op->argumentos.DESCRIBE.nombre_tabla)){
 		pthread_mutex_lock(&memorias_sem);
-		t_memoria* mem = random_memory(memorias);
+		t_memoria* mem = list_find(memorias,(void*)memoria_asociada);
 		pthread_mutex_unlock(&memorias_sem);
+		if(mem == NULL){
+			if(op->consola){
+				puts("ERROR: No hay ninguna memoria asociada a ningún criterio para realizar el describe global.");
+			}
+			log_error(loggerKernel,"No hay ninguna memoria asociada a ningún criterio para realizar el describe global");
+			return;
+		}
 		pthread_mutex_lock(&(mem->socket_mem_sem));
 		char* resp = opDESCRIBE(mem->socket_mem, "");
 		if(verificar_memoria_caida(resp,op,mem->id_mem)){
 			return;
 		}
-		pthread_mutex_unlock(&(mem->socket_mem_sem));
+		if(string_equals_ignore_case(resp,"NO_EXISTEN_TABLAS")){
+			if(op->consola){
+				puts("ERROR: No existe ninguna tabla.");
+			}
+			log_error(loggerKernel,"No existe ninguna tabla");
+			free(resp);
+			op->success = false;
+			return;
+		}
 		describe_global(resp,op->consola);
+		pthread_mutex_unlock(&(mem->socket_mem_sem));
 		free(resp);
 		op->success = true;
 	}
 	else{
-		pthread_mutex_lock(&tablas_sem);
-		t_tabla* tabla = devuelve_tabla(op->argumentos.DESCRIBE.nombre_tabla);
-		pthread_mutex_unlock(&tablas_sem);
-		if(tabla == NULL){
-			log_error(loggerKernel,"La tabla de nombre:  %s no existe",op->argumentos.DESCRIBE.nombre_tabla);
-			free_tabla(tabla);
+		pthread_mutex_lock(&memorias_sem);
+		t_memoria* mem = list_find(memorias,(void*)memoria_asociada);
+		pthread_mutex_unlock(&memorias_sem);
+		if(mem == NULL){
+			if(op->consola){
+				printf("ERROR: No hay ninguna memoria asociada a ningún criterio para realizar el describe %s.\n",op->argumentos.DESCRIBE.nombre_tabla);
+			}
+			log_error(loggerKernel,"No hay ninguna memoria asociada a ningún criterio para realizar el describe %s.",op->argumentos.DESCRIBE.nombre_tabla);
+			return;
+		}
+		pthread_mutex_lock(&(mem->socket_mem_sem));
+		char* resp = opDESCRIBE(mem->socket_mem,op->argumentos.DESCRIBE.nombre_tabla);
+		if(verificar_memoria_caida(resp,op,mem->id_mem)){
+			return;
+		}
+		if(string_equals_ignore_case(resp,"NO_EXISTE_TABLA")){
+			if(op->consola){
+				printf("La tabla %s no existe.",op->argumentos.DESCRIBE.nombre_tabla);
+			}
+			log_error(loggerKernel,"La tabla %s no existe.",op->argumentos.DESCRIBE.nombre_tabla);
 			op->success = false;
+			free(resp);
 			return;
 		}
-		t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia,-1);
-		if(!memoria->valida){
-			log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,op->argumentos.DESCRIBE.nombre_tabla);
-			free_memoria(memoria);
-			op->success = false;
-			return;
-		}
-		pthread_mutex_lock(&(memoria->socket_mem_sem));
-		char* resp = opDESCRIBE(memoria->socket_mem,op->argumentos.DESCRIBE.nombre_tabla);
-		if(verificar_memoria_caida(resp,op,memoria->id_mem)){
-			return;
-		}
-		pthread_mutex_unlock(&(memoria->socket_mem_sem));
-		puts(resp);
+		describe(resp,op->consola);
+		pthread_mutex_unlock(&(mem->socket_mem_sem));
 		free(resp);
 		op->success = true;
 	}
@@ -343,7 +363,6 @@ void lql_drop(t_LQL_operacion* op){
 			printf("ERROR :La tabla de nombre:  %s no existe.\n",op->argumentos.DROP.nombre_tabla);
 		}
 		log_error(loggerKernel,"La tabla de nombre:  %s no existe",op->argumentos.DROP.nombre_tabla);
-		free_tabla(tabla);
 		op->success = false;
 		return;
 	}
@@ -395,19 +414,21 @@ void lql_drop(t_LQL_operacion* op){
 void lql_journal(t_list* list_mem, t_LQL_operacion* op){
 	for(int i = 0; i < list_size(list_mem); i++){
 		t_memoria* memoria = list_get(list_mem,i);
-		pthread_mutex_lock(&(memoria->socket_mem_sem));
-		char* resp = opJOURNAL(memoria->socket_mem);
-		pthread_mutex_unlock(&(memoria->socket_mem_sem));
-		if(!verificar_memoria_caida(resp,op,memoria->id_mem)){
-			if(op->consola){
-				printf("La memoria %d inició el proceso de Journal.\n", memoria->id_mem);
-				log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+		if(memoria->asociada){
+			pthread_mutex_lock(&(memoria->socket_mem_sem));
+			char* resp = opJOURNAL(memoria->socket_mem);
+			pthread_mutex_unlock(&(memoria->socket_mem_sem));
+			if(!verificar_memoria_caida(resp,op,memoria->id_mem)){
+				if(op->consola){
+					printf("La memoria %d inició el proceso de Journal.\n", memoria->id_mem);
+					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+				}
+				else{
+					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+				}
 			}
-			else{
-				log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
-			}
+			free(resp);
 		}
-		free(resp);
 	}
 	op->success = true;
 	return;
@@ -431,6 +452,7 @@ void lql_add(t_LQL_operacion* op){
 				printf("Se ha asignado la memoria %d al criterio Strong Consistency.\n",strong_consistency->id_mem);
 			}
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Strong Consistency",strong_consistency->id_mem);
+			strong_consistency->asociada = true;
 			pthread_mutex_unlock(&strong_consistency_sem);
 			op->success = true;
 			return;
@@ -463,6 +485,8 @@ void lql_add(t_LQL_operacion* op){
 				printf("Se ha asignado la memoria %d al criterio Strong Hash Consistency.\n",op->argumentos.ADD.nro_memoria);
 			}
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Strong Hash Consistency",op->argumentos.ADD.nro_memoria);
+			t_memoria* mem = obtener_memoria_por_id(op->argumentos.ADD.nro_memoria);
+			mem->asociada = true;
 			pthread_mutex_unlock(&strong_hash_consistency_sem);
 			op->success = true;
 			return;
@@ -485,6 +509,8 @@ void lql_add(t_LQL_operacion* op){
 				printf("Se ha asignado la memoria %d al criterio Eventual Consistency.\n",op->argumentos.ADD.nro_memoria);
 			}
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Eventual Consistency",op->argumentos.ADD.nro_memoria);
+			t_memoria* mem = obtener_memoria_por_id(op->argumentos.ADD.nro_memoria);
+			mem->asociada = true;
 			pthread_mutex_unlock(&eventual_consistency_sem);
 			op->success = true;
 			return;
@@ -762,44 +788,74 @@ void describe_global(char* data, bool mostrarPorConsola){
 		tabla->consistencia =malloc(strlen(metadata_final[1])+1);
 		strcpy(tabla->consistencia,metadata_final[1]);
 		list_add(lista_aux,tabla);
+		if(mostrarPorConsola){
+			printf("Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sseg.\n",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
+		}
+		log_info(loggerKernel,"Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sseg",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
 		freeParametros(metadata_final);
 	}
 	freeParametros(metadata);
 	pthread_mutex_lock(&tablas_sem);
-	for(int i = 0; i < list_size(tablas); i++){
-		t_tabla* tabla = list_get(tablas,i);
-		int veces_repetida = 0;
-		for(int j = 0; j < list_size(lista_aux); j++){
-			t_tabla* tabla_aux = list_get(lista_aux,j);
-			if(string_equals_ignore_case(tabla->nombre_tabla,tabla_aux->nombre_tabla)){
-				veces_repetida++;
+	int tablas_size = list_size(tablas);
+	for(int i = 0; i < tablas_size; i++){
+		if(!list_is_empty(tablas)){
+			t_tabla* tabla = list_get(tablas,i);
+			bool exists_table(t_tabla* table){
+				return string_equals_ignore_case(table->nombre_tabla, tabla->nombre_tabla);
 			}
-		}
-		if(veces_repetida==0){
-			if(mostrarPorConsola){
-				printf("La tabla %s fue removida de la metadata del Kernel.\n",tabla->nombre_tabla);
+			if(!list_any_satisfy(lista_aux,(void*)exists_table)){
+				if(mostrarPorConsola){
+					printf("La tabla %s fue removida de la metadata del Kernel.\n",tabla->nombre_tabla);
+				}
+				log_info(loggerKernel,"La tabla %s fue removida de la metadata del Kernel",tabla->nombre_tabla);
+				list_remove_and_destroy_element(tablas,i,(void*)free_tabla);
+				i--;
+				tablas_size--;
 			}
-			log_info(loggerKernel,"La tabla %s fue removida de la metadata del Kernel",tabla->nombre_tabla);
-			list_remove_and_destroy_element(tablas,i,(void*)free_tabla);
 		}
 	}
-	for(int i = 0; i < list_size(lista_aux); i++){
-		t_tabla* tabla_aux = list_get(lista_aux,i);
-		if(!existe_tabla(tabla_aux->nombre_tabla)){
-			t_tabla* tabla_aux2 = list_remove(lista_aux,i);
-			list_add(tablas,tabla_aux2);
-			if(mostrarPorConsola){
-				printf("La tabla %s fue agregada a la metadata del Kernel.\n",tabla_aux2->nombre_tabla);
+	int aux_size = list_size(lista_aux);
+	for(int i = 0; i < aux_size; i++){
+		if(!list_is_empty(lista_aux)){
+			t_tabla* tabla_aux = list_get(lista_aux,i);
+			if(!existe_tabla(tabla_aux->nombre_tabla)){
+				t_tabla* tabla_aux2 = list_remove(lista_aux,i);
+				i--;
+				aux_size--;
+				list_add(tablas,tabla_aux2);
+				if(mostrarPorConsola){
+					printf("La tabla %s fue agregada a la metadata del Kernel.\n",tabla_aux2->nombre_tabla);
+				}
+				log_info(loggerKernel,"La tabla %s fue agregada a la metadata del Kernel",tabla_aux2->nombre_tabla);
 			}
-			log_info(loggerKernel,"La tabla %s fue agregada a la metadata del Kernel",tabla_aux2->nombre_tabla);
 		}
 	}
-
-	list_destroy_and_destroy_elements(lista_aux,(void*)free_tabla2);
+	list_destroy_and_destroy_elements(lista_aux,(void*)free_tabla);
 	pthread_mutex_unlock(&tablas_sem);
 }
 
-
+void describe(char* data, bool mostrarPorConsola){
+	char** metadata = string_split(data,"#");
+	char** metadata_final = string_split(metadata[0],";");
+	t_tabla* tabla = malloc(sizeof(t_tabla));
+	tabla->nombre_tabla = malloc(strlen(metadata_final[0])+1);
+	strcpy(tabla->nombre_tabla,metadata_final[0]);
+	tabla->consistencia =malloc(strlen(metadata_final[1])+1);
+	strcpy(tabla->consistencia,metadata_final[1]);
+	if(mostrarPorConsola){
+		printf("Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sseg.\n",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
+	}
+	log_info(loggerKernel,"Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sseg",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
+	freeParametros(metadata_final);
+	freeParametros(metadata);
+	if(!existe_tabla(tabla->nombre_tabla)){
+		list_add(tablas,tabla);
+		if(mostrarPorConsola){
+			printf("La tabla %s fue agregada a la metadata del Kernel.\n",tabla->nombre_tabla);
+		}
+		log_info(loggerKernel,"La tabla %s fue agregada a la metadata del Kernel",tabla->nombre_tabla);
+	}
+}
 
 
 
