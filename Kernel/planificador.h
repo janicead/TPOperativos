@@ -43,7 +43,7 @@ int porcentajeSelectsInserts(int cant_selects_inserts_ejecutados);
 void memoryLoad(bool mostrarEnConsola);
 
 //FUNCIONES EXTRA
-FILE* abrirArchivo(char* path);
+FILE* abrirArchivo(t_LQL_operacion* op);
 t_tabla* devuelve_tabla(char* nombre);
 void describe_global(char* data, bool mostrarPorConsola);
 void describe(char* data, bool mostrarPorConsola);

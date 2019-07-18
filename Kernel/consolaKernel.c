@@ -268,7 +268,8 @@ void crear_lql_add(char* criterio, int nro_memoria){
 	op->success = true;
 	op->consola = true;
 	agregar_op_lcb(lcb,op);
-	pasar_lcb_a_ready(lcb);
+	lql_add(op);
+	pasar_lcb_a_exit(lcb);
 	return;
 }
 
@@ -282,7 +283,8 @@ void crear_lql_run(char* path){
 	op->success = true;
 	op->consola = true;
 	agregar_op_lcb(lcb,op);
-	pasar_lcb_a_ready(lcb);
+	lql_run(abrirArchivo(op),op);
+	pasar_lcb_a_exit(lcb);
 	return;
 }
 
@@ -294,7 +296,8 @@ void crear_lql_metrics(){
 	op->success = true;
 	op->consola = true;
 	agregar_op_lcb(lcb,op);
-	pasar_lcb_a_ready(lcb);
+	lql_metrics(op->consola);
+	pasar_lcb_a_exit(lcb);
 	return;
 }
 

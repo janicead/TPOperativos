@@ -36,12 +36,15 @@ void* ejecutar(){
 					break;
 				case ADD:
 					lql_add(operacion);
+					quantum++;
 					break;
 				case RUN:
-					lql_run(abrirArchivo(operacion->argumentos.RUN.path), operacion);
+					lql_run(abrirArchivo(operacion),operacion);
+					quantum++;
 					break;
 				case METRICS:
 					lql_metrics(true);
+					quantum++;
 					operacion->success = true;
 					break;
 			}
@@ -65,10 +68,13 @@ void* ejecutar(){
 }
 
 
-FILE* abrirArchivo(char* path){
-	FILE* f = fopen(path,"r");
+FILE* abrirArchivo(t_LQL_operacion* op){
+	FILE* f = fopen(op->argumentos.RUN.path,"r");
 	if(f == NULL){
-		log_error(loggerKernel,"Error al abrir el archivo LQL");
+		if(op->consola){
+			printf("ERROR: No se pudo abrir el archivo LQL cuyo path es %s.\n",op->argumentos.RUN.path);
+		}
+		log_error(loggerKernel,"No se pudo abrir el archivo LQL cuyo path es %s.\n",op->argumentos.RUN.path);
 		return f;
 	}
 	return f;
@@ -412,6 +418,7 @@ void lql_drop(t_LQL_operacion* op){
 }
 
 void lql_journal(t_list* list_mem, t_LQL_operacion* op){
+	int j = 0;
 	for(int i = 0; i < list_size(list_mem); i++){
 		t_memoria* memoria = list_get(list_mem,i);
 		if(memoria->asociada){
@@ -426,9 +433,16 @@ void lql_journal(t_list* list_mem, t_LQL_operacion* op){
 				else{
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
 				}
+				j++;
 			}
 			free(resp);
 		}
+	}
+	if(j==0){
+		if(op->consola){
+			puts("No hay ninguna memoria asociada a ningun criterio, por ende ninguna inició el proceso de Journal.");
+		}
+		log_info(loggerKernel,"No hay ninguna memoria asociada a ningun criterio, por ende ninguna inició el proceso de Journal.");
 	}
 	op->success = true;
 	return;
