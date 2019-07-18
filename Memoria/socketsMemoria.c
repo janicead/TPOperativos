@@ -108,10 +108,8 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		log_info(loggerMemoria, "Query recibido: JOURNAL [%s]",packageRecibido->Datos);
 
 		pthread_mutex_lock(&semMemoriaPrincipal);
-
-		JOURNALMemoria();
 		enviarRespuesta(socketEmisor,id_respuesta_journal,"Todo ok");
-
+		JOURNALMemoria();
 		pthread_mutex_lock(&semConfig);
 		int retardoMemoriaPrincipal = configMemoria.retardoAccesoMemoriaPrincipal;
 		pthread_mutex_unlock(&semConfig);

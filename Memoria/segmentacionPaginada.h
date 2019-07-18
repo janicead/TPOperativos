@@ -48,12 +48,6 @@ typedef struct {
 	t_registro* registro;
 }t_JOURNAL;
 
-typedef struct{
-	t_JOURNAL datosJOURNAL;
-	char* valorObtenido;
-
-}t_INSERTJOURNAL;
-
 pthread_mutex_t semTablaSegmentos;
 pthread_mutex_t semCantMaxMarcos;
 pthread_mutex_t semCantMarcosIngresados;
@@ -66,7 +60,6 @@ pthread_mutex_t semLfs;
 
 //Parametros globales modificables
 t_list* tablaDeSegmentos; //elementos de tipo t_segmento
-t_list* journalRespuestas;
 
 int cantMaxMarcos;
 int cantMarcosIngresados;
