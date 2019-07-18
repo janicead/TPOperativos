@@ -471,7 +471,8 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		pthread_mutex_lock(&semTablaSegmentos);
 		void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
 		t_segmento *segmento =(t_segmento*)elemento;
-		char* value = buscarTablaPaginas(segmento->tablaPaginas, key);// aca tenemos que buscar en la tabla de paginas especifica de este segmento y meternos 1 x 1 en sus paginas para ver si en la memoria Principal esta el key
+		char* value = malloc(tamanioDadoPorLFS);
+		value = buscarTablaPaginas(segmento->tablaPaginas, key);// aca tenemos que buscar en la tabla de paginas especifica de este segmento y meternos 1 x 1 en sus paginas para ver si en la memoria Principal esta el key
 		pthread_mutex_unlock(&semTablaSegmentos);
 		if(value!= NULL){ //lo encontro en tabla de paginas, lo busca en memoria principal y devuelve lo que vale
 			log_info(loggerMemoria,"Esta en la tabla de PAGINAS");
@@ -481,8 +482,7 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 			//tengo que consultarle a LFS PERO solo guardo en tabla de paginas
 			pthread_mutex_lock(&semLfs);
 			int keyEnINT = pasarUINT16AInt(key);
-			char* value = malloc(tamanioDadoPorLFS);
-			value = opSELECT(socketLFS,nombreTabla, keyEnINT);
+			char* value = opSELECT(socketLFS,nombreTabla, keyEnINT);
 			if(string_equals_ignore_case(value, "NO_EXISTE_TABLA")||string_equals_ignore_case(value, "NO_EXISTE_VALUE")){
 				return value;
 			} else{
@@ -505,14 +505,10 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		}
 	}
 	else{
-		// no esta en tabla de segmentos
-		//pedirle a lfs y guardar datos en tabla segmentos y tabla paginas
-		//consultaSELECTMemoriaLfs();
 		pthread_mutex_lock(&semLfs);
 		log_info(loggerMemoria,"No se encontro en la tabla de SEGMENTOS");
 		int keyEnINT = pasarUINT16AInt(key);
-		char* value = malloc(tamanioDadoPorLFS);
-		value = opSELECT(socketLFS,nombreTabla, keyEnINT);
+		char* value = opSELECT(socketLFS,nombreTabla, keyEnINT);
 		if(string_equals_ignore_case(value, "NO_EXISTE_TABLA")||string_equals_ignore_case(value, "NO_EXISTE_KEY")){
 			pthread_mutex_unlock(&semLfs);
 			return value;
@@ -532,9 +528,6 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 
 			pthread_mutex_unlock(&semLfs);
 			log_info(loggerMemoria,"Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
-			//mostrarDatosMarcos();
-			//mostrarElementosTablaSegmentos();
-			//mostrarElementosMemoriaPrincipal();
 			retardoMemoriaAplicado();
 			return value;
 		}

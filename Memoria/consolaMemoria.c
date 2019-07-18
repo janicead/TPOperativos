@@ -59,7 +59,7 @@ void* crearConsolaMemoria(){
 				switch(comandoDeString(operacion[0])){
 					case CMD_SELECT:
 						if (pasarAUint16(operacion[2], key)){
-							char* valor = SELECTMemoria(operacion[1], *key, 0);
+							char* valor  = SELECTMemoria(operacion[1], *key, 0);
 							if(string_equals_ignore_case(valor, "NO_EXISTE_TABLA")){
 								log_error(loggerMemoria, "La tabla '%s' no existe.", operacion[1]);
 							}
