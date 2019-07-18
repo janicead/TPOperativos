@@ -753,14 +753,16 @@ bool verificar_memoria_caida2(char* respuesta, int id_mem){
 
 void describe_global(char* data, bool mostrarPorConsola){
 	char** metadata = string_split(data,"#");
-	char** metadata_final;
 	t_list* lista_aux = list_create();
 	for(int i = 0;metadata[i] != NULL;i++){
-		metadata_final = string_split(metadata[i],";");
+		char** metadata_final = string_split(metadata[i],";");
 		t_tabla* tabla = malloc(sizeof(t_tabla));
-		tabla->nombre_tabla = metadata_final[0];
-		tabla->consistencia = metadata_final[1];
+		tabla->nombre_tabla = malloc(strlen(metadata_final[0])+1);
+		strcpy(tabla->nombre_tabla,metadata_final[0]);
+		tabla->consistencia =malloc(strlen(metadata_final[1])+1);
+		strcpy(tabla->consistencia,metadata_final[1]);
 		list_add(lista_aux,tabla);
+		freeParametros(metadata_final);
 	}
 	freeParametros(metadata);
 	pthread_mutex_lock(&tablas_sem);
@@ -792,8 +794,8 @@ void describe_global(char* data, bool mostrarPorConsola){
 			log_info(loggerKernel,"La tabla %s fue agregada a la metadata del Kernel",tabla_aux2->nombre_tabla);
 		}
 	}
-	freeParametros(metadata_final);
-	list_destroy_and_destroy_elements(lista_aux,(void*)free_tabla);
+
+	list_destroy_and_destroy_elements(lista_aux,(void*)free_tabla2);
 	pthread_mutex_unlock(&tablas_sem);
 }
 

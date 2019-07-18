@@ -273,6 +273,13 @@ void free_tabla(t_tabla* tabla){
 	return;
 }
 
+void free_tabla2(t_tabla* tabla){
+	free(tabla->consistencia);
+	free(tabla->nombre_tabla);
+	free(tabla);
+	return;
+}
+
 void free_memoria(t_memoria* memoria){
 	if(memoria->valida){
 		free(memoria->ip);

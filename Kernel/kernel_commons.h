@@ -209,6 +209,7 @@ void destruir_colas();
 void destruir_semaforos();
 void free_memoria(t_memoria* memoria);
 void free_tabla(t_tabla* tabla);
+void free_tabla2(t_tabla* tabla);
 
 
 #endif /* KERNEL_COMMONS_H_ */
