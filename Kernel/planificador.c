@@ -41,7 +41,7 @@ void* ejecutar(){
 					lql_run(abrirArchivo(operacion->argumentos.RUN.path), operacion);
 					break;
 				case METRICS:
-					lql_metrics();
+					lql_metrics(true);
 					operacion->success = true;
 					break;
 			}
@@ -99,21 +99,39 @@ void lql_select(t_LQL_operacion* operacion){
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
-	char** valor =string_split(respuesta, " ");
-	if(string_equals_ignore_case(valor[0],"NO_EXISTE_TABLA")){
-		log_error(loggerKernel, "No se realizar SELECT %s %d ya que la tabla %s no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.nombre_tabla);
-		operacion->success = false;
-		freeParametros(valor);
-		return;
+	if(operacion->consola){
+		if(string_equals_ignore_case(respuesta,"NO_EXISTE_TABLA")){
+			printf("No se realizar SELECT %s %d ya que la tabla %s no existe.\n", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.nombre_tabla);
+			log_error(loggerKernel, "No se realizar SELECT %s %d ya que la tabla %s no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.nombre_tabla);
+			operacion->success = false;
+			free(respuesta);
+			return;
+		}
+		if(string_equals_ignore_case(respuesta,"NO_EXISTE_VALUE")){
+			printf("No se realizar SELECT %s %d ya que la key %d no existe.\n", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.key);
+			log_error(loggerKernel, "No se realizar SELECT %s %d ya que la key %d no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.key);
+			operacion->success = false;
+			free(respuesta);
+			return;
+		}
+		printf("SELECT %s %d Value -> %s \n",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
+		log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
 	}
-	if(string_equals_ignore_case(valor[0],"NO_EXISTE_VALUE")){
-		log_error(loggerKernel, "No se realizar SELECT %s %d ya que la key %d no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.key);
-		operacion->success = false;
-		freeParametros(valor);
-		return;
+	else{
+		if(string_equals_ignore_case(respuesta,"NO_EXISTE_TABLA")){
+			log_error(loggerKernel, "No se realizar SELECT %s %d ya que la tabla %s no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.nombre_tabla);
+			operacion->success = false;
+			free(respuesta);
+			return;
+		}
+		if(string_equals_ignore_case(respuesta,"NO_EXISTE_VALUE")){
+			log_error(loggerKernel, "No se realizar SELECT %s %d ya que la key %d no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.key);
+			operacion->success = false;
+			free(respuesta);
+			return;
+		}
+		log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
 	}
-	freeParametros(valor);
-	log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
 	time_t tiempo_fin = time(NULL);
 	t_select_ejecutado* select = (t_select_ejecutado*)malloc(sizeof(t_select_ejecutado));
 	select->tiempo_fin = tiempo_fin;
@@ -154,17 +172,30 @@ void lql_insert(t_LQL_operacion* op){
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
-	char** valor =string_split(resp, " ");
-	if(string_equals_ignore_case(valor[0],"NO_EXISTE_TABLA")){
-		log_error(loggerKernel, "No se pudo realizar: INSERT %s %d %s ya que la tabla %s no existe.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor, op->argumentos.INSERT.nombre_tabla);
-		op->success = false;
-		freeParametros(valor);
-		return;
+	if(op->consola){
+		if(string_equals_ignore_case(resp,"NO_EXISTE_TABLA")){
+			printf("No se pudo realizar: INSERT %s %d %s ya que la tabla %s no existe.\n", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor, op->argumentos.INSERT.nombre_tabla);
+			log_error(loggerKernel, "No se pudo realizar: INSERT %s %d %s ya que la tabla %s no existe.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor, op->argumentos.INSERT.nombre_tabla);
+			op->success = false;
+			free(resp);
+			return;
+		}
+		else{
+			printf("INSERT %s %d %s realizado correctamente.\n", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
+			log_info(loggerKernel, "INSERT %s %d %s realizado correctamente.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
+		}
 	}
 	else{
-		log_info(loggerKernel, "INSERT %s %d %s realizado correctamente.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
+		if(string_equals_ignore_case(resp,"NO_EXISTE_TABLA")){
+			log_error(loggerKernel, "No se pudo realizar: INSERT %s %d %s ya que la tabla %s no existe.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor, op->argumentos.INSERT.nombre_tabla);
+			op->success = false;
+			free(resp);
+			return;
+		}
+		else{
+			log_info(loggerKernel, "INSERT %s %d %s realizado correctamente.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
+		}
 	}
-	freeParametros(valor);
 	time_t tiempo_fin = time(NULL);
 	t_insert_ejecutado* insert = (t_insert_ejecutado*)malloc(sizeof(t_insert_ejecutado));
 	insert->tiempo_fin = tiempo_fin;
@@ -195,7 +226,52 @@ void lql_create(t_LQL_operacion* op){
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
-	puts(resp);
+	if(op->consola){
+		if(string_equals_ignore_case(resp,"YA_EXISTE_TABLA")){
+			printf("CREATE %s %s %d %d falló ya que la tabla %s ya existe.\n",op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
+					op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time, op->argumentos.CREATE.nombre_tabla);
+			log_info(loggerKernel,"CREATE %s %s %d %d falló ya que la tabla %s ya existe.",op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
+					op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time, op->argumentos.CREATE.nombre_tabla);
+			op->success = false;
+			free(resp);
+			return;
+		}
+		if(string_equals_ignore_case(resp,"NO_HAY_ESPACIO")){
+			printf("CREATE %s %s %d %d falló ya que no hay espacio suficiente en el File System.\n",op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
+					op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time);
+			log_info(loggerKernel,"CREATE %s %s %d %d falló ya que no hay espacio suficiente en el File System.",op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
+			op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time);
+			op->success = false;
+			free(resp);
+			return;
+		}
+		else{
+			printf("CREATE %s %s %d %d se realizó correctamente.\n",op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
+					op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time);
+			log_info(loggerKernel,"CREATE %s %s %d %d se realizó correctamente.",op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
+					op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time);
+		}
+	}
+	else{
+		if(string_equals_ignore_case(resp,"YA_EXISTE_TABLA")){
+			log_info(loggerKernel,"CREATE %s %s %d %d falló ya que la tabla %s ya existe.",op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
+					op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time, op->argumentos.CREATE.nombre_tabla);
+			op->success = false;
+			free(resp);
+			return;
+		}
+		if(string_equals_ignore_case(resp,"NO_HAY_ESPACIO")){
+			log_info(loggerKernel,"CREATE %s %s %d %d falló ya que no hay espacio suficiente en el File System.",op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
+			op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time);
+			op->success = false;
+			free(resp);
+			return;
+		}
+		else{
+			log_info(loggerKernel,"CREATE %s %s %d %d se realizó correctamente.",op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
+					op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time);
+		}
+	}
 	op->success = true;
 	free(resp);
 	return;
@@ -268,14 +344,30 @@ void lql_drop(t_LQL_operacion* op){
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
-	char** valor =string_split(resp, " ");
-	if(string_equals_ignore_case(valor[0],"NO_EXISTE_TABLA")){
-		log_error(loggerKernel, "No se pudo borrar la tabla %s ya que no existe", op->argumentos.DROP.nombre_tabla);
+	if(op->consola){
+		if(string_equals_ignore_case(resp,"NO_EXISTE_TABLA")){
+			printf("No se pudo borrar la tabla %s ya que no existe.\n", op->argumentos.DROP.nombre_tabla);
+			log_error(loggerKernel, "No se pudo borrar la tabla %s ya que no existe", op->argumentos.DROP.nombre_tabla);
+			op->success = false;
+			free(resp);
+			return;
+		}
+		else{
+			printf("Se borro la tabla %s correctamente.\n", op->argumentos.DROP.nombre_tabla);
+			log_info(loggerKernel, "Se borro la tabla %s correctamente", op->argumentos.DROP.nombre_tabla);
+		}
 	}
 	else{
-		log_info(loggerKernel, "Se borro la tabla %s correctamente", op->argumentos.DROP.nombre_tabla);
+		if(string_equals_ignore_case(resp,"NO_EXISTE_TABLA")){
+			log_error(loggerKernel, "No se pudo borrar la tabla %s ya que no existe", op->argumentos.DROP.nombre_tabla);
+			op->success = false;
+			free(resp);
+			return;
+		}
+		else{
+			log_info(loggerKernel, "Se borro la tabla %s correctamente", op->argumentos.DROP.nombre_tabla);
+		}
 	}
-	freeParametros(valor);
 	free(resp);
 	op->success = true;
 	return;
@@ -288,7 +380,13 @@ void lql_journal(t_list* list_mem, t_LQL_operacion* op){
 		char* resp = opJOURNAL(memoria->socket_mem);
 		pthread_mutex_unlock(&(memoria->socket_mem_sem));
 		if(!verificar_memoria_caida(resp,op,memoria->id_mem)){
-			log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+			if(op->consola){
+				printf("La memoria %d inició el proceso de Journal.\n", memoria->id_mem);
+				log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+			}
+			else{
+				log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+			}
 		}
 		free(resp);
 	}
@@ -307,12 +405,18 @@ void lql_add(t_LQL_operacion* op){
 		if(strong_consistency == NULL){
 			strong_consistency = obtener_memoria_por_id(op->argumentos.ADD.nro_memoria);
 			strong_consistency->valida = true;
+			if(op->consola){
+				printf("Se ha asignado la memoria %d al criterio Strong Consistency.\n",strong_consistency->id_mem);
+			}
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Strong Consistency",strong_consistency->id_mem);
 			pthread_mutex_unlock(&strong_consistency_sem);
 			op->success = true;
 			return;
 		}
 		else{
+			if(op->consola){
+				printf("El criterio Strong Consistency ya posee una memoria asociada.\n");
+			}
 			log_error(loggerKernel,"El criterio Strong Consistency ya posee una memoria asociada");
 			pthread_mutex_unlock(&strong_consistency_sem);
 			op->success = true;
@@ -322,6 +426,9 @@ void lql_add(t_LQL_operacion* op){
 	if(string_equals_ignore_case(op->argumentos.ADD.criterio,"SHC")){
 		pthread_mutex_lock(&strong_hash_consistency_sem);
 		if(memoria_existente(strong_hash_consistency,op->argumentos.ADD.nro_memoria)){
+			if(op->consola){
+				printf("La memoria %d ya se encuentra asignada al criterio Strong Hash Consistency.\n",op->argumentos.ADD.nro_memoria);
+			}
 			log_error(loggerKernel,"La memoria %d ya se encuentra asignada al criterio Strong Hash Consistency",op->argumentos.ADD.nro_memoria);
 			pthread_mutex_unlock(&strong_hash_consistency_sem);
 			op->success = true;
@@ -330,6 +437,9 @@ void lql_add(t_LQL_operacion* op){
 		else{
 			list_add(strong_hash_consistency,obtener_memoria_por_id(op->argumentos.ADD.nro_memoria));
 			lql_journal(strong_hash_consistency, op);
+			if(op->consola){
+				printf("Se ha asignado la memoria %d al criterio Strong Hash Consistency.\n",op->argumentos.ADD.nro_memoria);
+			}
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Strong Hash Consistency",op->argumentos.ADD.nro_memoria);
 			pthread_mutex_unlock(&strong_hash_consistency_sem);
 			op->success = true;
@@ -339,6 +449,9 @@ void lql_add(t_LQL_operacion* op){
 	if(string_equals_ignore_case(op->argumentos.ADD.criterio,"EC")){
 		pthread_mutex_lock(&eventual_consistency_sem);
 		if(memoria_existente(eventual_consistency,op->argumentos.ADD.nro_memoria)){
+			if(op->consola){
+				printf("La memoria %d ya se encuentra asignada al criterio Eventual Consistency.\n",op->argumentos.ADD.nro_memoria);
+			}
 			log_error(loggerKernel,"La memoria %d ya se encuentra asignada al criterio Eventual Consistency",op->argumentos.ADD.nro_memoria);
 			pthread_mutex_unlock(&eventual_consistency_sem);
 			op->success = true;
@@ -346,6 +459,9 @@ void lql_add(t_LQL_operacion* op){
 		}
 		else{
 			list_add(eventual_consistency,obtener_memoria_por_id(op->argumentos.ADD.nro_memoria));
+			if(op->consola){
+				printf("Se ha asignado la memoria %d al criterio Eventual Consistency.\n",op->argumentos.ADD.nro_memoria);
+			}
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Eventual Consistency",op->argumentos.ADD.nro_memoria);
 			pthread_mutex_unlock(&eventual_consistency_sem);
 			op->success = true;
@@ -360,6 +476,9 @@ void lql_run(FILE* archivo, t_LQL_operacion* op){
 		op->success = false;
 		return;
 	}
+	if(op->consola){
+		printf("Iniciando ejecución de archivo LQL.\n");
+	}
 	log_info(loggerKernel,"Iniciando ejecución de archivo LQL");
 	char* linea = NULL;
 	size_t len = 0;
@@ -368,11 +487,16 @@ void lql_run(FILE* archivo, t_LQL_operacion* op){
 	        t_LQL_operacion* operacion = parse(linea);
 	        if(operacion->valido){
 	        	op->success = true;
+	        	op->consola = false;
 	        	agregar_op_lcb(lcb,operacion);
 	        }
 	        else {
+	        	if(op->consola){
+	        		printf("La linea %s no es valida.\n", linea);
+	        	}
 	            log_error(loggerKernel, "La linea %s no es valida", linea);
 	            op->success = false;
+	            op->consola = false;
 	            free(linea);
 	            return;
 	        }
@@ -436,22 +560,31 @@ int porcentajeSelectsInserts(int cant_selects_inserts_ejecutados){
 	return 0;
 }
 
-void memoryLoad(){
+void memoryLoad(bool mostrarEnConsola){
 	for(int i = 0; i < list_size(memorias); i++){
 		t_memoria* mem = list_get(memorias,i);
+		if(mostrarEnConsola){
+			printf("Memory Load: Memory %d porcentaje de uso: %d%%.\n",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados));
+		}
 		log_info(loggerKernel,"Memory Load: Memory %d porcentaje de uso: %d%%",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados));
 	}
 }
 
-void lql_metrics(){
+void lql_metrics(bool mostrarEnConsola){
 	pthread_mutex_lock(&memorias_sem);
 	pthread_mutex_lock(&selects_ejecutados_sem);
 	pthread_mutex_lock(&inserts_ejecutados_sem);
+	if(mostrarEnConsola){
+		printf("Read Latency / 30s: %lf ms.\n", tiempoPromedioSelect());
+		printf("Write Latency / 30s: %lf ms.\n", tiempoPromedioInsert());
+		printf("Reads / 30s: %d.\n", cantidadSelects());
+		printf("Writes / 30s: %d.\n", cantidadInserts());
+	}
 	log_info(loggerKernel,"Read Latency / 30s: %lf ms", tiempoPromedioSelect());
 	log_info(loggerKernel,"Write Latency / 30s: %lf ms", tiempoPromedioInsert());
 	log_info(loggerKernel,"Reads / 30s: %d", cantidadSelects());
 	log_info(loggerKernel,"Writes / 30s: %d", cantidadInserts());
-	memoryLoad();
+	memoryLoad(mostrarEnConsola);
 	pthread_mutex_unlock(&inserts_ejecutados_sem);
 	pthread_mutex_unlock(&selects_ejecutados_sem);
 	pthread_mutex_unlock(&memorias_sem);
@@ -461,7 +594,7 @@ void lql_metrics(){
 void* metrics_timer(){
 	while(1){
 		sleep(30);
-		lql_metrics();
+		lql_metrics(false);
 		pthread_mutex_lock(&queue_exit_sem);
 		queue_clean_and_destroy_elements(queue_exit,(void*) free_lcb);
 		pthread_mutex_unlock(&queue_exit_sem);

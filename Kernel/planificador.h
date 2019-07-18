@@ -30,7 +30,7 @@ void lql_drop(t_LQL_operacion* op);
 void lql_journal(t_list* list_mem, t_LQL_operacion* op);
 void lql_add(t_LQL_operacion* op);
 void lql_run(FILE* archivo, t_LQL_operacion* op);
-void lql_metrics();
+void lql_metrics(bool mostrarEnConsola);
 void* refresh_metadata_timer();
 
 //FUNCIONES PARA LAS MÉTRICAS
@@ -40,7 +40,7 @@ double tiempoPromedioInsert();
 int cantidadSelects();
 int cantidadInserts();
 int porcentajeSelectsInserts(int cant_selects_inserts_ejecutados);
-void memoryLoad();
+void memoryLoad(bool mostrarEnConsola);
 
 //FUNCIONES EXTRA
 FILE* abrirArchivo(char* path);

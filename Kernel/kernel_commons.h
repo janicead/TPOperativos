@@ -73,6 +73,7 @@ typedef struct {
 	} argumentos;
 	char** _raw; //Para uso de la liberación
 	bool success;
+	bool consola;
 } t_LQL_operacion;
 
 typedef enum{
@@ -134,7 +135,6 @@ typedef struct{
 
 //VARIABLES DE CONFIGURACIÓN
 t_log* loggerKernel;
-t_log* loggerKernelConsola;
 t_config* archivoConfigKernel;
 
 //COLAS

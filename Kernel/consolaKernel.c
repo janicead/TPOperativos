@@ -177,6 +177,7 @@ void crear_lql_select(char** parametros){
 	op->argumentos.SELECT.key = atoi(parametros[2]);
 	op->argumentos.SELECT.nombre_tabla = parametros[1];
 	op->success = true;
+	op->consola = true;
 	op->_raw = parametros;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
@@ -192,6 +193,7 @@ void crear_lql_insert(char** parametros){
 	op->argumentos.INSERT.nombre_tabla = parametros[1];
 	op->argumentos.INSERT.valor = quitarComillas(parametros[3]);
 	op->success = true;
+	op->consola = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
@@ -207,6 +209,7 @@ void crear_lql_create(char** parametros){
 	op->argumentos.CREATE.numero_particiones = atoi(parametros[3]);
 	op->argumentos.CREATE.tipo_consistencia = parametros[2];
 	op->success = true;
+	op->consola = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
@@ -217,6 +220,7 @@ void crear_lql_describe(char** parametros){
 	t_LQL_operacion* op = (t_LQL_operacion*) malloc(sizeof(t_LQL_operacion));
 	op->keyword = DESCRIBE;
 	op->success = true;
+	op->consola = true;
 	op->_raw = parametros;
 	if(parametros[1] == NULL || string_is_empty(parametros[1])){
 		op->argumentos.DESCRIBE.nombre_tabla = "";
@@ -236,6 +240,7 @@ void crear_lql_drop(char** parametros){
 	op->keyword = DROP;
 	op->argumentos.DROP.nombre_tabla = parametros[1];
 	op->success = true;
+	op->consola = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
@@ -247,6 +252,7 @@ void crear_lql_journal(){
 	op->_raw = NULL;
 	op->keyword = JOURNAL;
 	op->success = true;
+	op->consola = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
@@ -260,6 +266,7 @@ void crear_lql_add(char* criterio, int nro_memoria){
 	op->argumentos.ADD.criterio = criterio;
 	op->argumentos.ADD.nro_memoria = nro_memoria;
 	op->success = true;
+	op->consola = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
@@ -273,6 +280,7 @@ void crear_lql_run(char* path){
 	op->argumentos.RUN.path = malloc(strlen(path)+1);
 	strcpy(op->argumentos.RUN.path, path);
 	op->success = true;
+	op->consola = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;
@@ -284,6 +292,7 @@ void crear_lql_metrics(){
 	op->_raw = NULL;
 	op->keyword = METRICS;
 	op->success = true;
+	op->consola = true;
 	agregar_op_lcb(lcb,op);
 	pasar_lcb_a_ready(lcb);
 	return;

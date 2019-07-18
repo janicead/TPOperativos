@@ -1,8 +1,7 @@
 #include "kernel_commons.h"
 
 void configure_logger_kernel(){
-	loggerKernel = log_create("kernel.log","kernel",1,LOG_LEVEL_INFO);
-	loggerKernelConsola = log_create("kernelConsola.log","kernelConsola",1,LOG_LEVEL_INFO);
+	loggerKernel = log_create("kernel.log","kernel",0,LOG_LEVEL_INFO);
 	return;
 }
 
@@ -10,7 +9,6 @@ void exit_gracefully(int exitInfo){
 	pthread_mutex_lock(&log_sem);
 	log_destroy(loggerKernel);
 	pthread_mutex_unlock(&log_sem);
-	log_destroy(loggerKernelConsola);
 	free(puertoMemoria);
 	destruir_colas();
 	destruir_listas();
