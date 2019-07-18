@@ -12,8 +12,8 @@ int realizarHandshakeAlLFS(t_log *logger,int socketServer, char *msjEnviado)
 	//printf("\nPAQUETE ENVIADO\n");
 
 	t_PaqueteDeDatos *package;
-	//package->Datos = "";
-	package = recibirPaquete(socketServer);
+	package=recibirPaquete(socketServer);
+
 
 	if(package->ID != 12) //12: Respuesta del hancshake enviado
 	{
@@ -21,8 +21,7 @@ int realizarHandshakeAlLFS(t_log *logger,int socketServer, char *msjEnviado)
 		tamanioPagina = -1;
 	}
 	else
-	{
-		tamanioPagina = atoi(package->Datos);
+	{	tamanioPagina = atoi(package->Datos);
 		log_info(logger,"LISSANDRA: Tamanio de VALUE = %d",tamanioPagina);
 		log_info(logger,"Handshake  con socket %d: DONE!", socketServer);
 
