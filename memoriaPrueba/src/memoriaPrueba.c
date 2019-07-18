@@ -19,26 +19,48 @@ int main() {
 
 //########## OPERACIONES MEMORIA-> LFS ######################
 
-  char unNombreTabla[] = "TaBla1";
+  /*char unNombreTabla[] = "TaBla1";
   int unaKey = 23;
   while(1){
   char *respuestaSELECT = opSELECT(socketServer,unNombreTabla,unaKey);
   printf("RespuestaSELECT: [%s]\n",respuestaSELECT);
   printf("\n-----------------------------------------------");
   //sleep(1);
-  }
+  }*/
 //-----------------------------------------------------------------
-  /*
-  char unNombreTabla2[] = "TaBla2";
+
+  char unNombreTabla2[] = "t1";
   int unaKey2 = 23;
   char unValue2[] = "valor123";
-  int unTimestamp2 = 666;
-  /*while(1){
-  char *respuestaINSERT = opINSERT(socketServer,unNombreTabla2,unaKey2,unValue2,unTimestamp2);
-  printf("RespuestaINSERT: [%s]\n",respuestaINSERT);
-  printf("\n-----------------------------------------------");
-  //sleep(1);
-  }*/
+  unsigned  long int unTimestamp2 = 4294967294;
+
+  printf("timestamp: %lu\n",unTimestamp2);
+
+  	  char *respuestaINSERT = opINSERT(socketServer,unNombreTabla2,unaKey2,unValue2,unTimestamp2);
+  	  printf("RespuestaINSERT: [%s]\n",respuestaINSERT);
+  	  printf("\n-----------------------------------------------");
+
+  unTimestamp2 = 4294967295;
+  printf("timestamp: %lu\n",unTimestamp2);
+
+    	  respuestaINSERT = opINSERT(socketServer,unNombreTabla2,unaKey2,unValue2,unTimestamp2);
+    	  printf("RespuestaINSERT: [%s]\n",respuestaINSERT);
+    	  printf("\n-----------------------------------------------");
+
+
+  int i = 5;
+  while(i < 5)
+  {
+	  //unTimestamp2 = (unsigned long int)time(NULL);
+	  //sleep(1);
+	  printf("timestamp: %lu\n",unTimestamp2);
+
+	  //char *respuestaINSERT = opINSERT(socketServer,unNombreTabla2,unaKey2,unValue2,unTimestamp2);
+	  printf("RespuestaINSERT: [%s]\n",respuestaINSERT);
+	  printf("\n-----------------------------------------------");
+	  i++;
+	  sleep(1);
+  }
 
 //-----------------------------------------------------------------
  /*

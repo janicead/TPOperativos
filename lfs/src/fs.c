@@ -974,7 +974,7 @@ char *crearTablaEnFS(t_CREATE *unCREATE)
 			escribirLineaEn(nombreAbsoluto,bufferLinea);
 			free(nombreAbsoluto);
 			free(bufferLinea);
-			r = string_from_format("TABLA_CREADA");
+			r = string_from_format("SUCCESSFUL_CREATE");
 		}
 		else
 		{
@@ -1118,7 +1118,8 @@ void freeT_MetadataTabla(t_MetadataTabla *unStruct)
 	free(unStruct->Consistency);
 	free(unStruct);
 }
-/*
+
+/*ENLISTA, SOLAMENTE, DEL PATH: CARPETAS, *.TMP, *TMPC
 */
 char **enlistarElPath(char *unPath)
 {
@@ -1150,4 +1151,68 @@ char **enlistarElPath(char *unPath)
     closedir(dir);
 
     return listado;
+}
+/* ENLISTA TOD0 MENOS EL ARCHIVO "Metadata" (E . Y ..) */
+char **enlistarCarpetaTabla(char *unPath)
+{
+	//char *pathTabla = string_from_format("%s/Tables/%s",configLFS.puntoMontaje,unNombreTabla);
+    struct dirent *dp;
+    DIR *dir = opendir(unPath);
+
+    char **listado;
+    char *unFile;
+    char *aux = string_new();
+
+    //if (!dir)
+        //return;
+
+    while ((dp = readdir(dir)) != NULL)
+    {
+    	if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0 && strcmp(dp->d_name, "Metadata"))
+    	{	unFile = string_from_format(";%s",dp->d_name);
+    		string_append(&aux,unFile);
+    		//printf("%s\n", dp->d_name); ///
+    		free(unFile);
+    	}
+    }
+
+    listado = string_split(aux,";");
+    free(aux);
+
+    closedir(dir);
+
+    return listado;
+}
+
+void cargarTablasPersistidasEnMEMTABLE(void)
+{
+	char *pathTablas = string_from_format("%s/Tables",configLFS.puntoMontaje);
+	char **listaTablas = enlistarElPath(pathTablas);
+	char *pathUnaTabla;
+	char **listaArchivosTMP;
+	int i;
+	int j;
+	int tipo;
+
+	log_info(logger,"Cargando Tablas persistidas...");
+
+	for(i=0; listaTablas[i] != NULL;i++)
+	{
+		pathUnaTabla = string_from_format("%s/Tables/%s",configLFS.puntoMontaje,listaTablas[i]);
+		listaArchivosTMP = enlistarElPath(pathUnaTabla);
+
+		t_Tabla *nuevaTabla = crearTablaEnMEMTABLE(listaTablas[i]);
+		printf("\nTabla: [%s]\n",listaTablas[i]);
+		for(j=0;listaArchivosTMP[j] != NULL;j++)
+		{
+			tipo = (string_ends_with(listaArchivosTMP[j],".tmp"))? 0:1;
+			agregarArchivoTempALista(nuevaTabla->temporales,listaArchivosTMP[j],tipo);
+			printf("archivo: [%s]\ntipo: %d",listaArchivosTMP[j],tipo);
+		}
+
+		free(pathUnaTabla);
+		freeArrayDePunteros(listaArchivosTMP);
+	}
+
+	freeArrayDePunteros(listaTablas);
 }

@@ -62,7 +62,7 @@ void* crearConsolaMemoria(){
 					char* valor = SELECTMemoria(operacion[1], *key, 0);
 					if(string_equals_ignore_case(valor, "NO_EXISTE_TABLA")){
 						log_error(loggerMemoria, "La tabla '%s' no existe.", operacion[1]);
-					}else if(string_equals_ignore_case(valor, "NO_EXISTE_VALUE")){
+					}else if(string_equals_ignore_case(valor, "NO_EXISTE_KEY")){
 						log_error(loggerMemoria, "La key '%s' de la tabla '%s', no existe.", operacion[2], operacion[1]);
 					}else{
 						log_info(loggerMemoria, "La respuesta de la request SELECT %s %s -> %s", operacion[1], operacion[2], valor);
@@ -117,7 +117,11 @@ void* crearConsolaMemoria(){
 					pthread_mutex_unlock(&semConfig);
 					sleep(retardoMemoriaPrincipal2);
 					pthread_mutex_unlock(&semMemoriaPrincipal);
-					log_info(loggerMemoria,value);
+					if(string_equals_ignore_case(value, "NO_EXISTE_TABLA")){
+						log_error(loggerMemoria,"La tabla '%s'no existe.", operacion[1] );
+					} else{
+						log_info(loggerMemoria, "Se ha borrado la tabla '%s'.", operacion[1]);
+					}
 					free(value);
 					break;
 				case CMD_JOURNAL:

@@ -12,6 +12,7 @@
 #include <commons/log.h>
 #include <commons/collections/list.h>
 #include <commons/string.h>
+#include <time.h>
 
 //#include <futbolitoCommons/futbolitoSerializacion.h>
 //#include <futbolitoCommons/futbolitoSocket.h>
