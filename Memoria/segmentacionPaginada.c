@@ -640,24 +640,24 @@ void JOURNALMemoria(){
 }
 char* DESCRIBETodasLasTablasMemoria(){
 	pthread_mutex_lock(&semLfs);
-	//aca le mando a lfs para q me de metadata de todas las tablas
+	char* value = opDESCRIBE(socketLFS,"ALL_TABLES");
 	pthread_mutex_lock(&semConfig);
 	int retardoLFS= configMemoria.retardoAccesoFileSystem;
 	pthread_mutex_unlock(&semConfig);
 	sleep(retardoLFS);
 	pthread_mutex_unlock(&semLfs);
 
-	return "DESCRIBE TOTAL OK";
+	return value;
 }
 char* DESCRIBEMemoria( char* nombreTabla){
 	pthread_mutex_lock(&semLfs);
-	 //aca tengo q mandarle mensaje a LFS para q me de la metada de esa tabla
+	char* value = opDESCRIBE(socketLFS,nombreTabla);
 	pthread_mutex_lock(&semConfig);
 	int retardoLFS= configMemoria.retardoAccesoFileSystem;
 	pthread_mutex_unlock(&semConfig);
 	sleep(retardoLFS);
 	pthread_mutex_unlock(&semLfs);
-	return "DESCRIBE OK";
+	return value;
 }
 
 char* CREATEMemoria(char* nombreTabla, char* tipoConsistencia, int nroParticiones, int compactionTime){

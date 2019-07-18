@@ -109,6 +109,28 @@ void* crearConsolaMemoria(){
 						break;
 					case CMD_DESCRIBE:
 						printf("COMANDO DESCRIBE\n");
+						if(operacion[1]!=NULL){
+							char* valor = DESCRIBEMemoria(operacion[1]);
+							if(string_equals_ignore_case(valor, "NO_EXISTE_TABLA")){
+								log_error(loggerMemoria, "La tabla '%s' ya existe.", operacion[1]);
+							}else{
+							char * buffer = respuestaDESCRIBEaPrintear(valor);
+							printf("EL BUFFER %s \n", buffer);
+							free(valor);
+							free(buffer);
+							}
+						}
+						else{
+							char* valor = DESCRIBETodasLasTablasMemoria();
+							if(string_equals_ignore_case(valor, "NO_EXISTEN_TABLAS")){
+								log_error(loggerMemoria, "No existen tablas en este momento.");
+							}else{
+							char * buffer = respuestaDESCRIBEaPrintear(valor);
+							printf("EL BUFFER %s \n", buffer);
+							free(valor);
+							free(buffer);
+							}
+						}
 						break;
 					case CMD_DROP:
 						pthread_mutex_lock(&semMemoriaPrincipal);
