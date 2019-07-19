@@ -73,6 +73,7 @@ typedef struct {
 	} argumentos;
 	char** _raw; //Para uso de la liberación
 	bool success;
+	bool consola;
 } t_LQL_operacion;
 
 typedef enum{
@@ -112,6 +113,7 @@ typedef struct{
 	bool valida;
 	int cant_selects_inserts_ejecutados;
 	pthread_mutex_t socket_mem_sem;
+	bool asociada;
 }t_memoria;
 
 char* puertoMemoria;
@@ -134,7 +136,6 @@ typedef struct{
 
 //VARIABLES DE CONFIGURACIÓN
 t_log* loggerKernel;
-t_log* loggerKernelConsola;
 t_config* archivoConfigKernel;
 
 //COLAS
@@ -197,6 +198,7 @@ void agregar_socket_mem(int nro_memoria, int socket);
 void sacar_memoria(int nro_memoria);
 void free_memoria_gossip(t_memoriaTablaDeGossip* memoria);
 bool validar_consistencia(char* consistencia);
+bool existe_tabla(char* nombre_tabla);
 
 //FUNCIONES DE LIBERAR MEMORIA
 void destruir_operacion(t_LQL_operacion* op);

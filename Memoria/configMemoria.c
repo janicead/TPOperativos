@@ -114,8 +114,8 @@ void mostrarDatosArchivoConfig(){
 	return;
 }
 void configurarLoggerMemoria(){
-	FILE * memorialog =fopen("/home/utnso/workspace/tp-2019-1c-BEFGN/Memoria/Config/memoria.log","w");
-	loggerMemoria = log_create("/home/utnso/workspace/tp-2019-1c-BEFGN/Memoria/Config/memoria.log","memoria",1,LOG_LEVEL_INFO);
+	FILE * memorialog =fopen("../Config/memoria.log","w");
+	loggerMemoria = log_create("../Config/memoria.log","memoria",1,LOG_LEVEL_INFO);
 	fclose(memorialog);
 }
 

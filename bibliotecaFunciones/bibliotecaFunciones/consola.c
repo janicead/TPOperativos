@@ -67,7 +67,7 @@ int validarComando(char* linea, t_log* logger){
 			break;
 
 		case CMD_DESCRIBE:
-			if(cantArgumentos != 2){
+			if(cantArgumentos > 3){
 				log_error(logger, "Falta, o hay exceso, de parametros de DESCRIBE\n");
 				valido = 0;
 			}

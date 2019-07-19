@@ -358,7 +358,9 @@ t_PaqueteDeDatos *recibirPaquete(int socketEmisor)  //v1.5
 	//printf("\nID: %d   longDatos: %d\n",package->ID,package->longDatos);
 
 
-	package->Datos = (char*) malloc(package->longDatos +1); //+1 VALGRIND
+	//package->Datos = (char*) malloc(package->longDatos +1); //+1 VALGRIND
+
+	package->Datos = calloc(1, package->longDatos+1);
 
 	bytesRecibidos = recv(socketEmisor, package->Datos, package->longDatos, MSG_WAITALL);
 

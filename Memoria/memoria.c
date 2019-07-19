@@ -30,7 +30,7 @@ void crearHilos(){
 
 	pthread_create(&gossip, NULL, (void*)realizarGossip, NULL);
 
-	//pthread_create(&hacerJournal,NULL, (void*)JOURNALMemoria, NULL);
+	pthread_create(&hacerJournal,NULL, (void*)JOURNALMemoria, NULL);
 
 	pthread_create(&config_observer,NULL,observer_config,NULL);
 
@@ -38,7 +38,7 @@ void crearHilos(){
 	pthread_join(consola, NULL);
 	pthread_join(multiplexacionMemoria, NULL);
 	pthread_join(gossip, NULL);
-	//pthread_join(hacerJournal, NULL);
+	pthread_join(hacerJournal, NULL);
 
 }
 

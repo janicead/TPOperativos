@@ -13,7 +13,9 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-#define configMemoriaDir "/home/utnso/workspace/tp-2019-1c-BEFGN/Memoria/Config/memoria.conf"
+
+
+#define configMemoriaDir "../Config/memoria.conf"
 t_log *loggerMemoria;
 t_config *archivoConfigMemoria;
 

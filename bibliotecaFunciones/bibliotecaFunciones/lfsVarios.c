@@ -88,9 +88,13 @@ char *respuestaDESCRIBEaPrintear(char *unaRespDESCRIBE)
 		aux = string_from_format("\nTabla: [%s]\n   CONSISTENCY: %s\n   PARTITIONS: %s\n   COMPACTION_TIME: %s\n",unaMetadata[0],unaMetadata[1],unaMetadata[2],unaMetadata[3]);
 		string_append(&buffer,aux);
 		hacerFreeArray((void*)unaMetadata);
+		free(unaMetadata);
+		free(aux);
 	}
 
 	hacerFreeArray((void*)metadatasTablas);
+	free(metadatasTablas);
+
 
 	return buffer;
 }

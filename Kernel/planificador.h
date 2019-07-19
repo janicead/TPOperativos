@@ -30,7 +30,7 @@ void lql_drop(t_LQL_operacion* op);
 void lql_journal(t_list* list_mem, t_LQL_operacion* op);
 void lql_add(t_LQL_operacion* op);
 void lql_run(FILE* archivo, t_LQL_operacion* op);
-void lql_metrics();
+void lql_metrics(bool mostrarEnConsola);
 void* refresh_metadata_timer();
 
 //FUNCIONES PARA LAS MÉTRICAS
@@ -39,11 +39,13 @@ double tiempoPromedioSelect();
 double tiempoPromedioInsert();
 int cantidadSelects();
 int cantidadInserts();
-int porcentajeSelectsInserts(int cant_selects_inserts_ejecutados);
-void memoryLoad();
+int porcentajeSelectsInserts(int cant_selects_inserts_ejecutados, int cant_total_selects_inserts);
+void memoryLoad(bool mostrarEnConsola);
 
 //FUNCIONES EXTRA
-FILE* abrirArchivo(char* path);
+FILE* abrirArchivo(t_LQL_operacion* op);
 t_tabla* devuelve_tabla(char* nombre);
+void describe_global(char* data, bool mostrarPorConsola);
+void describe(char* data, bool mostrarPorConsola);
 
 #endif /* PLANIFICADOR_H_ */

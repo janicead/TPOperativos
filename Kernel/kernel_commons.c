@@ -1,8 +1,7 @@
 #include "kernel_commons.h"
 
 void configure_logger_kernel(){
-	loggerKernel = log_create("kernel.log","kernel",1,LOG_LEVEL_INFO);
-	loggerKernelConsola = log_create("kernelConsola.log","kernelConsola",1,LOG_LEVEL_INFO);
+	loggerKernel = log_create("kernel.log","kernel",0,LOG_LEVEL_INFO);
 	return;
 }
 
@@ -10,7 +9,6 @@ void exit_gracefully(int exitInfo){
 	pthread_mutex_lock(&log_sem);
 	log_destroy(loggerKernel);
 	pthread_mutex_unlock(&log_sem);
-	log_destroy(loggerKernelConsola);
 	free(puertoMemoria);
 	destruir_colas();
 	destruir_listas();
@@ -70,6 +68,7 @@ void agregar_memoria(int puerto, char* ip, int nro_memoria){
 	strcpy(memoria->ip,ip);
 	memoria->valida = true;
 	memoria->cant_selects_inserts_ejecutados = 0;
+	memoria->asociada = false;
 	pthread_mutex_init(&(memoria->socket_mem_sem),NULL);
 	pthread_mutex_lock(&memorias_sem);
 	if(!list_any_satisfy(memorias,(void*) sameID)){
@@ -186,6 +185,13 @@ void agregar_tabla(t_tabla* tabla){
 	return;
 }
 
+bool existe_tabla(char* nombre_tabla){
+	bool sameTable(t_tabla* tabla){
+		return string_equals_ignore_case(tabla->nombre_tabla, nombre_tabla);
+	}
+	return list_any_satisfy(tablas,(void*)sameTable);
+}
+
 bool validar_consistencia(char* consistencia){
 	return string_equals_ignore_case(consistencia,"sc") || string_equals_ignore_case(consistencia,"shc") || string_equals_ignore_case(consistencia,"ec");
 }
@@ -264,6 +270,8 @@ void destruir_semaforos(){
 }
 
 void free_tabla(t_tabla* tabla){
+	free(tabla->consistencia);
+	free(tabla->nombre_tabla);
 	free(tabla);
 	return;
 }

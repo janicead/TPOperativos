@@ -9,16 +9,22 @@ void pruebaParser(){
 
 void iniciarValoresParaTest(){
 	t_tabla* tabla = (t_tabla*) malloc(sizeof(t_tabla));
-	tabla->consistencia = "SHC";
-	tabla->nombre_tabla = "hash";
+	tabla->consistencia = malloc(strlen("SHC")+1);
+	strcpy(tabla->consistencia,"SHC");
+	tabla->nombre_tabla = malloc(strlen("hash")+1);
+	strcpy(tabla->nombre_tabla,"hash");
 	agregar_tabla(tabla);
 	t_tabla* tabla2 = (t_tabla*) malloc(sizeof(t_tabla));
-	tabla2->consistencia = "SC";
-	tabla2->nombre_tabla = "personajes";
+	tabla2->consistencia = malloc(strlen("SC")+1);
+	strcpy(tabla2->consistencia,"SC");
+	tabla2->nombre_tabla = malloc(strlen("personajes")+1);
+	strcpy(tabla2->nombre_tabla,"personajes");
 	agregar_tabla(tabla2);
 	t_tabla* tabla3 = (t_tabla*) malloc(sizeof(t_tabla));
-	tabla3->consistencia = "EC";
-	tabla3->nombre_tabla = "random";
+	tabla3->consistencia = malloc(strlen("EC")+1);
+	strcpy(tabla3->consistencia,"EC");
+	tabla3->nombre_tabla = malloc(strlen("random")+1);
+	strcpy(tabla3->nombre_tabla,"random");
 	agregar_tabla(tabla3);
 	/*crear_lql_add("sc",1);
 	agregar_memoria(5,"1",0);
@@ -60,7 +66,7 @@ void iniciar(){
 	conectarAMemoria(configKernel.ip_memoria,configKernel.puerto_memoria);
 	t_memoria* mem = list_get(memorias,0);
 	char* resp = opDESCRIBE(mem->socket_mem,"");
-	puts(resp);
+	describe_global(resp,true);
 	free(resp);
 	return;
 }
