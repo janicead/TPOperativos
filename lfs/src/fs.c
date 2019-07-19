@@ -361,9 +361,9 @@ void leerConfigMetadata(int showMetadata)
 
 	if(showMetadata)
 	{
-		printf("TAMANIO_BLOQUES: %d\n",metadata.tamanioBloque);
-		printf("CANTIDAD_BLOQUES: %d\n",metadata.cantidadBloques);
-		printf("MAGIC_NUMBER: %s\n\n",metadata.numeroMagico);
+		log_info(logger,"TAMANIO_BLOQUES: %d\n",metadata.tamanioBloque);
+		log_info(logger,"CANTIDAD_BLOQUES: %d\n",metadata.cantidadBloques);
+		log_info(logger,"MAGIC_NUMBER: %s\n\n",metadata.numeroMagico);
 	}
 
 }
@@ -451,8 +451,17 @@ void borrarArchivoEnFS(char *pathArchivo)
 	char *nombreAbsoluto = string_from_format("%s%s%s",configLFS.puntoMontaje,dirTables,pathArchivo);
 
 	liberarBloquesDe(nombreAbsoluto);
-	remove(nombreAbsoluto); // LLAMA A UNLINK() PARA ARCHIVOS Y RMDIR PARA DIRECTORIOS
+	char *rmSystem = string_from_format("rm -f %s",nombreAbsoluto);
+	system(rmSystem);
+	free(rmSystem);
+
+	/*int ret = remove(nombreAbsoluto); // LLAMA A UNLINK() PARA ARCHIVOS Y RMDIR PARA DIRECTORIOS
 	//unlink(nombreAbsoluto);
+	if(ret == 0) {
+	      printf("File deleted successfully");
+	   } else {
+	      printf("Error: unable to delete the file");
+	   }*/
 
 	free(nombreAbsoluto);
 }
@@ -573,7 +582,7 @@ void obtenerBitArrayPersistido()
 	{	//EXISTE
 		fseek(archivoBitArray, 0L, SEEK_END);
 		tamanioArchivoAMapear = ftell(archivoBitArray);
-		printf("\nTamanio del archivo: %d (bytes)\n",tamanioArchivoAMapear); ///
+		//printf("\nTamanio del archivo: %d (bytes)\n",tamanioArchivoAMapear); ///
 		fclose(archivoBitArray);
 	}
 	else
@@ -603,7 +612,7 @@ void obtenerBitArrayPersistido()
 
 		escribirLineaEn(nombreAbsoluto,unaLinea);
 
-		printf("\nTamanio del archivo: %d (bytes)\n",tamanioArchivoAMapear); ///
+		//printf("\nTamanio del archivo: %d (bytes)\n",tamanioArchivoAMapear); ///
 	}
 
 	//int fd = open(nombreAbsoluto, O_RDWR,S_IRWXO);
@@ -652,7 +661,7 @@ void obtenerBitArrayPersistido()
 	}
 	log_info(logger, "Leyendo archivo Bitmap.bin...");
 
-	mostrarBitsDeBloques(8);///
+	//mostrarBitsDeBloques(8);///
 
 	munmap (bitsDeBloques, tamanioArchivoAMapear);
 	//munmap (arrayMap, tamanioArchivoAMapear);
@@ -949,6 +958,8 @@ char *existeTablaEnFS(char* unNombreTabla)
 
 char *crearTablaEnFS(t_CREATE *unCREATE)
 {
+	//pthread_mutex_lock(&elFS);
+
 	char *r = existeTablaEnFS(unCREATE->nombreTabla);
 	//printf("\nJJJJJ RESPUESTA: %s\n",Respuesta);
 
@@ -982,12 +993,16 @@ char *crearTablaEnFS(t_CREATE *unCREATE)
 		}
 	}
 
+	//pthread_mutex_unlock(&elFS);
+
 	return r;
 }
 
 // unPath = nombreTabla + nombreArchivo  (.bin   .temp  .tempc)
 char *obtenerDatosDeArchivoEnFS(char *unPath)
 {
+	//pthread_mutex_lock(&elFS);
+
 	char *Respuesta = validarArchivoEnFS(unPath);
 
 	if(strcmp(Respuesta,"EXISTE_ARCHIVO") == 0)
@@ -996,12 +1011,13 @@ char *obtenerDatosDeArchivoEnFS(char *unPath)
 
 		char *nombreAmsoluto = string_from_format("%s%s%s",configLFS.puntoMontaje,dirTables,unPath);
 		char *buffer = getTodoElArchivoBufferDe(nombreAmsoluto);
-		printf("\nnombreAmsoluto: %s",nombreAmsoluto); ///
+		//printf("\nnombreAmsoluto: %s",nombreAmsoluto); ///
 		free(nombreAmsoluto);
 
 		return buffer;
 	}
 
+	//pthread_mutex_unlock(&elFS);
 	return Respuesta;
 }
 
@@ -1010,6 +1026,8 @@ char *obtenerDatosDeArchivoEnFS(char *unPath)
  */
 char *guardarDatosEnArchivoEnFS(char *unPathArchivo, char *todoElArchivo)
 {
+	//pthread_mutex_lock(&elFS);
+
 	char *Respuesta = validarArchivoEnFS(unPathArchivo);
 
 	if(strcmp(Respuesta,"EXISTE_ARCHIVO") == 0)
@@ -1025,9 +1043,9 @@ char *guardarDatosEnArchivoEnFS(char *unPathArchivo, char *todoElArchivo)
 
 		if(hayEspacio)
 		{
-			mostrarBitsDeBloques(8); ///
+			//mostrarBitsDeBloques(8); ///
 			borrarArchivoEnFS(unPathArchivo);
-			mostrarBitsDeBloques(8); ///
+			//mostrarBitsDeBloques(8); ///
 
 			//### DE CREAR ARCHIVO #########################
 			char *bloques = asignarBloques(tamanioArchivo);
@@ -1035,7 +1053,7 @@ char *guardarDatosEnArchivoEnFS(char *unPathArchivo, char *todoElArchivo)
 
 			escribirLineaEn(nombreAbsoluto,bufferLinea);
 			guardarBufferArchivoEn(nombreAbsoluto,todoElArchivo,tamanioArchivo);
-			mostrarBitsDeBloques(8); ///
+			//mostrarBitsDeBloques(8); ///
 
 			free(bloques);
 			free(bufferLinea);
@@ -1052,6 +1070,8 @@ char *guardarDatosEnArchivoEnFS(char *unPathArchivo, char *todoElArchivo)
 	}
 
 	free(todoElArchivo);
+
+	//pthread_mutex_unlock(&elFS);
 
 	return Respuesta;
 }
@@ -1073,9 +1093,11 @@ char *eliminarArchivoEnFS(char *unPathArchivo)
 
 t_MetadataTabla *obtenerMetadataTabla(char *unNombreTabla)
 {
+	//printf("\nobtenerMetadataTabla()\n"); ///
 	t_MetadataTabla *unMetadataTabla = malloc(sizeof(t_MetadataTabla));
+	//printf("unNombreTabla: [%s]\n",unNombreTabla); ///
 	char *unNombreAbsoluto = string_from_format("%s%s%s/Metadata",configLFS.puntoMontaje,dirTables,unNombreTabla);
-	//printf("\n[%s]\n",unNombreAbsoluto); ///
+	//printf("\nobtenerMetadataTabla.unNombreAbsoluto: [%s]\n",unNombreAbsoluto); ///
 
 	archivoMetadataTabla = config_create(unNombreAbsoluto);
 
@@ -1202,12 +1224,12 @@ void cargarTablasPersistidasEnMEMTABLE(void)
 		listaArchivosTMP = enlistarElPath(pathUnaTabla);
 
 		t_Tabla *nuevaTabla = crearTablaEnMEMTABLE(listaTablas[i]);
-		printf("\nTabla: [%s]\n",listaTablas[i]);
+		//printf("\nTabla: [%s]\n",listaTablas[i]); ///
 		for(j=0;listaArchivosTMP[j] != NULL;j++)
 		{
 			tipo = (string_ends_with(listaArchivosTMP[j],".tmp"))? 0:1;
 			agregarArchivoTempALista(nuevaTabla->temporales,listaArchivosTMP[j],tipo);
-			printf("archivo: [%s]\ntipo: %d",listaArchivosTMP[j],tipo);
+			//printf("archivo: [%s]\ntipo: %d",listaArchivosTMP[j],tipo); ///
 		}
 
 		free(pathUnaTabla);
