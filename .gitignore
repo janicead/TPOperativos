@@ -1,8 +1,8 @@
 # Prerequisites
-*.d
+#*.d
 
 # Object files
-*.o
+#*.o
 *.ko
 *.obj
 *.elf
@@ -28,6 +28,12 @@
 *.so.*
 *.dylib
 *.log
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
 
 # Executables
 *.exe
