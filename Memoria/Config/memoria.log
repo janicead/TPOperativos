@@ -1,0 +1,31 @@
+[INFO] 01:44:20:591 memoria/(13467:13467): Leyendo archivo de configuracion...
+[INFO] 01:44:20:593 memoria/(13467:13467): LISSANDRA: Tamanio de VALUE = 20
+[INFO] 01:44:20:593 memoria/(13467:13467): Handshake  con socket 3: DONE!
+[INFO] 01:44:20:593 memoria/(13467:13467): Esperando Conexiones
+[INFO] 01:44:20:593 memoria/(13467:13467): Asignado un socket al proceso LFS
+[INFO] 01:44:20:594 memoria/(13467:13467): Esperando conexiones, listen()....
+[INFO] 01:44:20:594 memoria/(13467:13467): El tamanio de un registro es de 26
+
+[INFO] 01:44:20:594 memoria/(13467:13467): Cant max de marcos posibles 2
+
+[INFO] 01:44:20:594 memoria/(13467:13472): No hay datos para poder hacer JOURNAL
+[INFO] 01:44:25:464 memoria/(13467:13470): Acepte una conexion en socket: 7
+[INFO] 01:44:25:465 memoria/(13467:13470): Handshake con KERNEL realizado con exito
+[INFO] 01:44:25:466 memoria/(13467:13470): Query recibido: DESCRIBE []
+[INFO] 01:44:30:927 memoria/(13467:13479): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:44:43:387 memoria/(13467:13486): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:44:56:144 memoria/(13467:13489): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:45:11:351 memoria/(13467:13493): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:45:22:456 memoria/(13467:13495): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:45:35:595 memoria/(13467:13501): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:45:49:107 memoria/(13467:13504): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:46:03:995 memoria/(13467:13506): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:46:14:723 memoria/(13467:13507): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:46:27:671 memoria/(13467:13514): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:46:38:426 memoria/(13467:13515): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:46:48:548 memoria/(13467:13516): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:47:01:671 memoria/(13467:13518): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:47:11:789 memoria/(13467:13519): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:47:22:659 memoria/(13467:13520): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:47:37:425 memoria/(13467:13527): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 01:47:50:275 memoria/(13467:13531): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
