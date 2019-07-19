@@ -11,16 +11,16 @@ so-commons-library:
 
 readline:
 	sudo apt-get install libreadline6 libreadline6-dev
-	cd bibliotecaFunciones/Debug; sudo make all
+	cd bibliotecaFunciones/Debug; sudo make
 
 kernel:
-	cd Kernel/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-Non-lol/bibliotecaFunciones/Debug; sudo make all
+	cd Kernel/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-Non-lol/bibliotecaFunciones/Debug; sudo make
 
 memoria:
-	cd Memoria/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-Non-lol/bibliotecaFunciones/Debug; sudo make all
+	cd Memoria/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-Non-lol/bibliotecaFunciones/Debug; sudo make
 
 lfs:
-	cd lfs/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-Non-lol/bibliotecaFunciones/Debug; sudo make all
+	cd lfs/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-Non-lol/bibliotecaFunciones/Debug; sudo make
 
 clean:
 	cd Kernel/Debug; sudo make clean
