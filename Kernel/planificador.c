@@ -133,7 +133,7 @@ void lql_select(t_LQL_operacion* operacion){
 			free(respuesta);
 			return;
 		}
-		if(string_equals_ignore_case(respuesta,"NO_EXISTE_VALUE")){
+		if(string_equals_ignore_case(respuesta,"NO_EXISTE_KEY")){
 			log_error(loggerKernel, "No se pudo realizar SELECT %s %d ya que la key %d no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.key);
 			operacion->success = false;
 			free(respuesta);
@@ -614,21 +614,26 @@ int cantidadInserts(){
 	return cantidad;
 }
 
-int porcentajeSelectsInserts(int cant_selects_inserts_ejecutados){
-	if(!list_is_empty(selects_ejecutados) || !list_is_empty(inserts_ejecutados)){
-		int cant_total_inserts_selects = list_size(selects_ejecutados) + list_size(inserts_ejecutados);
-		return (cant_selects_inserts_ejecutados / cant_total_inserts_selects)*100;
+int porcentajeSelectsInserts(int cant_selects_inserts_ejecutados, int cant_total_selects_inserts){
+	if(cant_total_selects_inserts != 0){
+		return (cant_selects_inserts_ejecutados / cant_total_selects_inserts)*100;
 	}
 	return 0;
 }
 
 void memoryLoad(bool mostrarEnConsola){
+	int cantidad_total_inserts_selects = 0;
+	for(int i = 0; i < list_size(memorias); i++){
+		t_memoria* memoria = list_get(memorias,i);
+		cantidad_total_inserts_selects += memoria->cant_selects_inserts_ejecutados;
+	}
+	printf("cant total %d.\n",cantidad_total_inserts_selects);
 	for(int i = 0; i < list_size(memorias); i++){
 		t_memoria* mem = list_get(memorias,i);
 		if(mostrarEnConsola){
-			printf("Memory Load: Memory %d porcentaje de uso: %d%%.\n",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados));
+			printf("Memory Load: Memory %d porcentaje de uso: %d%%.\n",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados, cantidad_total_inserts_selects));
 		}
-		log_info(loggerKernel,"Memory Load: Memory %d porcentaje de uso: %d%%",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados));
+		log_info(loggerKernel,"Memory Load: Memory %d porcentaje de uso: %d%%",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados, cantidad_total_inserts_selects));
 	}
 }
 
@@ -666,12 +671,6 @@ void* metrics_timer(){
 		pthread_mutex_lock(&inserts_ejecutados_sem);
 		list_clean_and_destroy_elements(inserts_ejecutados,(void*) free);
 		pthread_mutex_unlock(&inserts_ejecutados_sem);
-		pthread_mutex_lock(&memorias_sem);
-		for(int i = 0; i < list_size(memorias); i++){
-			t_memoria* mem = list_get(memorias,i);
-			mem->cant_selects_inserts_ejecutados = 0;
-		}
-		pthread_mutex_unlock(&memorias_sem);
 	}
 	return NULL;
 }
@@ -682,6 +681,7 @@ void* refresh_metadata_timer(){
 		int refresh_metadata = configKernel.metadata_refresh;
 		pthread_mutex_unlock(&config_sem);
 		sleep(refresh_metadata);
+		log_info(loggerKernel,"Iniciando actualización de metadata");
 		char** parametros = string_n_split("DESCRIBE",2," ");
 		crear_lql_describe(parametros,false);
 	}
