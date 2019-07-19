@@ -133,7 +133,7 @@ void lql_select(t_LQL_operacion* operacion){
 			free(respuesta);
 			return;
 		}
-		if(string_equals_ignore_case(respuesta,"NO_EXISTE_VALUE")){
+		if(string_equals_ignore_case(respuesta,"NO_EXISTE_KEY")){
 			log_error(loggerKernel, "No se pudo realizar SELECT %s %d ya que la key %d no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.key);
 			operacion->success = false;
 			free(respuesta);
