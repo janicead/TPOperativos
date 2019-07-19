@@ -1,7 +1,7 @@
 #include "lfs.h"
 //#include "fs.h"
 
-int socketLFS; //SOCKET ESCUCHANDO, SERVIDOR
+int socketLFS; // SOCKET ESCUCHANDO, SERVIDOR
 
 int main(void) {
 
