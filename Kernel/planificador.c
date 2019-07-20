@@ -801,6 +801,9 @@ bool verificar_memoria_caida2(char* respuesta, int id_mem){
 }
 
 void describe_global(char* data, bool mostrarPorConsola){
+	if(data ==NULL || string_is_empty(data)|| string_equals_ignore_case(data, "NO_EXISTEN_TABLAS")){
+		return;
+	}
 	char** metadata = string_split(data,"#");
 	t_list* lista_aux = list_create();
 	for(int i = 0;metadata[i] != NULL;i++){
