@@ -39,7 +39,7 @@ double tiempoPromedioSelect();
 double tiempoPromedioInsert();
 int cantidadSelects();
 int cantidadInserts();
-int porcentajeSelectsInserts(int cant_selects_inserts_ejecutados, int cant_total_selects_inserts);
+double porcentajeSelectsInserts(int cant_selects_inserts_ejecutados, int cant_total_selects_inserts);
 void memoryLoad(bool mostrarEnConsola);
 
 //FUNCIONES EXTRA

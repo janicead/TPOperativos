@@ -1,73 +1,687 @@
-[INFO] 02:58:25:601 memoria/(19822:19822): Leyendo archivo de configuracion...
-[INFO] 02:58:25:609 memoria/(19822:19822): LISSANDRA: Tamanio de VALUE = 60
-[INFO] 02:58:25:609 memoria/(19822:19822): Handshake  con socket 3: DONE!
-[INFO] 02:58:25:609 memoria/(19822:19822): Esperando Conexiones
-[INFO] 02:58:25:609 memoria/(19822:19822): Asignado un socket al proceso LFS
-[INFO] 02:58:25:609 memoria/(19822:19822): Esperando conexiones, listen()....
-[INFO] 02:58:25:609 memoria/(19822:19822): El tamanio de un registro es de 66
+[INFO] 03:19:14:147 memoria/(21000:21000): Leyendo archivo de configuracion...
+[INFO] 03:19:14:155 memoria/(21000:21000): LISSANDRA: Tamanio de VALUE = 60
+[INFO] 03:19:14:155 memoria/(21000:21000): Handshake  con socket 3: DONE!
+[INFO] 03:19:14:155 memoria/(21000:21000): Esperando Conexiones
+[INFO] 03:19:14:155 memoria/(21000:21000): Asignado un socket al proceso LFS
+[INFO] 03:19:14:155 memoria/(21000:21000): Esperando conexiones, listen()....
+[INFO] 03:19:14:155 memoria/(21000:21000): El tamanio de un registro es de 66
 
-[INFO] 02:58:25:609 memoria/(19822:19822): Cant max de marcos posibles 62
+[INFO] 03:19:14:155 memoria/(21000:21000): Cant max de marcos posibles 62
 
-[INFO] 02:58:25:610 memoria/(19822:19827): No hay datos para poder hacer JOURNAL
-[INFO] 02:58:32:473 memoria/(19822:19825): Acepte una conexion en socket: 7
-[INFO] 02:58:32:473 memoria/(19822:19825): Handshake con MEMORIA 4 realizado con exito
-[INFO] 02:58:32:473 memoria/(17085:19903): Handshake con MEMORIA 1 realizado con exito
-[INFO] 02:58:32:473 memoria/(19822:19825): Recibi la TABLA DE GOSSIP correctamente
-[INFO] 02:58:32:474 memoria/(17085:19903): Recibi la TABLA DE GOSSIP correctamente
-[INFO] 02:58:34:945 memoria/(19569:19907): No tengo que conectarme a ninguna memoria
-[INFO] 02:58:40:91 memoria/(19569:19572): Acepte una conexion en socket: 7
-[INFO] 02:58:40:215 memoria/(19569:19572): Handshake con KERNEL realizado con exito
-[INFO] 02:58:40:846 memoria/(19822:19825): Acepte una conexion en socket: 7
-[INFO] 02:58:40:853 memoria/(19822:19825): Handshake con KERNEL realizado con exito
-[INFO] 02:58:40:926 memoria/(19822:19825): Recibi la TABLA DE GOSSIP correctamente
-[INFO] 02:58:40:977 memoria/(17085:17088): Acepte una conexion en socket: 7
-[INFO] 02:58:40:978 memoria/(17085:17088): Handshake con KERNEL realizado con exito
-[INFO] 02:58:40:994 memoria/(17085:17088): Recibi la TABLA DE GOSSIP correctamente
-[INFO] 02:58:41:153 memoria/(19569:19572): Query recibido: DESCRIBE []
-[INFO] 02:58:45:937 memoria/(19569:19572): Acepte una conexion en socket: 8
-[INFO] 02:58:45:937 memoria/(19569:19572): Handshake con MEMORIA 1 realizado con exito
-[INFO] 02:58:45:937 memoria/(19822:19916): Handshake con MEMORIA 3 realizado con exito
-[INFO] 02:58:45:937 memoria/(19569:19572): Recibi la TABLA DE GOSSIP correctamente
-[INFO] 02:58:45:937 memoria/(19822:19916): Recibi la TABLA DE GOSSIP correctamente
-[INFO] 02:58:51:699 memoria/(19822:19825): Acepte una conexion en socket: 8
-[INFO] 02:58:51:699 memoria/(19822:19825): Handshake con MEMORIA 4 realizado con exito
-[INFO] 02:58:51:699 memoria/(17085:19918): Handshake con MEMORIA 1 realizado con exito
-[INFO] 02:58:51:700 memoria/(19822:19825): Recibi la TABLA DE GOSSIP correctamente
-[INFO] 02:58:51:700 memoria/(17085:19918): Recibi la TABLA DE GOSSIP correctamente
-[INFO] 02:58:53:981 memoria/(19569:19921): No tengo que conectarme a ninguna memoria
-[INFO] 02:58:56:645 memoria/(19569:19572): Query recibido: DESCRIBE []
-[INFO] 02:59:01:539 memoria/(19569:19572): Acepte una conexion en socket: 8
-[INFO] 02:59:01:541 memoria/(19569:19572): Handshake con MEMORIA 1 realizado con exito
-[INFO] 02:59:01:541 memoria/(19822:19924): Handshake con MEMORIA 3 realizado con exito
-[INFO] 02:59:01:541 memoria/(19569:19572): Recibi la TABLA DE GOSSIP correctamente
-[INFO] 02:59:01:541 memoria/(19822:19924): Recibi la TABLA DE GOSSIP correctamente
-[INFO] 02:59:01:554 memoria/(17085:17088): Ya envie la TABLA DE GOSSIP a KERNEL
-[INFO] 02:59:06:197 memoria/(17085:19925): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
-[INFO] 02:59:07:705 memoria/(19569:19927): No tengo que conectarme a ninguna memoria
-[INFO] 02:59:11:636 memoria/(19569:19572): Query recibido: DESCRIBE []
-[INFO] 02:59:16:520 memoria/(17085:19930): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
-[INFO] 02:59:18:457 memoria/(19569:19931): No tengo que conectarme a ninguna memoria
-[INFO] 02:59:27:409 memoria/(17085:19934): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
-[INFO] 02:59:28:889 memoria/(19569:19935): No tengo que conectarme a ninguna memoria
-[INFO] 02:59:40:261 memoria/(17085:19943): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
-[INFO] 02:59:42:577 memoria/(19569:19945): No tengo que conectarme a ninguna memoria
-[INFO] 02:59:53:706 memoria/(17085:19953): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
-[INFO] 02:59:55:442 memoria/(19569:19954): No tengo que conectarme a ninguna memoria
-[INFO] 03:00:06:757 memoria/(17085:19955): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
-[INFO] 03:00:08:728 memoria/(19569:19956): No tengo que conectarme a ninguna memoria
-[INFO] 03:00:17:706 memoria/(17085:19957): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
-[INFO] 03:00:19:185 memoria/(19569:19958): No tengo que conectarme a ninguna memoria
-[INFO] 03:00:29:153 memoria/(17085:19961): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
-[INFO] 03:00:30:653 memoria/(19569:19962): No tengo que conectarme a ninguna memoria
-[INFO] 03:00:39:569 memoria/(17085:19965): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
-[INFO] 03:00:41:57 memoria/(19569:19966): No tengo que conectarme a ninguna memoria
-[INFO] 03:00:49:755 memoria/(17085:19967): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
-[INFO] 03:00:51:326 memoria/(19569:19968): No tengo que conectarme a ninguna memoria
-[INFO] 03:01:00:157 memoria/(17085:19969): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
-[INFO] 03:01:01:649 memoria/(19569:19970): No tengo que conectarme a ninguna memoria
-[INFO] 03:01:11:509 memoria/(17085:19971): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
-[INFO] 03:01:13:29 memoria/(19569:19972): No tengo que conectarme a ninguna memoria
-[INFO] 03:01:21:989 memoria/(17085:19975): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
-[INFO] 03:01:23:477 memoria/(19569:19976): No tengo que conectarme a ninguna memoria
-[INFO] 03:01:33:485 memoria/(17085:19977): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
-[INFO] 03:01:35:427 memoria/(19569:19978): No tengo que conectarme a ninguna memoria
+[INFO] 03:19:14:157 memoria/(21000:21005): No hay datos para poder hacer JOURNAL
+[INFO] 03:19:25:841 memoria/(20992:21080): No tengo que conectarme a ninguna memoria
+[INFO] 03:19:26:453 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:19:26:453 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:19:26:454 memoria/(21000:21081): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:19:26:454 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:19:26:454 memoria/(21000:21081): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:19:36:9 memoria/(20992:21082): No tengo que conectarme a ninguna memoria
+[INFO] 03:19:36:629 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:19:36:629 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:19:36:629 memoria/(21000:21088): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:19:36:630 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:19:36:630 memoria/(21000:21088): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:19:46:193 memoria/(20992:21089): No tengo que conectarme a ninguna memoria
+[INFO] 03:19:46:809 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:19:46:810 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:19:46:812 memoria/(21000:21090): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:19:46:812 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:19:46:812 memoria/(21000:21090): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:19:51:2 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:19:51:2 memoria/(20992:20995): Handshake con KERNEL realizado con exito
+[INFO] 03:19:51:6 memoria/(21000:21003): Acepte una conexion en socket: 7
+[INFO] 03:19:51:6 memoria/(21000:21003): Handshake con KERNEL realizado con exito
+[INFO] 03:19:51:7 memoria/(21000:21003): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:19:51:7 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:19:57:589 memoria/(20992:21101): No tengo que conectarme a ninguna memoria
+[INFO] 03:19:58:701 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:19:58:701 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:19:58:701 memoria/(21000:21102): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:19:58:701 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:19:58:701 memoria/(21000:21102): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:20:10:129 memoria/(20992:21110): No tengo que conectarme a ninguna memoria
+[INFO] 03:20:10:741 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:20:10:741 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:20:10:741 memoria/(21000:21111): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:20:10:741 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:20:10:741 memoria/(21000:21111): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:20:11:14 memoria/(20992:20995): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:20:20:340 memoria/(20992:21114): No tengo que conectarme a ninguna memoria
+[INFO] 03:20:20:952 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:20:20:952 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:20:20:952 memoria/(21000:21115): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:20:20:952 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:20:20:952 memoria/(21000:21115): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:20:30:600 memoria/(20992:21121): No tengo que conectarme a ninguna memoria
+[INFO] 03:20:31:15 memoria/(20992:20995): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:20:31:225 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:20:31:225 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:20:31:225 memoria/(21000:21122): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:20:31:226 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:20:31:226 memoria/(21000:21122): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:20:36:18 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:20:40:781 memoria/(20992:21126): No tengo que conectarme a ninguna memoria
+[INFO] 03:20:41:395 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:20:41:396 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:20:41:396 memoria/(21000:21127): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:20:41:403 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:20:41:403 memoria/(21000:21127): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:20:50:949 memoria/(20992:21128): No tengo que conectarme a ninguna memoria
+[INFO] 03:20:51:16 memoria/(21000:21003): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:20:51:18 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:20:51:584 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:20:51:584 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:20:51:584 memoria/(21000:21131): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:20:51:585 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:20:51:589 memoria/(21000:21131): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:21:01:137 memoria/(20992:21133): No tengo que conectarme a ninguna memoria
+[INFO] 03:21:01:745 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:21:01:745 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:21:01:749 memoria/(21000:21134): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:21:01:750 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:21:01:750 memoria/(21000:21134): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:21:06:19 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:21:11:16 memoria/(20992:20995): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:21:11:305 memoria/(20992:21137): No tengo que conectarme a ninguna memoria
+[INFO] 03:21:11:923 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:21:11:924 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:21:11:924 memoria/(21000:21138): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:21:11:924 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:21:11:924 memoria/(21000:21138): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:21:21:19 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:21:21:532 memoria/(20992:21148): No tengo que conectarme a ninguna memoria
+[INFO] 03:21:22:21 memoria/(20992:20995): Query recibido: SELECT [FRUTAS] [1]
+[INFO] 03:21:23:21 memoria/(20992:20995): No se encontro en la tabla de SEGMENTOS
+[INFO] 03:21:23:28 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:21:23:28 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:21:23:29 memoria/(21000:21149): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:21:23:29 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:21:23:29 memoria/(21000:21149): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:21:27:432 memoria/(21000:21003): Query recibido: SELECT [INTERNET] [1]
+[INFO] 03:21:28:432 memoria/(21000:21003): No se encontro en la tabla de SEGMENTOS
+[INFO] 03:21:31:17 memoria/(21000:21003): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:21:31:781 memoria/(20992:21152): No tengo que conectarme a ninguna memoria
+[INFO] 03:21:32:393 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:21:32:393 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:21:32:393 memoria/(21000:21153): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:21:32:393 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:21:32:394 memoria/(21000:21153): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:21:36:22 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:21:42:17 memoria/(20992:21156): No tengo que conectarme a ninguna memoria
+[INFO] 03:21:42:629 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:21:42:629 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:21:42:629 memoria/(21000:21157): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:21:42:629 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:21:42:629 memoria/(21000:21157): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:21:44:244 memoria/(21000:21003): Query recibido: INSERT [INTERNET] [1] [RUFUS] [1563603704]
+[INFO] 03:21:44:244 memoria/(21000:21003): No se encontro en la tabla de SEGMENTOS
+[INFO] 03:21:44:244 memoria/(21000:21003): Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS
+[INFO] 03:21:51:18 memoria/(20992:20995): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:21:51:20 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:21:52:197 memoria/(20992:21160): No tengo que conectarme a ninguna memoria
+[INFO] 03:21:52:813 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:21:52:813 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:21:52:813 memoria/(21000:21161): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:21:52:813 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:21:52:813 memoria/(21000:21161): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:21:58:522 memoria/(20992:20995): Query recibido: INSERT [FRUTAS] [1] [RAFFA] [1563603718]
+[INFO] 03:21:58:522 memoria/(20992:20995): No se encontro en la tabla de SEGMENTOS
+[INFO] 03:21:58:522 memoria/(20992:20995): Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS
+[INFO] 03:22:02:428 memoria/(20992:21169): No tengo que conectarme a ninguna memoria
+[INFO] 03:22:03:61 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:22:03:61 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:22:03:62 memoria/(21000:21170): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:22:03:62 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:22:03:62 memoria/(21000:21170): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:22:06:21 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:22:08:97 memoria/(20992:20995): Query recibido: SELECT [FRUTAS] [5]
+[INFO] 03:22:09:98 memoria/(20992:20995): Esta en la tabla de SEGMENTOS
+[INFO] 03:22:09:98 memoria/(20992:20995): No esta en la tabla de PAGINAS
+[INFO] 03:22:11:18 memoria/(21000:21003): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:22:12:668 memoria/(20992:21174): No tengo que conectarme a ninguna memoria
+[INFO] 03:22:13:277 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:22:13:277 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:22:13:277 memoria/(21000:21175): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:22:13:277 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:22:13:278 memoria/(21000:21175): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:22:20:381 memoria/(20992:20995): Query recibido: SELECT [FRUTAS] [1]
+[INFO] 03:22:21:381 memoria/(20992:20995): Esta en la tabla de SEGMENTOS
+[INFO] 03:22:21:381 memoria/(20992:20995): Cantidad veces solicitado 1
+
+[INFO] 03:22:21:381 memoria/(20992:20995): Esta en la tabla de PAGINAS
+[INFO] 03:22:22:381 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:22:22:869 memoria/(20992:21180): No tengo que conectarme a ninguna memoria
+[INFO] 03:22:23:478 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:22:23:478 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:22:23:478 memoria/(21000:21181): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:22:23:479 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:22:23:479 memoria/(21000:21181): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:22:31:19 memoria/(20992:20995): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:22:33:37 memoria/(20992:21184): No tengo que conectarme a ninguna memoria
+[INFO] 03:22:33:649 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:22:33:649 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:22:33:649 memoria/(21000:21186): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:22:33:650 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:22:33:650 memoria/(21000:21186): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:22:36:22 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:22:43:185 memoria/(20992:21194): No tengo que conectarme a ninguna memoria
+[INFO] 03:22:43:801 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:22:43:804 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:22:43:804 memoria/(21000:21195): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:22:43:805 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:22:43:805 memoria/(21000:21195): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:22:51:20 memoria/(21000:21003): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:22:51:22 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:22:53:341 memoria/(20992:21198): No tengo que conectarme a ninguna memoria
+[INFO] 03:22:53:961 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:22:53:962 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:22:53:963 memoria/(21000:21199): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:22:53:963 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:22:53:963 memoria/(21000:21199): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:23:03:516 memoria/(20992:21201): No tengo que conectarme a ninguna memoria
+[INFO] 03:23:04:405 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:23:04:405 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:23:04:405 memoria/(21000:21203): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:23:04:405 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:23:04:405 memoria/(21000:21203): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:23:06:23 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:23:11:21 memoria/(20992:20995): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:23:15:108 memoria/(20992:21209): No tengo que conectarme a ninguna memoria
+[INFO] 03:23:15:715 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:23:15:715 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:23:15:715 memoria/(21000:21210): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:23:15:717 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:23:15:717 memoria/(21000:21210): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:23:21:23 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:23:26:421 memoria/(20992:21216): No tengo que conectarme a ninguna memoria
+[INFO] 03:23:27:161 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:23:27:161 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:23:27:161 memoria/(21000:21217): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:23:27:162 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:23:27:162 memoria/(21000:21217): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:23:31:22 memoria/(20992:20995): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:23:36:23 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:23:37:315 memoria/(20992:21227): No tengo que conectarme a ninguna memoria
+[INFO] 03:23:37:948 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:23:37:948 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:23:37:948 memoria/(21000:21228): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:23:37:949 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:23:37:952 memoria/(21000:21228): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:23:48:829 memoria/(20992:21243): No tengo que conectarme a ninguna memoria
+[INFO] 03:23:49:454 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:23:49:455 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:23:49:455 memoria/(21000:21244): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:23:49:455 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:23:49:455 memoria/(21000:21244): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:23:51:23 memoria/(20992:20995): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:23:51:24 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:24:00:369 memoria/(20992:21249): No tengo que conectarme a ninguna memoria
+[INFO] 03:24:00:992 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:24:00:992 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:24:00:992 memoria/(21000:21250): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:24:00:994 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:24:00:994 memoria/(21000:21250): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:24:06:25 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:24:11:24 memoria/(21000:21003): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:24:12:591 memoria/(20992:21259): No tengo que conectarme a ninguna memoria
+[INFO] 03:24:13:269 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:24:13:269 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:24:13:271 memoria/(21000:21260): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:24:13:274 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:24:13:274 memoria/(21000:21260): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:24:21:26 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:24:24:257 memoria/(20992:21270): No tengo que conectarme a ninguna memoria
+[INFO] 03:24:24:907 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:24:24:908 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:24:24:908 memoria/(21000:21271): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:24:24:908 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:24:24:908 memoria/(21000:21271): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:24:31:25 memoria/(21000:21003): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:24:38:906 memoria/(20992:21352): No tengo que conectarme a ninguna memoria
+[INFO] 03:24:39:525 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:24:39:525 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:24:39:525 memoria/(21000:21353): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:24:39:525 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:24:39:525 memoria/(21000:21353): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:24:40:290 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:24:40:293 memoria/(20992:20995): Handshake con KERNEL realizado con exito
+[INFO] 03:24:40:302 memoria/(21000:21003): Acepte una conexion en socket: 7
+[INFO] 03:24:40:302 memoria/(21000:21003): Handshake con KERNEL realizado con exito
+[INFO] 03:24:40:302 memoria/(21000:21003): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:24:40:303 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:24:49:244 memoria/(20992:21365): No tengo que conectarme a ninguna memoria
+[INFO] 03:24:49:865 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:24:49:865 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:24:49:865 memoria/(21000:21366): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:24:49:865 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:24:49:865 memoria/(21000:21366): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:24:54:439 memoria/(21000:21003): Query recibido: INSERT [FRUTAS] [1] [RAFFA] [1563603894]
+[INFO] 03:24:54:439 memoria/(21000:21003): No se encontro en la tabla de SEGMENTOS
+[INFO] 03:24:54:439 memoria/(21000:21003): Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS
+[INFO] 03:24:55:440 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:24:59:480 memoria/(20992:21369): No tengo que conectarme a ninguna memoria
+[INFO] 03:25:00:109 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:25:00:109 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:25:00:109 memoria/(21000:21370): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:25:00:109 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:25:00:109 memoria/(21000:21370): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:25:00:240 memoria/(20992:20995): Query recibido: INSERT [INTERNET] [1] [RUFUS] [1563603900]
+[INFO] 03:25:00:240 memoria/(20992:20995): No se encontro en la tabla de SEGMENTOS
+[INFO] 03:25:00:240 memoria/(20992:20995): Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS
+[INFO] 03:25:01:240 memoria/(20992:20995): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:25:04:179 memoria/(20992:20995): Query recibido: SELECT [INTERNET] [1]
+[INFO] 03:25:05:179 memoria/(20992:20995): Esta en la tabla de SEGMENTOS
+[INFO] 03:25:05:179 memoria/(20992:20995): Cantidad veces solicitado 1
+
+[INFO] 03:25:05:179 memoria/(20992:20995): Esta en la tabla de PAGINAS
+[INFO] 03:25:09:745 memoria/(20992:21373): No tengo que conectarme a ninguna memoria
+[INFO] 03:25:10:310 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:25:10:368 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:25:10:368 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:25:10:368 memoria/(21000:21374): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:25:10:368 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:25:10:368 memoria/(21000:21374): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:25:19:894 memoria/(20992:21376): No tengo que conectarme a ninguna memoria
+[INFO] 03:25:20:513 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:25:20:514 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:25:20:514 memoria/(21000:21377): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:25:20:514 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:25:20:514 memoria/(21000:21377): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:25:21:241 memoria/(21000:21003): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:25:25:310 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:25:30:120 memoria/(20992:21382): No tengo que conectarme a ninguna memoria
+[INFO] 03:25:30:741 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:25:30:741 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:25:30:741 memoria/(21000:21383): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:25:30:741 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:25:30:741 memoria/(21000:21383): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:25:40:301 memoria/(20992:21390): No tengo que conectarme a ninguna memoria
+[INFO] 03:25:40:312 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:25:40:925 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:25:40:925 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:25:40:925 memoria/(21000:21392): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:25:40:925 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:25:40:925 memoria/(21000:21392): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:25:41:242 memoria/(21000:21003): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:25:50:457 memoria/(20992:21394): No tengo que conectarme a ninguna memoria
+[INFO] 03:25:51:77 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:25:51:77 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:25:51:78 memoria/(21000:21395): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:25:51:78 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:25:51:78 memoria/(21000:21395): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:25:55:311 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:26:00:618 memoria/(20992:21398): No tengo que conectarme a ninguna memoria
+[INFO] 03:26:01:242 memoria/(20992:20995): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:26:01:245 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:26:01:245 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:26:01:245 memoria/(21000:21399): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:26:01:245 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:26:01:245 memoria/(21000:21399): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:26:10:312 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:26:10:801 memoria/(20992:21402): No tengo que conectarme a ninguna memoria
+[INFO] 03:26:11:429 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:26:11:429 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:26:11:429 memoria/(21000:21403): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:26:11:429 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:26:11:429 memoria/(21000:21403): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:26:23:445 memoria/(20992:21407): No tengo que conectarme a ninguna memoria
+[INFO] 03:26:24:333 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:26:24:333 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:26:24:333 memoria/(21000:21408): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:26:24:334 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:26:24:334 memoria/(21000:21408): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:26:35:754 memoria/(20992:21410): No tengo que conectarme a ninguna memoria
+[INFO] 03:26:36:382 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:26:36:382 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:26:36:382 memoria/(21000:21411): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:26:36:383 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:26:36:383 memoria/(21000:21411): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:26:48:797 memoria/(20992:21416): No tengo que conectarme a ninguna memoria
+[INFO] 03:26:49:481 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:26:49:481 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:26:49:481 memoria/(21000:21417): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:26:49:482 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:26:49:482 memoria/(21000:21417): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:27:00:493 memoria/(20992:21424): No tengo que conectarme a ninguna memoria
+[INFO] 03:27:01:649 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:27:01:649 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:27:01:649 memoria/(21000:21425): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:27:01:650 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:27:01:650 memoria/(21000:21425): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:27:11:187 memoria/(20992:21426): No tengo que conectarme a ninguna memoria
+[INFO] 03:27:11:817 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:27:11:817 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:27:11:817 memoria/(21000:21427): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:27:11:817 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:27:11:817 memoria/(21000:21427): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:27:21:342 memoria/(20992:21433): No tengo que conectarme a ninguna memoria
+[INFO] 03:27:21:977 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:27:21:977 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:27:21:977 memoria/(21000:21436): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:27:21:977 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:27:21:977 memoria/(21000:21436): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:27:32:772 memoria/(20992:21438): No tengo que conectarme a ninguna memoria
+[INFO] 03:27:33:401 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:27:33:401 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:27:33:401 memoria/(21000:21439): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:27:33:402 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:27:33:402 memoria/(21000:21439): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:27:45:785 memoria/(20992:21440): No tengo que conectarme a ninguna memoria
+[INFO] 03:27:46:440 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:27:46:441 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:27:46:442 memoria/(21000:21441): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:27:46:445 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:27:46:445 memoria/(21000:21441): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:27:58:821 memoria/(20992:21443): No tengo que conectarme a ninguna memoria
+[INFO] 03:27:59:449 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:27:59:449 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:27:59:449 memoria/(21000:21444): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:27:59:450 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:27:59:450 memoria/(21000:21444): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:28:08:989 memoria/(20992:21445): No tengo que conectarme a ninguna memoria
+[INFO] 03:28:09:613 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:28:09:613 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:28:09:614 memoria/(21000:21446): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:28:09:614 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:28:09:614 memoria/(21000:21446): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:28:22:997 memoria/(20992:21460): No tengo que conectarme a ninguna memoria
+[INFO] 03:28:24:566 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:28:24:569 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:28:24:569 memoria/(21000:21462): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:28:24:569 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:28:24:569 memoria/(21000:21462): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:28:36:113 memoria/(20992:21464): No tengo que conectarme a ninguna memoria
+[INFO] 03:28:36:745 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:28:36:745 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:28:36:745 memoria/(21000:21465): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:28:36:746 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:28:36:746 memoria/(21000:21465): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:28:48:218 memoria/(20992:21472): No tengo que conectarme a ninguna memoria
+[INFO] 03:28:48:873 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:28:48:873 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:28:48:873 memoria/(21000:21473): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:28:48:873 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:28:48:873 memoria/(21000:21473): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:29:01:308 memoria/(20992:21476): No tengo que conectarme a ninguna memoria
+[INFO] 03:29:01:964 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:29:01:964 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:29:01:964 memoria/(21000:21477): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:29:01:964 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:29:01:964 memoria/(21000:21477): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:29:07:683 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:29:07:683 memoria/(20992:20995): Handshake con KERNEL realizado con exito
+[INFO] 03:29:07:683 memoria/(21000:21003): Acepte una conexion en socket: 7
+[INFO] 03:29:07:684 memoria/(21000:21003): Handshake con KERNEL realizado con exito
+[INFO] 03:29:07:684 memoria/(21000:21003): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:29:07:684 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:29:12:621 memoria/(20992:21556): No tengo que conectarme a ninguna memoria
+[INFO] 03:29:13:261 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:29:13:263 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:29:13:263 memoria/(21000:21558): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:29:13:264 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:29:13:264 memoria/(21000:21558): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:29:22:694 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:29:22:854 memoria/(20992:21563): No tengo que conectarme a ninguna memoria
+[INFO] 03:29:23:489 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:29:23:489 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:29:23:489 memoria/(21000:21564): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:29:23:493 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:29:23:493 memoria/(21000:21564): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:29:26:649 memoria/(20992:20995): Query recibido: INSERT [INTERNET] [1] [RAFFA] [1563604166]
+[INFO] 03:29:26:649 memoria/(20992:20995): Esta en la tabla de SEGMENTOS
+[INFO] 03:29:26:649 memoria/(20992:20995): Se actualizo la MEMORIA PRINCIPAL
+[INFO] 03:29:26:649 memoria/(20992:20995): Esta en la tabla de PAGINAS
+[INFO] 03:29:27:694 memoria/(21000:21003): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:29:32:747 memoria/(21000:21003): Query recibido: INSERT [FRUTAS] [1] [RUFUS] [1563604172]
+[INFO] 03:29:32:747 memoria/(21000:21003): Esta en la tabla de SEGMENTOS
+[INFO] 03:29:32:747 memoria/(21000:21003): Se actualizo la MEMORIA PRINCIPAL
+[INFO] 03:29:32:747 memoria/(21000:21003): Esta en la tabla de PAGINAS
+[INFO] 03:29:33:313 memoria/(20992:21567): No tengo que conectarme a ninguna memoria
+[INFO] 03:29:33:957 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:29:33:957 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:29:33:957 memoria/(21000:21568): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:29:33:958 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:29:33:958 memoria/(21000:21568): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:29:36:489 memoria/(20992:20995): Query recibido: SELECT [INTERNET] [1]
+[INFO] 03:29:37:489 memoria/(20992:20995): Esta en la tabla de SEGMENTOS
+[INFO] 03:29:37:490 memoria/(20992:20995): Cantidad veces solicitado 2
+
+[INFO] 03:29:37:490 memoria/(20992:20995): Esta en la tabla de PAGINAS
+[INFO] 03:29:38:492 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:29:43:577 memoria/(20992:21576): No tengo que conectarme a ninguna memoria
+[INFO] 03:29:44:205 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:29:44:205 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:29:44:205 memoria/(21000:21577): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:29:44:205 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:29:44:206 memoria/(21000:21577): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:29:47:695 memoria/(21000:21003): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:29:54:953 memoria/(20992:21580): No tengo que conectarme a ninguna memoria
+[INFO] 03:29:55:593 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:29:55:593 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:29:55:593 memoria/(21000:21582): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:29:55:594 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:29:55:594 memoria/(21000:21582): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:30:06:25 memoria/(20992:21583): No tengo que conectarme a ninguna memoria
+[INFO] 03:30:06:945 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:30:06:945 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:30:06:945 memoria/(21000:21587): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:30:06:949 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:30:06:949 memoria/(21000:21587): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:30:21:909 memoria/(20992:21605): No tengo que conectarme a ninguna memoria
+[INFO] 03:30:22:581 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:30:22:582 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:30:22:582 memoria/(21000:21606): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:30:22:582 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:30:22:582 memoria/(21000:21606): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:30:36:151 memoria/(20992:21619): No tengo que conectarme a ninguna memoria
+[INFO] 03:30:36:829 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:30:36:829 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:30:36:829 memoria/(21000:21620): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:30:36:829 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:30:36:829 memoria/(21000:21620): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:30:49:505 memoria/(20992:21694): No tengo que conectarme a ninguna memoria
+[INFO] 03:30:50:145 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:30:50:145 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:30:50:145 memoria/(21000:21695): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:30:50:146 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:30:50:146 memoria/(21000:21695): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:30:51:393 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:30:51:394 memoria/(20992:20995): Handshake con KERNEL realizado con exito
+[INFO] 03:30:51:394 memoria/(21000:21003): Acepte una conexion en socket: 7
+[INFO] 03:30:51:394 memoria/(21000:21003): Handshake con KERNEL realizado con exito
+[INFO] 03:30:51:394 memoria/(21000:21003): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:30:51:396 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:30:59:821 memoria/(20992:21705): No tengo que conectarme a ninguna memoria
+[INFO] 03:31:00:461 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:31:00:461 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:31:00:461 memoria/(21000:21706): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:31:00:461 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:31:00:462 memoria/(21000:21706): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:31:04:873 memoria/(20992:20995): Query recibido: INSERT [INTERNET] [1] [RAFFA] [1563604264]
+[INFO] 03:31:04:873 memoria/(20992:20995): Esta en la tabla de SEGMENTOS
+[INFO] 03:31:04:873 memoria/(20992:20995): Se actualizo la MEMORIA PRINCIPAL
+[INFO] 03:31:04:873 memoria/(20992:20995): Esta en la tabla de PAGINAS
+[INFO] 03:31:06:415 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:31:10:51 memoria/(21000:21003): Query recibido: INSERT [FRUTAS] [1] [RUFUS] [1563604270]
+[INFO] 03:31:10:51 memoria/(21000:21003): Esta en la tabla de SEGMENTOS
+[INFO] 03:31:10:51 memoria/(21000:21003): Se actualizo la MEMORIA PRINCIPAL
+[INFO] 03:31:10:51 memoria/(21000:21003): Esta en la tabla de PAGINAS
+[INFO] 03:31:10:138 memoria/(20992:21710): No tengo que conectarme a ninguna memoria
+[INFO] 03:31:10:777 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:31:10:777 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:31:10:777 memoria/(21000:21711): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:31:10:778 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:31:10:778 memoria/(21000:21711): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:31:11:415 memoria/(20992:20995): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:31:12:594 memoria/(20992:20995): Query recibido: SELECT [INTERNET] [1]
+[INFO] 03:31:13:595 memoria/(20992:20995): Esta en la tabla de SEGMENTOS
+[INFO] 03:31:13:595 memoria/(20992:20995): Cantidad veces solicitado 3
+
+[INFO] 03:31:13:595 memoria/(20992:20995): Esta en la tabla de PAGINAS
+[INFO] 03:31:21:416 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:31:21:537 memoria/(20992:21714): No tengo que conectarme a ninguna memoria
+[INFO] 03:31:22:179 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:31:22:180 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:31:22:181 memoria/(21000:21717): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:31:22:181 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:31:22:185 memoria/(21000:21717): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:31:32:880 memoria/(20992:21722): No tengo que conectarme a ninguna memoria
+[INFO] 03:31:33:529 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:31:33:529 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:31:33:529 memoria/(21000:21723): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:31:33:529 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:31:33:529 memoria/(21000:21723): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:31:43:77 memoria/(20992:21724): No tengo que conectarme a ninguna memoria
+[INFO] 03:31:43:721 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:31:43:721 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:31:43:721 memoria/(21000:21725): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:31:43:721 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:31:43:721 memoria/(21000:21725): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:31:53:257 memoria/(20992:21726): No tengo que conectarme a ninguna memoria
+[INFO] 03:31:53:893 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:31:53:893 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:31:53:894 memoria/(21000:21727): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:31:53:894 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:31:53:894 memoria/(21000:21727): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:32:03:435 memoria/(20992:21728): No tengo que conectarme a ninguna memoria
+[INFO] 03:32:04:73 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:32:04:73 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:32:04:73 memoria/(21000:21729): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:32:04:73 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:32:04:73 memoria/(21000:21729): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:32:13:616 memoria/(20992:21730): No tengo que conectarme a ninguna memoria
+[INFO] 03:32:14:257 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:32:14:257 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:32:14:257 memoria/(21000:21731): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:32:14:258 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:32:14:258 memoria/(21000:21731): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:32:23:805 memoria/(20992:21739): No tengo que conectarme a ninguna memoria
+[INFO] 03:32:24:445 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:32:24:445 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:32:24:445 memoria/(21000:21740): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:32:24:445 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:32:24:445 memoria/(21000:21740): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:32:35:5 memoria/(20992:21742): No tengo que conectarme a ninguna memoria
+[INFO] 03:32:35:640 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:32:35:640 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:32:35:640 memoria/(21000:21743): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:32:35:640 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:32:35:641 memoria/(21000:21743): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:32:47:851 memoria/(20992:21747): No tengo que conectarme a ninguna memoria
+[INFO] 03:32:48:520 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:32:48:520 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:32:48:520 memoria/(21000:21748): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:32:48:520 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:32:48:520 memoria/(21000:21748): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:33:01:947 memoria/(20992:21762): No tengo que conectarme a ninguna memoria
+[INFO] 03:33:03:336 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:33:03:336 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:33:03:336 memoria/(21000:21786): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:33:03:336 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:33:03:336 memoria/(21000:21786): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:33:07:669 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:33:07:669 memoria/(20992:20995): Handshake con KERNEL realizado con exito
+[INFO] 03:33:07:670 memoria/(21000:21003): Acepte una conexion en socket: 7
+[INFO] 03:33:07:670 memoria/(21000:21003): Handshake con KERNEL realizado con exito
+[INFO] 03:33:07:670 memoria/(21000:21003): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:33:07:671 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:33:14:909 memoria/(20992:21840): No tengo que conectarme a ninguna memoria
+[INFO] 03:33:15:561 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:33:15:561 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:33:15:561 memoria/(21000:21841): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:33:15:561 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:33:15:561 memoria/(21000:21841): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:33:22:681 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:33:25:183 memoria/(20992:21846): No tengo que conectarme a ninguna memoria
+[INFO] 03:33:25:828 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:33:25:828 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:33:25:829 memoria/(21000:21847): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:33:25:829 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:33:25:829 memoria/(21000:21847): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:33:27:680 memoria/(20992:20995): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:33:31:703 memoria/(20992:20995): Query recibido: INSERT [INTERNET] [1] [RAFFA] [1563604411]
+[INFO] 03:33:31:703 memoria/(20992:20995): Esta en la tabla de SEGMENTOS
+[INFO] 03:33:31:703 memoria/(20992:20995): Se actualizo la MEMORIA PRINCIPAL
+[INFO] 03:33:31:703 memoria/(20992:20995): Esta en la tabla de PAGINAS
+[INFO] 03:33:35:473 memoria/(20992:21850): No tengo que conectarme a ninguna memoria
+[INFO] 03:33:36:120 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:33:36:121 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:33:36:121 memoria/(21000:21851): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:33:36:121 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:33:36:121 memoria/(21000:21851): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:33:37:681 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:33:44:722 memoria/(21000:21003): Query recibido: INSERT [FRUTAS] [1] [RUFUS] [1563604424]
+[INFO] 03:33:44:722 memoria/(21000:21003): Esta en la tabla de SEGMENTOS
+[INFO] 03:33:44:722 memoria/(21000:21003): Se actualizo la MEMORIA PRINCIPAL
+[INFO] 03:33:44:722 memoria/(21000:21003): Esta en la tabla de PAGINAS
+[INFO] 03:33:45:722 memoria/(20992:21855): No tengo que conectarme a ninguna memoria
+[INFO] 03:33:46:366 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:33:46:366 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:33:46:366 memoria/(21000:21856): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:33:46:366 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:33:46:366 memoria/(21000:21856): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:33:47:681 memoria/(21000:21003): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:33:48:571 memoria/(21000:21003): Query recibido: SELECT [FRUTAS] [1]
+[INFO] 03:33:49:571 memoria/(21000:21003): Esta en la tabla de SEGMENTOS
+[INFO] 03:33:49:571 memoria/(21000:21003): Cantidad veces solicitado 1
+
+[INFO] 03:33:49:571 memoria/(21000:21003): Esta en la tabla de PAGINAS
+[INFO] 03:33:52:681 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:33:56:505 memoria/(20992:21859): No tengo que conectarme a ninguna memoria
+[INFO] 03:33:57:153 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:33:57:153 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:33:57:153 memoria/(21000:21860): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:33:57:154 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:33:57:154 memoria/(21000:21860): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:34:07:682 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:34:07:682 memoria/(21000:21003): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:34:09:648 memoria/(20992:21865): No tengo que conectarme a ninguna memoria
+[INFO] 03:34:10:316 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:34:10:317 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:34:10:317 memoria/(21000:21866): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:34:10:317 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:34:10:317 memoria/(21000:21866): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:34:22:683 memoria/(20992:20995): Query recibido: DESCRIBE []
+[INFO] 03:34:24:37 memoria/(20992:21875): No tengo que conectarme a ninguna memoria
+[INFO] 03:34:24:919 memoria/(20992:20995): Acepte una conexion en socket: 8
+[INFO] 03:34:24:919 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:34:24:920 memoria/(21000:21876): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:34:24:920 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:34:24:920 memoria/(21000:21876): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:34:27:685 memoria/(20992:20995): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 03:34:37:757 memoria/(20992:21887): No tengo que conectarme a ninguna memoria
+[INFO] 03:34:38:485 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:34:38:486 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:34:38:486 memoria/(21000:21888): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:34:38:486 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:34:38:487 memoria/(21000:21888): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:34:50:349 memoria/(20992:21902): No tengo que conectarme a ninguna memoria
+[INFO] 03:34:51:181 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:34:51:182 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:34:51:182 memoria/(21000:21903): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:34:51:182 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:34:51:182 memoria/(21000:21903): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:35:00:976 memoria/(20992:21904): No tengo que conectarme a ninguna memoria
+[INFO] 03:35:01:621 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:35:01:621 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:35:01:621 memoria/(21000:21905): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:35:01:621 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:35:01:622 memoria/(21000:21905): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:35:11:265 memoria/(20992:21906): No tengo que conectarme a ninguna memoria
+[INFO] 03:35:11:913 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:35:11:913 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:35:11:913 memoria/(21000:21907): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:35:11:913 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:35:11:913 memoria/(21000:21907): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:35:21:501 memoria/(20992:21908): No tengo que conectarme a ninguna memoria
+[INFO] 03:35:22:141 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:35:22:142 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:35:22:142 memoria/(21000:21911): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:35:22:143 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:35:22:143 memoria/(21000:21911): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:35:32:105 memoria/(20992:21912): No tengo que conectarme a ninguna memoria
+[INFO] 03:35:32:753 memoria/(20992:20995): Acepte una conexion en socket: 7
+[INFO] 03:35:32:753 memoria/(20992:20995): Handshake con MEMORIA 1 realizado con exito
+[INFO] 03:35:32:753 memoria/(21000:21913): Handshake con MEMORIA 3 realizado con exito
+[INFO] 03:35:32:753 memoria/(20992:20995): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 03:35:32:753 memoria/(21000:21913): Recibi la TABLA DE GOSSIP correctamente

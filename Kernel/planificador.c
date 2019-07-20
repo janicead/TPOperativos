@@ -628,9 +628,10 @@ int cantidadInserts(){
 	return cantidad;
 }
 
-int porcentajeSelectsInserts(int cant_selects_inserts_ejecutados, int cant_total_selects_inserts){
+double porcentajeSelectsInserts(int cant_selects_inserts_ejecutados, int cant_total_selects_inserts){
 	if(cant_total_selects_inserts != 0){
-		return (cant_selects_inserts_ejecutados / cant_total_selects_inserts)*100;
+		double division = cant_selects_inserts_ejecutados / cant_total_selects_inserts;
+		return ((double)cant_selects_inserts_ejecutados / (double)cant_total_selects_inserts)*100;
 	}
 	return 0;
 }
@@ -644,9 +645,9 @@ void memoryLoad(bool mostrarEnConsola){
 	for(int i = 0; i < list_size(memorias); i++){
 		t_memoria* mem = list_get(memorias,i);
 		if(mostrarEnConsola){
-			printf("Memory Load: Memory %d porcentaje de uso: %d%%.\n",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados, cantidad_total_inserts_selects));
+			printf("Memory Load: Memory %d porcentaje de uso: %lf%%.\n",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados, cantidad_total_inserts_selects));
 		}
-		log_info(loggerKernel,"Memory Load: Memory %d porcentaje de uso: %d%%",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados, cantidad_total_inserts_selects));
+		log_info(loggerKernel,"Memory Load: Memory %d porcentaje de uso: %lf%%",mem->id_mem, porcentajeSelectsInserts(mem->cant_selects_inserts_ejecutados, cantidad_total_inserts_selects));
 	}
 }
 
