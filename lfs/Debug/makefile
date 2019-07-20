@@ -26,7 +26,7 @@ endif
 all: lfs
 
 dependents:
-	-cd /home/utnso/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/Debug && $(MAKE) all
+	-cd /home/utnso/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/Debug && $(MAKE) clean all
 
 # Tool invocations
 lfs: $(OBJS) $(USER_OBJS) /home/utnso/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/Debug/libbibliotecaFunciones.so
