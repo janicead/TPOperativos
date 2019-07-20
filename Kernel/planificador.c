@@ -776,14 +776,15 @@ t_memoria* random_memory(t_list* lista){
 	return list_get(lista,index);
 }
 
-bool verificar_memoria_caida(char* respuesta,t_LQL_operacion* op, int id_mem){
+bool verificar_memoria_caida(char* respuesta,t_LQL_operacion* op, t_memoria* mem){
 	if(string_equals_ignore_case(respuesta,"MEMORIA_DESCONECTADA")){
 		if(op->consola){
-			printf("La memoria %d fue desconectada.\n", id_mem);
+			printf("La memoria %d fue desconectada.\n", mem->id_mem);
 		}
-		log_error(loggerKernel,"La memoria %d fue desconectada.", id_mem);
+		log_error(loggerKernel,"La memoria %d fue desconectada.", mem->id_mem);
+		pthread_mutex_unlock(&(mem->socket_mem_sem));
 		op->success = true; //ESTE TIPO DE ERROR NO CORTA LA EJECUCIÓN DEL RESTO DE ARCHIVO LQL
-		sacar_memoria(id_mem);
+		sacar_memoria(mem->id_mem);
 		return true;
 	}
 	return false;
@@ -792,6 +793,7 @@ bool verificar_memoria_caida(char* respuesta,t_LQL_operacion* op, int id_mem){
 bool verificar_memoria_caida2(char* respuesta, int id_mem){
 	if(string_equals_ignore_case(respuesta,"MEMORIA_DESCONECTADA")){
 		log_error(loggerKernel,"La memoria %d fue desconectada.", id_mem);
+		pthread_mutex_unlock(&(mem->socket_mem_sem));
 		sacar_memoria(id_mem);
 		return true;
 	}

@@ -38,7 +38,7 @@ char *opSELECT(int socketReceptor, char* unNombreTabla, int unaKey)
 	char *selectSerializado;
 	t_SELECT *unSELECT = definirT_SELECT(unNombreTabla,unaKey);
 
-	printf("\nQuery:\n	SELECT [%s] [%d]\n",unSELECT->nombreTabla,unSELECT->KEY);
+	//printf("\nQuery:\n	SELECT [%s] [%d]\n",unSELECT->nombreTabla,unSELECT->KEY);
 
 	selectSerializado = serializarT_SELECT(unSELECT);
 
@@ -54,8 +54,8 @@ char *opSELECT(int socketReceptor, char* unNombreTabla, int unaKey)
 
 	//#####################################
 	t_PaqueteDeDatos *packageRecibido = recibirPaquete(socketReceptor);
-	printf("fd: %d\n",socketReceptor); ///
-	printf("package->ID: %d\n",packageRecibido->ID); ///
+	//printf("fd: %d\n",socketReceptor); ///
+	//printf("package->ID: %d\n",packageRecibido->ID); ///
 
 	if(packageRecibido->ID == 0){
 		return "MEMORIA_DESCONECTADA";
@@ -75,7 +75,7 @@ char *opINSERT(int socketReceptor, char* unNombreTabla, int unaKey, char* unValu
 	char *insertSerializado;
 	t_INSERT *unINSERT = definirT_INSERT(unNombreTabla,unaKey,unValue,unTimestamp);
 
-	printf("\nQuery:\n	INSERT [%s] [%d] [%s] [%d]\n",unINSERT->nombreTabla,unINSERT->KEY,unINSERT->Value,unINSERT->timeStamp);
+	//printf("\nQuery:\n	INSERT [%s] [%d] [%s] [%d]\n",unINSERT->nombreTabla,unINSERT->KEY,unINSERT->Value,unINSERT->timeStamp);
 
 	insertSerializado = serializarT_INSERT(unINSERT);
 
@@ -91,8 +91,8 @@ char *opINSERT(int socketReceptor, char* unNombreTabla, int unaKey, char* unValu
 
 	//#####################################
 	t_PaqueteDeDatos *packageRecibido = recibirPaquete(socketReceptor);
-	printf("fd: %d\n",socketReceptor); ///
-	printf("package->ID: %d\n",packageRecibido->ID); ///
+	//printf("fd: %d\n",socketReceptor); ///
+	//printf("package->ID: %d\n",packageRecibido->ID); ///
 
 	if(packageRecibido->ID == 0){
 		return "MEMORIA_DESCONECTADA";
@@ -110,7 +110,7 @@ char *opCREATE(int socketReceptor, char* unNombreTabla, char* unaConsistencia, i
 	char *createSerializado;
 	t_CREATE *unCREATE = definirT_CREATE(unNombreTabla,unaConsistencia,unNParticiones,unTiempoCompactacion);
 
-	printf("\nQuery:\n	CREATE [%s] [%s] [%d] [%d]\n",unCREATE->nombreTabla,unCREATE->tipoConsistencia,unCREATE->nParticiones,unCREATE->tiempoCompactacion);
+	//printf("\nQuery:\n	CREATE [%s] [%s] [%d] [%d]\n",unCREATE->nombreTabla,unCREATE->tipoConsistencia,unCREATE->nParticiones,unCREATE->tiempoCompactacion);
 
 	createSerializado = serializarT_CREATE(unCREATE);
 
@@ -126,8 +126,8 @@ char *opCREATE(int socketReceptor, char* unNombreTabla, char* unaConsistencia, i
 
 	//#####################################
 	t_PaqueteDeDatos *packageRecibido = recibirPaquete(socketReceptor);
-	printf("fd: %d\n",socketReceptor); ///
-	printf("package->ID: %d\n",packageRecibido->ID); ///
+	//printf("fd: %d\n",socketReceptor); ///
+	//printf("package->ID: %d\n",packageRecibido->ID); ///
 
 	if(packageRecibido->ID == 0){
 		return "MEMORIA_DESCONECTADA";
@@ -145,7 +145,7 @@ char *opDESCRIBE(int socketReceptor, char* unNombreTabla)
 	char *describeSerializado;
 	t_DESCRIBE *unDESCRIBE = definirT_DESCRIBE(unNombreTabla);
 
-	printf("\nQuery:\n	DESCRIBE [%s]\n",unDESCRIBE->nombreTabla);
+	//printf("\nQuery:\n	DESCRIBE [%s]\n",unDESCRIBE->nombreTabla);
 
 	describeSerializado = serializarT_DESCRIBE(unDESCRIBE);
 
@@ -161,8 +161,8 @@ char *opDESCRIBE(int socketReceptor, char* unNombreTabla)
 
 	//#####################################
 	t_PaqueteDeDatos *packageRecibido = recibirPaquete(socketReceptor);
-	printf("fd: %d\n",socketReceptor); ///
-	printf("package->ID: %d\n",packageRecibido->ID); ///
+	//printf("fd: %d\n",socketReceptor); ///
+	//printf("package->ID: %d\n",packageRecibido->ID); ///
 
 	if(packageRecibido->ID == 0){
 		return "MEMORIA_DESCONECTADA";
@@ -180,7 +180,7 @@ char *opDROP(int socketReceptor, char* unNombreTabla)
 	char *dropSerializado;
 	t_DROP *unDROP = definirT_DROP(unNombreTabla);
 
-	printf("\nQuery:\n	DROP [%s]\n",unDROP->nombreTabla);
+	//printf("\nQuery:\n	DROP [%s]\n",unDROP->nombreTabla);
 
 	dropSerializado = serializarT_DROP(unDROP);
 
@@ -196,8 +196,8 @@ char *opDROP(int socketReceptor, char* unNombreTabla)
 
 	//#####################################
 	t_PaqueteDeDatos *packageRecibido = recibirPaquete(socketReceptor);
-	printf("fd: %d\n",socketReceptor); ///
-	printf("package->ID: %d\n",packageRecibido->ID); ///
+	//printf("fd: %d\n",socketReceptor); ///
+	//printf("package->ID: %d\n",packageRecibido->ID); ///
 
 	if(packageRecibido->ID == 0){
 		return "MEMORIA_DESCONECTADA";
