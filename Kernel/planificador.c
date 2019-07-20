@@ -11,6 +11,7 @@ void* ejecutar(){
 		t_lcb* lcb = queue_pop(queue_ready);
 		pthread_mutex_unlock(&queue_ready_sem);
 		lcb->estado = EXEC;
+		log_info(loggerKernel,"LCB %d pasa a ejecutarse.",lcb->id_lcb);
 		while(quantum > 0 && lcb->program_counter < list_size(lcb->operaciones)){
 			t_LQL_operacion* operacion = obtener_op_actual(lcb);
 			switch(operacion->keyword){
