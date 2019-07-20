@@ -4,7 +4,11 @@ memoria.o: ../memoria.c ../memoria.h \
  ../consolaMemoria.h ../configMemoria.h \
  /home/utnso/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/bibliotecaFunciones/usoVariado.h \
  /home/utnso/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/bibliotecaFunciones/consola.h \
- ../socketsMemoria.h ../segmentacionPaginada.h
+ ../segmentacionPaginada.h ../socketsMemoria.h \
+ /home/utnso/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/bibliotecaFunciones/lfsSerializacion.h \
+ /home/utnso/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/bibliotecaFunciones/lfsProtocolos.h \
+ /home/utnso/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/bibliotecaFunciones/sockets.h \
+ /home/utnso/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/bibliotecaFunciones/lfsSerializacion.h
 
 ../memoria.h:
 
@@ -20,6 +24,14 @@ memoria.o: ../memoria.c ../memoria.h \
 
 /home/utnso/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/bibliotecaFunciones/consola.h:
 
+../segmentacionPaginada.h:
+
 ../socketsMemoria.h:
 
-../segmentacionPaginada.h:
+/home/utnso/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/bibliotecaFunciones/lfsSerializacion.h:
+
+/home/utnso/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/bibliotecaFunciones/lfsProtocolos.h:
+
+/home/utnso/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/bibliotecaFunciones/sockets.h:
+
+/home/utnso/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/bibliotecaFunciones/lfsSerializacion.h:

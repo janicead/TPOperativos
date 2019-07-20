@@ -1,31 +1,73 @@
-[INFO] 01:44:20:591 memoria/(13467:13467): Leyendo archivo de configuracion...
-[INFO] 01:44:20:593 memoria/(13467:13467): LISSANDRA: Tamanio de VALUE = 20
-[INFO] 01:44:20:593 memoria/(13467:13467): Handshake  con socket 3: DONE!
-[INFO] 01:44:20:593 memoria/(13467:13467): Esperando Conexiones
-[INFO] 01:44:20:593 memoria/(13467:13467): Asignado un socket al proceso LFS
-[INFO] 01:44:20:594 memoria/(13467:13467): Esperando conexiones, listen()....
-[INFO] 01:44:20:594 memoria/(13467:13467): El tamanio de un registro es de 26
+[INFO] 02:58:25:601 memoria/(19822:19822): Leyendo archivo de configuracion...
+[INFO] 02:58:25:609 memoria/(19822:19822): LISSANDRA: Tamanio de VALUE = 60
+[INFO] 02:58:25:609 memoria/(19822:19822): Handshake  con socket 3: DONE!
+[INFO] 02:58:25:609 memoria/(19822:19822): Esperando Conexiones
+[INFO] 02:58:25:609 memoria/(19822:19822): Asignado un socket al proceso LFS
+[INFO] 02:58:25:609 memoria/(19822:19822): Esperando conexiones, listen()....
+[INFO] 02:58:25:609 memoria/(19822:19822): El tamanio de un registro es de 66
 
-[INFO] 01:44:20:594 memoria/(13467:13467): Cant max de marcos posibles 2
+[INFO] 02:58:25:609 memoria/(19822:19822): Cant max de marcos posibles 62
 
-[INFO] 01:44:20:594 memoria/(13467:13472): No hay datos para poder hacer JOURNAL
-[INFO] 01:44:25:464 memoria/(13467:13470): Acepte una conexion en socket: 7
-[INFO] 01:44:25:465 memoria/(13467:13470): Handshake con KERNEL realizado con exito
-[INFO] 01:44:25:466 memoria/(13467:13470): Query recibido: DESCRIBE []
-[INFO] 01:44:30:927 memoria/(13467:13479): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:44:43:387 memoria/(13467:13486): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:44:56:144 memoria/(13467:13489): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:45:11:351 memoria/(13467:13493): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:45:22:456 memoria/(13467:13495): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:45:35:595 memoria/(13467:13501): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:45:49:107 memoria/(13467:13504): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:46:03:995 memoria/(13467:13506): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:46:14:723 memoria/(13467:13507): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:46:27:671 memoria/(13467:13514): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:46:38:426 memoria/(13467:13515): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:46:48:548 memoria/(13467:13516): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:47:01:671 memoria/(13467:13518): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:47:11:789 memoria/(13467:13519): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:47:22:659 memoria/(13467:13520): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:47:37:425 memoria/(13467:13527): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
-[INFO] 01:47:50:275 memoria/(13467:13531): La memoria con puerto 35138 e ip 127.0.0.8 no se encuentra activa
+[INFO] 02:58:25:610 memoria/(19822:19827): No hay datos para poder hacer JOURNAL
+[INFO] 02:58:32:473 memoria/(19822:19825): Acepte una conexion en socket: 7
+[INFO] 02:58:32:473 memoria/(19822:19825): Handshake con MEMORIA 4 realizado con exito
+[INFO] 02:58:32:473 memoria/(17085:19903): Handshake con MEMORIA 1 realizado con exito
+[INFO] 02:58:32:473 memoria/(19822:19825): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 02:58:32:474 memoria/(17085:19903): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 02:58:34:945 memoria/(19569:19907): No tengo que conectarme a ninguna memoria
+[INFO] 02:58:40:91 memoria/(19569:19572): Acepte una conexion en socket: 7
+[INFO] 02:58:40:215 memoria/(19569:19572): Handshake con KERNEL realizado con exito
+[INFO] 02:58:40:846 memoria/(19822:19825): Acepte una conexion en socket: 7
+[INFO] 02:58:40:853 memoria/(19822:19825): Handshake con KERNEL realizado con exito
+[INFO] 02:58:40:926 memoria/(19822:19825): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 02:58:40:977 memoria/(17085:17088): Acepte una conexion en socket: 7
+[INFO] 02:58:40:978 memoria/(17085:17088): Handshake con KERNEL realizado con exito
+[INFO] 02:58:40:994 memoria/(17085:17088): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 02:58:41:153 memoria/(19569:19572): Query recibido: DESCRIBE []
+[INFO] 02:58:45:937 memoria/(19569:19572): Acepte una conexion en socket: 8
+[INFO] 02:58:45:937 memoria/(19569:19572): Handshake con MEMORIA 1 realizado con exito
+[INFO] 02:58:45:937 memoria/(19822:19916): Handshake con MEMORIA 3 realizado con exito
+[INFO] 02:58:45:937 memoria/(19569:19572): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 02:58:45:937 memoria/(19822:19916): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 02:58:51:699 memoria/(19822:19825): Acepte una conexion en socket: 8
+[INFO] 02:58:51:699 memoria/(19822:19825): Handshake con MEMORIA 4 realizado con exito
+[INFO] 02:58:51:699 memoria/(17085:19918): Handshake con MEMORIA 1 realizado con exito
+[INFO] 02:58:51:700 memoria/(19822:19825): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 02:58:51:700 memoria/(17085:19918): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 02:58:53:981 memoria/(19569:19921): No tengo que conectarme a ninguna memoria
+[INFO] 02:58:56:645 memoria/(19569:19572): Query recibido: DESCRIBE []
+[INFO] 02:59:01:539 memoria/(19569:19572): Acepte una conexion en socket: 8
+[INFO] 02:59:01:541 memoria/(19569:19572): Handshake con MEMORIA 1 realizado con exito
+[INFO] 02:59:01:541 memoria/(19822:19924): Handshake con MEMORIA 3 realizado con exito
+[INFO] 02:59:01:541 memoria/(19569:19572): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 02:59:01:541 memoria/(19822:19924): Recibi la TABLA DE GOSSIP correctamente
+[INFO] 02:59:01:554 memoria/(17085:17088): Ya envie la TABLA DE GOSSIP a KERNEL
+[INFO] 02:59:06:197 memoria/(17085:19925): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
+[INFO] 02:59:07:705 memoria/(19569:19927): No tengo que conectarme a ninguna memoria
+[INFO] 02:59:11:636 memoria/(19569:19572): Query recibido: DESCRIBE []
+[INFO] 02:59:16:520 memoria/(17085:19930): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
+[INFO] 02:59:18:457 memoria/(19569:19931): No tengo que conectarme a ninguna memoria
+[INFO] 02:59:27:409 memoria/(17085:19934): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
+[INFO] 02:59:28:889 memoria/(19569:19935): No tengo que conectarme a ninguna memoria
+[INFO] 02:59:40:261 memoria/(17085:19943): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
+[INFO] 02:59:42:577 memoria/(19569:19945): No tengo que conectarme a ninguna memoria
+[INFO] 02:59:53:706 memoria/(17085:19953): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
+[INFO] 02:59:55:442 memoria/(19569:19954): No tengo que conectarme a ninguna memoria
+[INFO] 03:00:06:757 memoria/(17085:19955): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
+[INFO] 03:00:08:728 memoria/(19569:19956): No tengo que conectarme a ninguna memoria
+[INFO] 03:00:17:706 memoria/(17085:19957): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
+[INFO] 03:00:19:185 memoria/(19569:19958): No tengo que conectarme a ninguna memoria
+[INFO] 03:00:29:153 memoria/(17085:19961): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
+[INFO] 03:00:30:653 memoria/(19569:19962): No tengo que conectarme a ninguna memoria
+[INFO] 03:00:39:569 memoria/(17085:19965): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
+[INFO] 03:00:41:57 memoria/(19569:19966): No tengo que conectarme a ninguna memoria
+[INFO] 03:00:49:755 memoria/(17085:19967): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
+[INFO] 03:00:51:326 memoria/(19569:19968): No tengo que conectarme a ninguna memoria
+[INFO] 03:01:00:157 memoria/(17085:19969): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
+[INFO] 03:01:01:649 memoria/(19569:19970): No tengo que conectarme a ninguna memoria
+[INFO] 03:01:11:509 memoria/(17085:19971): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
+[INFO] 03:01:13:29 memoria/(19569:19972): No tengo que conectarme a ninguna memoria
+[INFO] 03:01:21:989 memoria/(17085:19975): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
+[INFO] 03:01:23:477 memoria/(19569:19976): No tengo que conectarme a ninguna memoria
+[INFO] 03:01:33:485 memoria/(17085:19977): La memoria con puerto 35137 e ip 127.0.0.7 no se encuentra activa
+[INFO] 03:01:35:427 memoria/(19569:19978): No tengo que conectarme a ninguna memoria

@@ -73,7 +73,12 @@ t_LQL_operacion* parse(char* linea){
 	else if(string_equals_ignore_case(keyword, "DESCRIBE")){
 		ret->_raw = split;
 		ret->keyword = DESCRIBE;
-		ret->argumentos.DESCRIBE.nombre_tabla = split[1];
+		if(split[1]==NULL){
+			ret->argumentos.DESCRIBE.nombre_tabla = "";
+		}
+		else {
+			ret->argumentos.DESCRIBE.nombre_tabla = split[1];
+		}
 	}
 	else if(string_equals_ignore_case(keyword, "DROP")){
 		ret->_raw = split;

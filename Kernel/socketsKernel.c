@@ -86,11 +86,10 @@ void gossipDeKernel(){
 			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			pedirTablaGossip(memoria->socket_mem, 50, "Dame tabla gossip", memoria->id_mem);
 			char* respuesta = recibirMemoriasTablaDeGossipKernel(memoria->socket_mem,KERNELOMEMORIA,loggerKernel);
-			if(verificar_memoria_caida2(respuesta,memoria->id_mem)){
+			if(!verificar_memoria_caida2(respuesta,memoria)){
+				conectarmeAMemorias();
 				pthread_mutex_unlock(&(memoria->socket_mem_sem));
 			}
-			conectarmeAMemorias();
-			pthread_mutex_unlock(&(memoria->socket_mem_sem));
 		}
 	}
 }

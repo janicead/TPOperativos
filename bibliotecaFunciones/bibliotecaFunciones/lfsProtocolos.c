@@ -58,7 +58,9 @@ char *opSELECT(int socketReceptor, char* unNombreTabla, int unaKey)
 	//printf("package->ID: %d\n",packageRecibido->ID); ///
 
 	if(packageRecibido->ID == 0){
-		return "MEMORIA_DESCONECTADA";
+		char* rsta = malloc(strlen("MEMORIA_DESCONECTADA")+1);
+		strcpy(rsta, "MEMORIA DESCONECTADA");
+		return rsta;
 	}
 
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
@@ -95,7 +97,9 @@ char *opINSERT(int socketReceptor, char* unNombreTabla, int unaKey, char* unValu
 	//printf("package->ID: %d\n",packageRecibido->ID); ///
 
 	if(packageRecibido->ID == 0){
-		return "MEMORIA_DESCONECTADA";
+		char* rsta = malloc(strlen("MEMORIA_DESCONECTADA")+1);
+		strcpy(rsta, "MEMORIA DESCONECTADA");
+		return rsta;
 	}
 
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
@@ -130,8 +134,11 @@ char *opCREATE(int socketReceptor, char* unNombreTabla, char* unaConsistencia, i
 	//printf("package->ID: %d\n",packageRecibido->ID); ///
 
 	if(packageRecibido->ID == 0){
-		return "MEMORIA_DESCONECTADA";
+		char* rsta = malloc(strlen("MEMORIA_DESCONECTADA")+1);
+		strcpy(rsta, "MEMORIA DESCONECTADA");
+		return rsta;
 	}
+
 
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
 	freePackage(packageRecibido);
@@ -164,8 +171,11 @@ char *opDESCRIBE(int socketReceptor, char* unNombreTabla)
 	//printf("fd: %d\n",socketReceptor); ///
 	//printf("package->ID: %d\n",packageRecibido->ID); ///
 
+
 	if(packageRecibido->ID == 0){
-		return "MEMORIA_DESCONECTADA";
+		char* rsta = malloc(strlen("MEMORIA_DESCONECTADA")+1);
+		strcpy(rsta, "MEMORIA DESCONECTADA");
+		return rsta;
 	}
 
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
@@ -200,8 +210,11 @@ char *opDROP(int socketReceptor, char* unNombreTabla)
 	//printf("package->ID: %d\n",packageRecibido->ID); ///
 
 	if(packageRecibido->ID == 0){
-		return "MEMORIA_DESCONECTADA";
+		char* rsta = malloc(strlen("MEMORIA_DESCONECTADA")+1);
+		strcpy(rsta, "MEMORIA DESCONECTADA");
+		return rsta;
 	}
+
 
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
 	freePackage(packageRecibido);
@@ -219,8 +232,11 @@ char* opJOURNAL(int socketReceptor){
 
 	t_PaqueteDeDatos* packageRecibido = recibirPaquete(socketReceptor);
 	if(packageRecibido->ID == 0){
-		return "MEMORIA_DESCONECTADA";
+		char* rsta = malloc(strlen("MEMORIA_DESCONECTADA")+1);
+		strcpy(rsta, "MEMORIA DESCONECTADA");
+		return rsta;
 	}
+
 
 	char* respuesta = deserializarRespuesta(packageRecibido->Datos);
 	freePackage(packageRecibido);

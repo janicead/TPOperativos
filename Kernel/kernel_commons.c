@@ -78,6 +78,7 @@ void agregar_memoria(int puerto, char* ip, int nro_memoria){
 		free_memoria(memoria);
 	}
 	pthread_mutex_unlock(&memorias_sem);
+	log_info(loggerKernel, "Se descubrio la memoria %d", nro_memoria);
 	return;
 }
 

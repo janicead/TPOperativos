@@ -106,6 +106,7 @@ void lql_select(t_LQL_operacion* operacion){
 	char* respuesta = opSELECT(memoria->socket_mem,operacion->argumentos.SELECT.nombre_tabla, operacion->argumentos.SELECT.key);
 
 	if(verificar_memoria_caida(respuesta,operacion,memoria)){
+		free(respuesta);
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
@@ -184,6 +185,7 @@ void lql_insert(t_LQL_operacion* op){
 	unsigned long int timestamp = obtenerTimeStamp();
 	char* resp = opINSERT(memoria->socket_mem, op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key,op->argumentos.INSERT.valor,timestamp);
 	if(verificar_memoria_caida(resp,op,memoria)){
+		free(resp);
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
@@ -241,6 +243,7 @@ void lql_create(t_LQL_operacion* op){
 	char* resp = opCREATE(memoria->socket_mem, op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
 			op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time);
 	if(verificar_memoria_caida(resp,op,memoria)){
+		free(resp);
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
@@ -319,6 +322,7 @@ void lql_describe(t_LQL_operacion* op){
 		pthread_mutex_lock(&(mem->socket_mem_sem));
 		char* resp = opDESCRIBE(mem->socket_mem, "");
 		if(verificar_memoria_caida(resp,op,mem)){
+			free(resp);
 			return;
 		}
 		if(string_equals_ignore_case(resp,"NO_EXISTEN_TABLAS")){
@@ -328,6 +332,7 @@ void lql_describe(t_LQL_operacion* op){
 			log_error(loggerKernel,"No existe ninguna tabla");
 			free(resp);
 			op->success = false;
+			pthread_mutex_unlock(&(mem->socket_mem_sem));
 			return;
 		}
 		describe_global(resp,op->consola);
@@ -349,6 +354,7 @@ void lql_describe(t_LQL_operacion* op){
 		pthread_mutex_lock(&(mem->socket_mem_sem));
 		char* resp = opDESCRIBE(mem->socket_mem,op->argumentos.DESCRIBE.nombre_tabla);
 		if(verificar_memoria_caida(resp,op,mem)){
+			free(resp);
 			return;
 		}
 		if(string_equals_ignore_case(resp,"NO_EXISTE_TABLA")){
@@ -392,6 +398,7 @@ void lql_drop(t_LQL_operacion* op){
 	pthread_mutex_lock(&(memoria->socket_mem_sem));
 	char* resp = opDROP(memoria->socket_mem, op->argumentos.DROP.nombre_tabla);
 	if(verificar_memoria_caida(resp,op,memoria)){
+		free(resp);
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
@@ -556,7 +563,7 @@ void lql_run(FILE* archivo, t_LQL_operacion* op){
 	        t_LQL_operacion* operacion = parse(linea);
 	        if(operacion->valido){
 	        	op->success = true;
-	        	op->consola = false;
+	        	operacion->consola = false;
 	        	agregar_op_lcb(lcb,operacion);
 	        }
 	        else {
@@ -565,7 +572,7 @@ void lql_run(FILE* archivo, t_LQL_operacion* op){
 	        	}
 	            log_error(loggerKernel, "La linea %s no es valida", linea);
 	            op->success = false;
-	            op->consola = false;
+	            operacion->consola = false;
 	            free(linea);
 	            return;
 	        }
@@ -634,7 +641,6 @@ void memoryLoad(bool mostrarEnConsola){
 		t_memoria* memoria = list_get(memorias,i);
 		cantidad_total_inserts_selects += memoria->cant_selects_inserts_ejecutados;
 	}
-	printf("cant total %d.\n",cantidad_total_inserts_selects);
 	for(int i = 0; i < list_size(memorias); i++){
 		t_memoria* mem = list_get(memorias,i);
 		if(mostrarEnConsola){
@@ -790,10 +796,11 @@ bool verificar_memoria_caida(char* respuesta,t_LQL_operacion* op, t_memoria* mem
 	return false;
 }
 
-bool verificar_memoria_caida2(char* respuesta, int id_mem){
+bool verificar_memoria_caida2(char* respuesta, t_memoria* memoria){
 	if(string_equals_ignore_case(respuesta,"MEMORIA_DESCONECTADA")){
-		log_error(loggerKernel,"La memoria %d fue desconectada.", id_mem);
-		sacar_memoria(id_mem);
+		log_error(loggerKernel,"La memoria %d fue desconectada.", memoria->id_mem);
+		pthread_mutex_unlock(&(memoria->socket_mem_sem));
+		sacar_memoria(memoria->id_mem);
 		return true;
 	}
 	return false;
