@@ -1,13 +1,8 @@
 #include "lfs.h"
 //#include "fs.h"
 
-<<<<<<< HEAD
 int socketLFS; //SOCKET ESCUCHANDO, SERVIDOR
 #define printLOGGER 0  //SI=1,  NO=0
-
-=======
-int socketLFS; // SOCKET ESCUCHANDO, SERVIDOR
->>>>>>> f1b19c468ce11e260e8685f92c16b93e383bd55f
 
 int main(void) {
 
