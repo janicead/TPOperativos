@@ -395,15 +395,15 @@ void mostrarmeMemoriasTablaGossip(t_list* tablaDeGossip){
 	for(int i = 0; i <cantidadMemoriasConectadas; i ++){
 		void * elemento = list_get(tablaDeGossip, i);
 		t_memoriaTablaDeGossip *memoriaConectada =(t_memoriaTablaDeGossip*)elemento;
-		printf("POSICION '%d'\n", i);
-		printf("IP: '%s'\n",memoriaConectada->ip);
-		printf("PUERTO: '%d'\n",memoriaConectada->puerto);
-		printf("NRO MEMORIA: '%d'\n",memoriaConectada->numeroDeMemoria);
-		char* booleano = pasarBoolAString(memoriaConectada->conectado);
-		printf("CONECTADO: '%s'\n", booleano);
-		puts("---------------------------------------------------");
+		//printf("POSICION '%d'\n", i);
+		//printf("IP: '%s'\n",memoriaConectada->ip);
+		//printf("PUERTO: '%d'\n",memoriaConectada->puerto);
+		//printf("NRO MEMORIA: '%d'\n",memoriaConectada->numeroDeMemoria);
+		//char* booleano = pasarBoolAString(memoriaConectada->conectado);
+		//printf("CONECTADO: '%s'\n", booleano);
+		//puts("---------------------------------------------------");
 	}
-	puts("---------------------------------------------------");
+	//puts("---------------------------------------------------");
 }
 
 bool modificadoHacePocoEnGossip(bool modificadoHacePoco){
