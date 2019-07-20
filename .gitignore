@@ -27,7 +27,7 @@
 #*.so
 #*.so.*
 #*.dylib
-#*.log
+*.log
 
 # Debug files
 #*.dSYM/
