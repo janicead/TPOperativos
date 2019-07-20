@@ -55,7 +55,7 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		unCREATE = deserializarT_CREATE(packageRecibido->Datos);
 		log_info(loggerMemoria,"Query recibido: CREATE [%s] [%s] [%d] [%d]",unCREATE->nombreTabla,unCREATE->tipoConsistencia,unCREATE->nParticiones,unCREATE->tiempoCompactacion);
 
-		char* Respuesta = string_from_format("CREATE OK");
+		char* Respuesta = CREATEMemoria(unCREATE->nombreTabla,unCREATE->tipoConsistencia, unCREATE->nParticiones, unCREATE->tiempoCompactacion);
 		enviarRespuesta(socketEmisor,id_respuesta_create,Respuesta);
 
 		free(Respuesta);
