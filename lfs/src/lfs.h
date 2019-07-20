@@ -15,6 +15,8 @@
 #include <sys/stat.h>
 #include <libgen.h>
 #include <pthread.h>
+#include <signal.h> //para el 	pthread_kill
+
 
 #include <commons/log.h>
 #include <commons/collections/list.h>
@@ -33,6 +35,11 @@
 //#include "compactador.h"
 
 #define maximoDeConexiones 20
+
+//####################
+pthread_mutex_t laMEMTABLE;
+pthread_mutex_t elFS;
+pthread_mutex_t LISSANDRA;
 
 //### CONFIG #################
 t_config *archivoConfig;
@@ -64,7 +71,7 @@ typedef struct
 	t_list *registros;
 	t_list *temporales; //NOMBRES DE ARCHIVOS .tmp .tmpc
 	pthread_t hiloIDCompactador; //o un bool SW de un break en el hilo
-	sem_t noBloqueado;
+	pthread_mutex_t noBloqueado;
 }t_Tabla;
 
 t_list* memTable;
