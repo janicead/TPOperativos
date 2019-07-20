@@ -290,6 +290,12 @@ void lql_create(t_LQL_operacion* op){
 					op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time);
 		}
 	}
+	t_tabla* tabla = (t_tabla*) malloc(sizeof(t_tabla));
+	tabla->consistencia = malloc(strlen(op->argumentos.CREATE.tipo_consistencia)+1);
+	strcpy(tabla->consistencia,op->argumentos.CREATE.tipo_consistencia);
+	tabla->nombre_tabla = malloc(strlen(op->argumentos.CREATE.nombre_tabla)+1);
+	strcpy(tabla->nombre_tabla,op->argumentos.CREATE.nombre_tabla);
+	agregar_tabla(tabla);
 	op->success = true;
 	free(resp);
 	return;
