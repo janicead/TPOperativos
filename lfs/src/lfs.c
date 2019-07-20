@@ -7,11 +7,14 @@
 <<<<<<< HEAD
 >>>>>>> parent of 3464c2d... borrando lineas de la nada
 int socketLFS; //SOCKET ESCUCHANDO, SERVIDOR
+<<<<<<< HEAD
 #define printLOGGER 0  //SI=1,  NO=0
 
 =======
 int socketLFS; // SOCKET ESCUCHANDO, SERVIDOR
 >>>>>>> f1b19c468ce11e260e8685f92c16b93e383bd55f
+=======
+>>>>>>> parent of b611c19... LISSANDRA_FS v1.0~
 
 int main(void) {
 
@@ -20,24 +23,15 @@ int main(void) {
 
 	crearListasGenerales();
 
-	pthread_mutex_init(&laMEMTABLE,NULL);
-	pthread_mutex_init(&elFS,NULL);
-	pthread_mutex_init(&LISSANDRA,NULL);
 
 	iniciarFileSystemLISSANDRA();
 
-	cargarTablasPersistidasEnMEMTABLE();
 
 	iniciarEscucha();
 	pthread_t hiloIDAsignador;
 	pthread_create( &hiloIDAsignador , NULL ,  asignadorLISSANDRA , NULL);
 
-	pthread_t hiloIdDUMP;
-	if( pthread_create( &hiloIdDUMP , NULL ,  hiloDUMP , NULL) < 0)
-	{
-		perror("No se pudo crear el hilo DUMP");
-		exitLFS(1);
-	}
+	cargarTablasPersistidasEnMEMTABLE();
 
 	printf("\nCONSOLA...\n");
 	consolaAPI();
@@ -52,8 +46,7 @@ int main(void) {
 void leerConfigLFS()
 {
 	archivoConfig = config_create("../../lfs.conf");
-	//archivoConfig = config_create("/home/utnso/workspace/backUpTP1C2019/tp-2019-1c-BEFGN/lfs.conf");
-	logger = log_create("lfs.log", "lfs", printLOGGER,LOG_LEVEL_INFO);
+	logger = log_create("lfs.log", "lfs", 1,LOG_LEVEL_INFO);
 
 	log_info(logger,"\n\nINICIANDO PROCESO LFS...");
 	log_info(logger, "Leyendo archivo de configuracion...");
@@ -121,10 +114,6 @@ void exitLFS(int return_nr)
 	config_destroy(archivoMetadata);
 	log_destroy(logger);
 
-	pthread_mutex_destroy(&laMEMTABLE);
-	pthread_mutex_destroy(&elFS);
-
-	pthread_mutex_destroy(&LISSANDRA);
 	//close(socketLFS);
 	exit(return_nr);
 }
@@ -192,9 +181,9 @@ void consolaAPI()
 	    		log_info(logger,"\n>INSERT [%s][%s][%s]",operacion[1],operacion[2],operacion[3]);
 	    		//IMPRIMO POR PANTALLA EL RESULTADO DE LA OPERACION
 	    		t_INSERT *unINSERT = definirT_INSERT(operacion[1],atoi(operacion[2]),operacion[3],0);
-	    		//printf("\ntamanioLISTA: %d  (before memtable)\n",list_size(memTable)); ///
+	    		printf("\ntamanioLISTA: %d  (before memtable)\n",list_size(memTable)); ///
 	    		char* respuesta = realizarINSERT(unINSERT);  //TESTEAR
-	    		//printf("tamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
+	    		printf("tamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
 	    		printf("Respuesta: %s\n",respuesta);
 	    		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
 	    		free(respuesta);
@@ -205,9 +194,9 @@ void consolaAPI()
 	    		log_info(logger,"\n>INSERT [%s][%s][%s][%s]",operacion[1],operacion[2],operacion[3],operacion[4]);
 	    		//IMPRIMO POR PANTALLA EL RESULTADO DE LA OPERACION
 	    		t_INSERT *unINSERT = definirT_INSERT(operacion[1],atoi(operacion[2]),operacion[3],atoi(operacion[4]));
-	    		//printf("\ntamanioLISTA: %d  (before memtable)\n",list_size(memTable)); ///
+	    		printf("\ntamanioLISTA: %d  (before memtable)\n",list_size(memTable)); ///
 	    		char* respuesta = realizarINSERT(unINSERT);  //TESTEAR
-	    		//printf("tamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
+	    		printf("tamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
 	    		printf("Respuesta: %s\n",respuesta);
 	    		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
 	    		free(respuesta);
@@ -232,7 +221,7 @@ void consolaAPI()
 	    		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
 	    		free(respuesta);
 	    		freeT_CREATE(unCREATE);
-	    		//mostrarBitsDeBloques(8);///
+	    		mostrarBitsDeBloques(8);///
 
 	    	}
 	    	else
@@ -335,10 +324,8 @@ void consolaAPI()
 	    	free(unPath);
 	    	freeArrayDePunteros(listado);*/
 
-	    	/*t_Tabla *tablaEncontrada = existeEnMemtable("t1");
-	    	realizarCOMPACTAR(tablaEncontrada,2);*/
-
-	    	//remove("/home/utnso/workspace/tp-2019-1c-BEFGN/LISSANDRA_FS/asd");
+	    	//t_Tabla *tablaEncontrada = existeEnMemtable("t1");
+	    	//realizarCOMPACTAR(tablaEncontrada,2);
 
 	    	/*char *nombreActual = string_from_format("%s/Tables/%s/antes.before",configLFS.puntoMontaje,"t1");
 	    	char *nombreNuevo = string_from_format("%sc",nombreActual);
@@ -448,7 +435,7 @@ void realizarMultiplexacion(int socketEscuchando) //EN LISTEN()
 			{
 				package = recibirPaquete(fd); //MODIFICAR LA FUNCION PARA Q DEVUELVA NULL (SE DESCONECTO)
 				//printf("fd: %d\n",fd); ///
-				//printf("\npackage->ID: %d\n",package->ID); ///MODIFICAR EL ORDEN EN LA FUNCION DE HANDSHAKE
+				printf("\npackage->ID: %d\n",package->ID); ///MODIFICAR EL ORDEN EN LA FUNCION DE HANDSHAKE
 				realizarProtocoloDelPackage(package, fd); //POSIBLE, PASAR EL SOCKET DE DONDE VIENE EL PAQUETE PARA DEVOLVER RESULTADO
 			}
 			FD_CLR(fd,&tempReadSet);
@@ -495,9 +482,9 @@ void realizarProtocoloDelPackage(t_PaqueteDeDatos *packageRecibido, int socketEm
 		unINSERT = deserializarT_INSERT(packageRecibido->Datos);
 		log_info(logger,"\nQuery recibido: INSERT [%s] [%d] [%s] [%d]",unINSERT->nombreTabla,unINSERT->KEY,unINSERT->Value,unINSERT->timeStamp);
 
-		//printf("\ntamanioLISTA: %d  (before memtable)\n",list_size(memTable)); ///
-		char* respuesta = realizarINSERT(unINSERT);  //TESTEAR
-		//printf("tamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
+		printf("\ntamanioLISTA: %d  (before memtable)\n",list_size(memTable)); ///
+		char* respuesta = realizarINSERT(unINSERT);  ///TESTEAR
+		printf("tamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
 		//printf("Respuesta: %s\n",respuesta); ///
 		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
 
@@ -518,7 +505,7 @@ void realizarProtocoloDelPackage(t_PaqueteDeDatos *packageRecibido, int socketEm
 		//printf("Respuesta: %s\n",respuesta); ///
 		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
 
-		//mostrarBitsDeBloques(8);///
+		mostrarBitsDeBloques(8);///
 
 		enviarRespuesta(socketEmisor,18,respuesta); //18: RESPUESTA DE UN PROTOCOLO = 17
 
@@ -565,11 +552,6 @@ void realizarProtocoloDelPackage(t_PaqueteDeDatos *packageRecibido, int socketEm
 //###########################################################
 char *realizarSELECT(t_SELECT *unSELECT)
 {
-	//t_Tabla *unaTabla = existeEnMemtable(unSELECT->nombreTabla);
-	//pthread_mutex_lock(&unaTabla->noBloqueado);
-	//pthread_mutex_lock(&elFS);
-	pthread_mutex_lock(&LISSANDRA);
-
 	char *respuesta = existeTablaEnFS(unSELECT->nombreTabla);
 
 	if(strcmp(respuesta,"YA_EXISTE_TABLA") == 0)
@@ -587,7 +569,7 @@ char *realizarSELECT(t_SELECT *unSELECT)
 
 		listaAUX = obtenerArchivoComoLista(unNombreTablaArchivo);
 		free(unNombreTablaArchivo);
-		//printf("\nlist_size(listaAUX): %d\n",list_size(listaAUX)); ///
+printf("\nlist_size(listaAUX): %d\n",list_size(listaAUX)); ///
 		if(list_size(listaAUX) != 0)
 		{
 			bool conLaMismaKEY(void *elemento)
@@ -607,18 +589,13 @@ char *realizarSELECT(t_SELECT *unSELECT)
 
 		if(tablaEncontrada!= NULL)
 		{
-
-			//pthread_mutex_lock(&laMEMTABLE);
 			int topeTEMPs = list_size(tablaEncontrada->temporales);
-			//pthread_mutex_unlock(&laMEMTABLE);
 			int i;
 			t_ArchivoTemp *unArchivoTemp;
 
 			for(i=0; i < topeTEMPs ;i++)
 			{
-				//pthread_mutex_lock(&laMEMTABLE);
 				unArchivoTemp = list_get(tablaEncontrada->temporales,i);
-				//pthread_mutex_unlock(&laMEMTABLE);
 
 
 				unNombreTablaArchivo = string_from_format("%s/%s",unSELECT->nombreTabla,unArchivoTemp->nombre);
@@ -641,11 +618,7 @@ char *realizarSELECT(t_SELECT *unSELECT)
 			{
 				return (((t_Registro*)elemento)->KEY == unSELECT->KEY);
 			}
-
-			//pthread_mutex_lock(&laMEMTABLE);
 			listaRegistrosFiltrados = list_filter(tablaEncontrada->registros,conLaMismaKEY);
-			//pthread_mutex_unlock(&laMEMTABLE);
-
 			//freeListaDeRegistros(listaAUX);
 
 			list_add_all(listaRegistrosDeKEY,listaRegistrosFiltrados);
@@ -653,7 +626,7 @@ char *realizarSELECT(t_SELECT *unSELECT)
 		}
 
 		free(respuesta);
-		//printf("list_size(listaRegistrosDeKEY): %d\n",list_size(listaRegistrosDeKEY)); ///
+		printf("list_size(listaRegistrosDeKEY): %d\n",list_size(listaRegistrosDeKEY)); ///
 		if (list_size(listaRegistrosDeKEY) == 0)
 		{
 			respuesta = string_from_format("NO_EXISTE_KEY");
@@ -676,21 +649,15 @@ char *realizarSELECT(t_SELECT *unSELECT)
 		//freeListaDeRegistros(listaRegistrosDeKEY);
 		//AL PARECER SON REFERENCIAS DE LOS REGISTROS
 
-
 	}
 
-	//pthread_mutex_unlock(&elFS);
-	//pthread_mutex_unlock(&unaTabla->noBloqueado);
-	pthread_mutex_unlock(&LISSANDRA);
 	return respuesta;
 }
 
 //SE VA A TENER Q USAR MUTEX
 char *realizarINSERT(t_INSERT *unINSERT)
 {
-	//t_Tabla *unaTabla = existeEnMemtable(unINSERT->nombreTabla);
-	//pthread_mutex_lock(&unaTabla->noBloqueado);
-	pthread_mutex_lock(&LISSANDRA);
+	//char* respuesta = string_from_format("insert123");
 
 	char *respuesta = existeTablaEnFS(unINSERT->nombreTabla);
 
@@ -711,12 +678,9 @@ char *realizarINSERT(t_INSERT *unINSERT)
 			nuevoRegistro->KEY = unINSERT->KEY;
 			nuevoRegistro->VALUE = string_from_format("%s",unINSERT->Value);
 
-			//printf("\n698 tamanioLISTA: %d  (before REGISTROS)\n",list_size(tablaEncontrada->registros)); ///
-
-			//pthread_mutex_lock(&laMEMTABLE);
+			printf("\n510 tamanioLISTA: %d  (before REGISTROS)\n",list_size(tablaEncontrada->registros)); ///
 			list_add(tablaEncontrada->registros,nuevoRegistro);
-			//pthread_mutex_unlock(&laMEMTABLE);
-			//printf("700 tamanioLISTA: %d  (after REGISTROS)\n",list_size(tablaEncontrada->registros)); ///
+			printf("512 tamanioLISTA: %d  (after REGISTROS)\n",list_size(tablaEncontrada->registros)); ///
 
 			respuesta = string_from_format("SUCCESSFUL_INSERT");
 		}
@@ -736,20 +700,14 @@ char *realizarINSERT(t_INSERT *unINSERT)
 			nuevoRegistro->KEY = unINSERT->KEY;
 			nuevoRegistro->VALUE = string_from_format("%s",unINSERT->Value);
 
-			//printf("\n539 tamanioLISTA: %d  (before REGISTROS)\n",list_size(nuevaTabla->registros)); ///
-
-			//pthread_mutex_lock(&laMEMTABLE);
+			printf("\n539 tamanioLISTA: %d  (before REGISTROS)\n",list_size(nuevaTabla->registros)); ///
 			list_add(nuevaTabla->registros,nuevoRegistro);
-			//pthread_mutex_unlock(&laMEMTABLE);
-			//printf("541 tamanioLISTA: %d  (before REGISTROS)\n",list_size(nuevaTabla->registros)); ///
+			printf("541 tamanioLISTA: %d  (before REGISTROS)\n",list_size(nuevaTabla->registros)); ///
 
 			respuesta = string_from_format("SUCCESSFUL_INSERT");
 		}
-
-
 	}
-	//pthread_mutex_unlock(&unaTabla->noBloqueado);
-	pthread_mutex_unlock(&LISSANDRA);
+
 	return respuesta;
 }
 
@@ -761,30 +719,17 @@ t_Tabla *crearTablaEnMEMTABLE(char *nombreTabla)
 	nuevaTabla->registros = list_create();
 	nuevaTabla->temporales = list_create();
 
-	pthread_mutex_init(&(nuevaTabla->noBloqueado), NULL);
-
-	//pthread_mutex_lock(&laMEMTABLE);
-	//OBTENER LA METADATA PARA SABER TIMEPO DE COMPACTACION <-- ya en hiloCOMPACTADOR()
+	//OBTENER LA METADATA PARA SABER TIMEPO DE COMPACTACION
 	//CREARIA EL HILO COMPACTADOR Y GUARDO EL hiloID en nuevaTabla->hiloIDCompactador
-	if( pthread_create( &nuevaTabla->hiloIDCompactador , NULL ,  (void*)hiloCOMPACTADOR , (void*) nuevaTabla) < 0) //(void*) nuevaTabla NO VA CON &
-	{
-		perror("No se pudo crear el hilo COMPACTADOR");
-		exitLFS(1);
-	}
-	else
-		log_info(logger,"\nSe creo hilo Compactador de [%s]",nuevaTabla->nombreTabla);
 
 	list_add(memTable,nuevaTabla);
-
-	//pthread_mutex_unlock(&laMEMTABLE);
 
 	return nuevaTabla;
 }
 
 void borrarTablaEnMEMTABLE(char *unNombreTabla)
 {
-	//pthread_mutex_lock(&laMEMTABLE);
-
+	//list_remove_by_condition
 	bool existeTabla(void * elemento)
 	{
 		return (strcmp(((t_Tabla*)elemento)->nombreTabla,unNombreTabla) == 0);
@@ -792,20 +737,14 @@ void borrarTablaEnMEMTABLE(char *unNombreTabla)
 
 	t_Tabla *tablaEncontrada = (t_Tabla *)list_remove_by_condition(memTable,existeTabla);
 
-	//pthread_mutex_lock(&tablaEncontrada->noBloqueado);
-
 	if(tablaEncontrada != NULL)
 	{
 		freeT_Tabla(tablaEncontrada);
 	}
 	else
 	{
-		//printf("\nNo se encontro [%s] en MEMTABLE\n",unNombreTabla); ///
+		printf("\nNo se encontro [%s] en MEMTABLE\n",unNombreTabla); ///
 	}
-
-	//pthread_mutex_unlock(&tablaEncontrada->noBloqueado);
-
-	//pthread_mutex_unlock(&laMEMTABLE);
 }
 
 t_Tabla *existeEnMemtable(char *nombreTabla)
@@ -815,36 +754,19 @@ t_Tabla *existeEnMemtable(char *nombreTabla)
 		return (strcmp(((t_Tabla*)elemento)->nombreTabla,nombreTabla) == 0);
 	}
 
-	//pthread_mutex_lock(&laMEMTABLE);
 	t_Tabla *unaTabla = (t_Tabla *)list_find(memTable,existeTabla);
-	//pthread_mutex_unlock(&laMEMTABLE);
 
 	return unaTabla;
 }
 
 char *realizarCREATE(t_CREATE *unCREATE)
 {
-	//t_Tabla *unaTabla = existeEnMemtable(unCREATE->nombreTabla);
-	//pthread_mutex_lock(&unaTabla->noBloqueado);
-	pthread_mutex_lock(&LISSANDRA);
-
-	char *r = crearTablaEnFS(unCREATE);
-	//pthread_mutex_unlock(&unaTabla->noBloqueado);
-
-	pthread_mutex_unlock(&LISSANDRA);
-
-	return r;
+	return crearTablaEnFS(unCREATE);
 }
 
 char *realizarDESCRIBE(t_DESCRIBE *unDESCRIBE)
 {
-	pthread_mutex_lock(&LISSANDRA);
 	char *r = string_new();
-
-	//t_Tabla *unaTabla = existeEnMemtable(unDESCRIBE->nombreTabla);
-	//pthread_mutex_lock(&unaTabla->noBloqueado);
-
-	//pthread_mutex_lock(&elFS);
 
 	if(strcmp(unDESCRIBE->nombreTabla,"ALL_TABLES") == 0)
 	{
@@ -890,25 +812,14 @@ char *realizarDESCRIBE(t_DESCRIBE *unDESCRIBE)
 		}
 	}
 
-	//pthread_mutex_unlock(&elFS);
-	//pthread_mutex_unlock(&unaTabla->noBloqueado);
-	pthread_mutex_unlock(&LISSANDRA);
-
 	return r;
 }
 /* NO BORRA A NIVEL MEMTABLE */
 char *realizarDROP(t_DROP *unDROP)
 {
-	pthread_mutex_lock(&LISSANDRA);
 	char *r;
 
 	//char *pathTabla = string_from_format("%s/Tables/%s",configLFS.puntoMontaje,unNombreTabla);
-
-	//t_Tabla *unaTabla = existeEnMemtable(unDROP->nombreTabla);
-	//pthread_mutex_lock(&unaTabla->noBloqueado);
-
-	//pthread_mutex_lock(&elFS);
-
 	r = existeTablaEnFS(unDROP->nombreTabla);
 
 	if(strcmp(r,"YA_EXISTE_TABLA") == 0)
@@ -922,9 +833,9 @@ char *realizarDROP(t_DROP *unDROP)
 		for(i=0; listaArchivos[i] != NULL;i++)
 		{
 			unPathArchivo = string_from_format("%s/%s",unDROP->nombreTabla,listaArchivos[i]);
-			//mostrarBitsDeBloques(8);///
+			mostrarBitsDeBloques(8);///
 			borrarArchivoEnFS(unPathArchivo);
-			//mostrarBitsDeBloques(8);///
+			mostrarBitsDeBloques(8);///
 			free(unPathArchivo);
 
 		}
@@ -936,17 +847,13 @@ char *realizarDROP(t_DROP *unDROP)
 
 		remove(pathTabla); //LA CARPETA DEBE ESTAR VACIA PARA Q SE BORRE
 
-		//printf("\ntamanioLISTA: %d  (before memtable)\n",list_size(memTable)); ///
+		printf("\ntamanioLISTA: %d  (before memtable)\n",list_size(memTable)); ///
 		borrarTablaEnMEMTABLE(unDROP->nombreTabla);
-		//printf("\ntamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
+		printf("\ntamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
 
 		r = string_from_format("SUCCESSFUL_DROP");
 
 	}
-
-	//pthread_mutex_unlock(&elFS);
-	//pthread_mutex_unlock(&unaTabla->noBloqueado);
-	pthread_mutex_unlock(&LISSANDRA);
 
 	return r;
 }
@@ -956,11 +863,11 @@ void realizarHandshakeAMemoria(t_log *logger,int socketCliente, t_PaqueteDeDatos
 
 	packageRecibido->Datos[packageRecibido->longDatos] = '\0'; //PAQUETE RECIBIDO
 
-	//log_info(logger,Recibiendo... ID: %d\n",packageRecibido->ID); ///
+	printf("Recibiendo... ID: %d\n",packageRecibido->ID); ///
 
 	if(packageRecibido->ID != 11) //NO ENTRA MAS POR ACA, se verifica anteriormente antes de entrar a esta funcion
 	{
-		log_info(logger,"el ID de protocolo no es el esperado, cerrando conexion");
+		printf("el ID de protocolo no es el esperado, cerrando conexion");
 		close(socketCliente);
 		//exitLFS(1);
 	}
@@ -968,7 +875,7 @@ void realizarHandshakeAMemoria(t_log *logger,int socketCliente, t_PaqueteDeDatos
 	{
 		int protocoloID = 12; // 12: RESPUESTA AL HANDSHAKE
 
-		log_info(logger,"Enviando tamanio de pagina: %s...\n\n",msjEnviado);
+		printf("Enviando tamanio de pagina: %s...\n\n",msjEnviado);
 		empaquetarEnviarMensaje(socketCliente,protocoloID,strlen(msjEnviado),msjEnviado);
 		//HAY Q VERIFICAR SI PASA: CLIENTE DESCONECTADO POR ALGUN MOTIVO AL ENVIAR EL SEND
 		log_info(logger,"Handshake socket %d: [%s]... DONE!", socketCliente, packageRecibido->Datos);
@@ -1024,7 +931,7 @@ void enviarRespuesta(int socketReceptor, int protocoloID, char *respuesta)
 
 	//printf("-----------------------------------------------\n"); ///
 }*/
-/**/
+
 void *asignadorLISSANDRA(void *arg)
 {
 	int socketNuevaConexion;
@@ -1035,14 +942,13 @@ void *asignadorLISSANDRA(void *arg)
 
 		if( pthread_create( &unaMemoria->hiloID , NULL ,  receptorDePackages , (void*) &socketNuevaConexion) < 0)
 		{
-			perror("No se pudo crear el hilo receptorDePackages");
+			perror("No se pudo crear el hilo");
 			exitLFS(1);
 		}
 
 		unaMemoria->socket = socketNuevaConexion;
 		list_add(listaMemorias,unaMemoria);
-		//printf("Se asigno una memoria\n");
-		log_info(logger,"Se asigno una memoria");
+		printf("Se asigno una memoria\n");
 	}
 
 	if (socketNuevaConexion < 0)
@@ -1067,13 +973,13 @@ void *receptorDePackages(void *unSocketCliente)
 		//printf("fd: %d\n",fd); ///
 		if(package->ID == 0 )
 		{
-			log_info(logger,"Se perdio conexion con la memoria en socket %d\n",socketCliente);
+			printf("Se perdio conexion con la memoria en socket %d\n",socketCliente);
 			close(socketCliente);
 			break;
 		}
 		else if(package->ID >= 1 && package->ID <=25)
 		{
-			//printf("\npackage->ID: %d\n",package->ID);
+			printf("\npackage->ID: %d\n",package->ID);
 			realizarProtocoloDelPackage(package, socketCliente); //POSIBLE, PASAR EL SOCKET DE DONDE VIENE EL PAQUETE PARA DEVOLVER RESULTADO
 			//sleep(2);
 		}
@@ -1110,15 +1016,13 @@ void freeT_ArchivoTemp(t_ArchivoTemp *unArchivoTemp)
 
 void freeT_Tabla(t_Tabla *unaTabla)
 {
-	//MATAR EL RESPECTIVO HILO COMPACTADOR  unaTabla->hiloIDCompactador
-	//pthread_kill(unaTabla->hiloIDCompactador,SIGUSR1); //????
-	pthread_mutex_destroy(&unaTabla->noBloqueado);
-	pthread_cancel(unaTabla->hiloIDCompactador);
-
-
 	free(unaTabla->nombreTabla);
 	freeListaDeRegistros(unaTabla->registros);
 	freeListaDeTemporales(unaTabla->temporales);
+
+
+	//MATAR EL RESPECTIVO HILO COMPACTADOR  unaTabla->hiloIDCompactador
+	//pthread_kill(unaTabla->hiloIDCompactador); //???
 
 	free(unaTabla);
 }

@@ -40,7 +40,7 @@ t_list *obtenerArchivoComoLista(char *unNombreTablaArchivo);
 char *dumpearUnaListaDeRegistros(t_list *unaLista);
 void freeListaDeRegistros(t_list *unaListaRegistros);
 void freeListaDeTemporales(t_list *unaListaTemporales);
-void *hiloDUMP(void *arg);
+void hiloDUMP(void);
 void realizarDUMP(void);
 void persistirRegistrarDUMP(t_Tabla *unaTabla,char *laTablaDUMPEADA);
 char *getNombreArchivoTEMP(t_Tabla *unaTabla);
@@ -50,7 +50,7 @@ void agregarArchivoTempALista(t_list *unaLista,char *nombreArchivo, int unTipo);
 int numeroDeParticion(int cantParticiones, int unaKey);
 
 //#############################################
-void *hiloCOMPACTADOR(void *algunaTabla);
+void hiloCOMPACTADOR(t_Tabla *unaTabla);
 void realizarCOMPACTAR(t_Tabla *unaTabla, int cantParticiones);
 void analizadorDelRegistro(t_Registro *unRegistroTMPC,t_list *particionesDeTabla,int cantParticiones);
 void persistirParticionBIN(t_Tabla *unaTabla,char *laBINDUMPEADA,int indexBIN);
