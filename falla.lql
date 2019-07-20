@@ -1,7 +1,0 @@
-METRICS
-SELECT tablaMala 1
-SELECT personajes 2
-INSERT personajes 5 "Jhin"
-CREATE partida SHC 4 5000
-DESCRIBE personajes
-METRICS
