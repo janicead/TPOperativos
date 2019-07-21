@@ -30,13 +30,24 @@ int tamanioLista(t_list * lista){
 	return list_size(lista);
 }
 
-char* recibirRespuestaSELECTMemoriaLfs(){
-	return "Hola Soy Lissandra";
-}
-
 void mostrarDatosMarcos(){
 	for(int i = 0; i<cantMaxMarcos; i ++){
 		printf("Marco %d : %d\n" ,i, marcosOcupados[i]);
+	}
+}
+
+void reacomodarNumerosDePaginas(){
+	int tamanioPag = 0;
+	int t = tamanioLista(tablaDeSegmentos);
+	for(int i = 0 ; i <t ; i ++){
+		void * elemento = list_get(tablaDeSegmentos, i);
+		t_segmento * segmento = (t_segmento*) elemento;
+		tamanioPag = tamanioLista(segmento->tablaPaginas);
+		for(int j = 0; j < tamanioPag; j++){
+			void* elemento2 = list_get(segmento->tablaPaginas, j);
+			t_pagina * pagina = (t_pagina*)elemento2;
+			pagina->numeroPag=j;
+		}
 	}
 }
 
@@ -263,12 +274,14 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 				DROPMemoria(lru->nombreTabla);
 				pthread_mutex_lock(&semTablaSegmentos);
 			}
-			log_info(loggerMemoria,"La PAGINA que voy a reemplazar es la nro %d del SEGMENTO '%s' \n", lru->numeroPag, lru->nombreTabla);
+			t_registro* registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
+			log_info(loggerMemoria,"La PAGINA que voy a reemplazar es la nro %d del SEGMENTO '%s' cuyo value es '%s' ", lru->numeroPag, lru->nombreTabla, registro->value);
 			settearMarcoEnMP(pagina->numeroMarco, 0);
 			guardarEnMPLugarEspecifico(key, value, pagina->numeroMarco, timestamp);
 			free(lru);
 			int nroMarco = pagina->numeroMarco;
 			free(pagina);
+			free(registro);
 			return nroMarco;
 		}
 		else {
@@ -453,6 +466,14 @@ void retardoMemoriaAplicado(){
 	pthread_mutex_unlock(&semMemoriaPrincipal);
 }
 
+void retardoLFSAplicado(){
+	pthread_mutex_lock(&semConfig);
+	int retardoLFS= configMemoria.retardoAccesoFileSystem;
+	pthread_mutex_unlock(&semConfig);
+	sleep(retardoLFS);
+
+}
+
 
 
 
@@ -483,7 +504,9 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 			pthread_mutex_lock(&semLfs);
 			int keyEnINT = pasarUINT16AInt(key);
 			char* value = opSELECT(socketLFS,nombreTabla, keyEnINT);
-			if(string_equals_ignore_case(value, "NO_EXISTE_TABLA")||string_equals_ignore_case(value, "NO_EXISTE_VALUE")){
+			if(string_equals_ignore_case(value, "NO_EXISTE_TABLA")||string_equals_ignore_case(value, "NO_EXISTE_KEY")){
+				retardoLFSAplicado();
+				pthread_mutex_unlock(&semLfs);
 				log_info(loggerMemoria,value);
 				return value;
 			} else{
@@ -493,20 +516,21 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 			int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
 
 			if(nroMarco == -1){
+				reacomodarNumerosDePaginas();
+				retardoLFSAplicado();
+				pthread_mutex_unlock(&semLfs);
 				pthread_mutex_unlock(&semTablaSegmentos);
 				log_info(loggerMemoria,"FULL");
 				return "FULL";
 			}
 			guardarEnTablaDePaginas(segmento, nroMarco, key, 0);
+			reacomodarNumerosDePaginas();
 			pthread_mutex_unlock(&semTablaSegmentos);
 
-			pthread_mutex_lock(&semConfig);
-			int retardoLFS= configMemoria.retardoAccesoFileSystem;
-			pthread_mutex_unlock(&semConfig);
-			sleep(retardoLFS);
+			retardoLFSAplicado();
 
 			pthread_mutex_unlock(&semLfs);
-			retardoMemoriaAplicado();
+
 			mostrarElementosTablaSegmentos();
 			mostrarDatosMarcos();
 			log_info(loggerMemoria,value);
@@ -520,6 +544,7 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		int keyEnINT = pasarUINT16AInt(key);
 		char* value = opSELECT(socketLFS,nombreTabla, keyEnINT);
 		if(string_equals_ignore_case(value, "NO_EXISTE_TABLA")||string_equals_ignore_case(value, "NO_EXISTE_KEY")){
+			retardoLFSAplicado();
 			pthread_mutex_unlock(&semLfs);
 			log_info(loggerMemoria,value);
 			return value;
@@ -531,18 +556,18 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 			pthread_mutex_lock(&semTablaSegmentos);
 			int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
 			if(nroMarco == -1){
+				reacomodarNumerosDePaginas();
+				retardoLFSAplicado();
+				pthread_mutex_unlock(&semLfs);
 				pthread_mutex_unlock(&semTablaSegmentos);
 				log_info(loggerMemoria,"FULL");
 				return "FULL";
 			}
 			guardarEnTablaDePaginas(segmento, nroMarco, key, 0);
+			reacomodarNumerosDePaginas();
 			pthread_mutex_unlock(&semTablaSegmentos);
 
-			pthread_mutex_lock(&semConfig);
-			int retardoLFS= configMemoria.retardoAccesoFileSystem;
-			pthread_mutex_unlock(&semConfig);
-			sleep(retardoLFS);
-
+			retardoLFSAplicado();
 			pthread_mutex_unlock(&semLfs);
 			log_info(loggerMemoria,"Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
 			retardoMemoriaAplicado();
@@ -558,6 +583,7 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
 	pthread_mutex_unlock(&semTablaSegmentos);
+	retardoMemoriaAplicado();
 	if(ubicacionSegmento!=(cantSegmentos+1)){ //esta en tabla de SEGMENTOS
 		log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
 		pthread_mutex_lock(&semTablaSegmentos);
@@ -587,6 +613,7 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 			}
 			pthread_mutex_lock(&semTablaSegmentos);
 			guardarEnTablaDePaginas(segmento, indice, key, 1);
+			reacomodarNumerosDePaginas();
 			pthread_mutex_unlock(&semTablaSegmentos);
 			log_info(loggerMemoria,"Se guardo en la tabla de PAGINAS y en la MEMORIA");
 			mostrarElementosTablaSegmentos();
@@ -608,6 +635,7 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 		segmento->tablaPaginas= list_create();
 		segmento->id = 0;
 		guardarEnTablaDePaginas(segmento, indice, key, 1);
+		reacomodarNumerosDePaginas();
 		pthread_mutex_unlock(&semTablaSegmentos);
 		log_info(loggerMemoria, "Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
 		log_info(loggerMemoria,"Se guardo correctamente");
@@ -615,6 +643,8 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 	}
 
 }
+
+//-----------------------------------------------------DROP---------------------------------------------//
 
 char* DROPMemoria(char* nombreTabla){
 	pthread_mutex_lock(&semTablaSegmentos);
@@ -628,6 +658,7 @@ char* DROPMemoria(char* nombreTabla){
 			t_segmento *segmento =(t_segmento*)elemento;
 			quitarEspaciosGuardadosEnMemoria(segmento->tablaPaginas);
 			borrarTablaDePaginas(segmento->tablaPaginas);
+			reacomodarNumerosDePaginas();
 			pthread_mutex_unlock(&semTablaSegmentos);
 			list_remove(tablaDeSegmentos, ubicacionSegmento);
 			free(segmento->nombreTabla);
@@ -638,18 +669,14 @@ char* DROPMemoria(char* nombreTabla){
 		}
 		pthread_mutex_lock(&semLfs);
 		char* value = opDROP(socketLFS,nombreTabla);
-
-		pthread_mutex_lock(&semConfig);
-		int retardoLFS= configMemoria.retardoAccesoFileSystem;
-		pthread_mutex_unlock(&semConfig);
-		sleep(retardoLFS);
-
+		retardoMemoriaAplicado();
+		retardoLFSAplicado();
 		pthread_mutex_unlock(&semLfs);
 		return  value;
 
-
-
 }
+
+//------------------------------------------------JOURNAL------------------------------------------------//
 void JOURNALMemoria(){
 	pthread_mutex_lock(&semLfs);
 	pthread_mutex_lock(&semTablaSegmentos);
@@ -657,12 +684,11 @@ void JOURNALMemoria(){
 	if(tamanioSegmento!=0){
 	iniciarJournal();
 	pthread_mutex_unlock(&semTablaSegmentos);
-	pthread_mutex_lock(&semConfig);
-	int retardoLFS= configMemoria.retardoAccesoFileSystem;
-	pthread_mutex_unlock(&semConfig);
-	sleep(retardoLFS);
+	retardoMemoriaAplicado();
+	retardoLFSAplicado();
 	pthread_mutex_unlock(&semLfs);
 	}else {
+		retardoMemoriaAplicado();
 		log_info(loggerMemoria, "No hay datos para poder hacer JOURNAL");
 		pthread_mutex_unlock(&semLfs);
 		pthread_mutex_unlock(&semTablaSegmentos);
