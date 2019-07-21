@@ -105,6 +105,7 @@ void settearMarcoEnMP(int nroMarco, int nroDeseado);
 void actualizarMemoriaPrincipal(int nroMarco, unsigned long int timeStamp, char* value);
 void guardarEnMPLugarEspecifico(uint16_t key, char* value, int nroMarco, unsigned long int timestamp);
 int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long int timestamp);
+t_pagina* eliminarElementoEspecifico(t_list* lista, int nroPag);
 void mostrarElementosMemoriaPrincipal();
 void quitarEspaciosGuardadosEnMemoria(t_list* lista);
 void borrarTodaMemoria();

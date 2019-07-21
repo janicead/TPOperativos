@@ -33,7 +33,7 @@ t_LQL_operacion* parse(char* linea){
 	else if(string_equals_ignore_case(keyword, "INSERT")){
 
 		char*lineadup = string_new();
-		char* value= armarValue(split);
+		char* value= armarValue2(split);
 		char* stringFinal= string_new();
 		string_append(&stringFinal, split[0]);
 		string_append(&stringFinal," ");

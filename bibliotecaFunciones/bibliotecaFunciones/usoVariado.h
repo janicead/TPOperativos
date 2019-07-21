@@ -45,6 +45,7 @@ char* int_to_string(int numero);
 unsigned long int obtenerTimeStamp();
 int buscarFinalValue(char** value);
 char* armarValue(char** value);
+char* armarValue2(char** value);
 char * quitarComillas(char* ip);
 int pasarUINT16AInt(uint16_t nro);
 
