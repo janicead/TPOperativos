@@ -133,7 +133,8 @@ void guardarEnTablaDePaginas(t_segmento * segmento, int nroMarco,uint16_t key, i
 	pagina->flagModificado= flagModificado;
 	pagina->key = key;
 	pagina->numeroMarco= nroMarco;
-	pagina->numeroPag= tamanioTablaPaginas;
+	pagina->numeroPag= segmento->id;
+	segmento->id = pagina->numeroPag +1;
 	list_add(segmento->tablaPaginas,(void*)pagina);
 }
 
@@ -274,12 +275,8 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 		else {
 			pthread_mutex_unlock(&semCantMaxMarcos);
 			log_info(loggerMemoria,"Tengo que realizar JOURNAL\n");
-			iniciarJournal();// se inicia journal, osea que queda vacia la memoria entonces tiene si o si espacio
-			//luego de realizar journal, se terminaria guardando el dato :D
-			nroMarco = buscarEspacioLibreEnMP();
-			guardarEnMPLugarEspecifico(key, value, nroMarco, timestamp);
 			free(lru);
-			return 0;
+			return -1;
 		}
 	}
 }
@@ -332,11 +329,11 @@ void borrarTodaMemoria(){
 //---------------------------------------LRU-------------------------------------------------------//
 
 t_LRU * LRU (){
-	int cantVecesSolicitadaMinimo = 0;
+	int cantVecesSolicitadaMinimo = INT_MAX;
 	//int paginaMenosCantVecesSolicitada = cantMaxMarcos;
 	int esElPrimerElemento = 0;
 	t_LRU * lru = malloc (sizeof(t_LRU));
-	lru->numeroPag= cantMaxMarcos;
+	lru->numeroPag= -1;
 	int tamanioTablaPaginas = 0;
 	int tamanioTablaSegmentos = tamanioLista(tablaDeSegmentos);
 	for(int i = 0; i< tamanioTablaSegmentos; i++){
@@ -350,17 +347,7 @@ t_LRU * LRU (){
 			void * elemento = list_get(segmento->tablaPaginas, j);
 			t_pagina *pagina =(t_pagina*)elemento;
 
-			if(esElPrimerElemento == 0 && pagina->flagModificado == 0){
-
-				cantVecesSolicitadaMinimo = pagina->contadorVecesSolicitado;
-				//paginaMenosCantVecesSolicitada = pagina->numeroPag;
-				esElPrimerElemento = 1;
-				lru->numeroPag= pagina->numeroPag;
-				lru->tablaPaginas= segmento->tablaPaginas;
-				lru->nombreTabla = segmento->nombreTabla;
-
-			} else if(pagina->flagModificado==0 && (pagina->contadorVecesSolicitado)<cantVecesSolicitadaMinimo){
-
+			if(pagina->flagModificado==0 && (pagina->contadorVecesSolicitado)<cantVecesSolicitadaMinimo){
 				cantVecesSolicitadaMinimo = pagina->contadorVecesSolicitado;
 				//paginaMenosCantVecesSolicitada = pagina->numeroPag;
 				lru->numeroPag= pagina->numeroPag;
@@ -490,7 +477,12 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 			unsigned long int t = obtenerTimeStamp();
 			pthread_mutex_lock(&semTablaSegmentos);
 			int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
-			guardarEnTablaDePaginas(segmento, nroMarco, key, flagModificado);
+
+			if(nroMarco == -1){
+				pthread_mutex_unlock(&semTablaSegmentos);
+				return "FULL";
+			}
+			guardarEnTablaDePaginas(segmento, nroMarco, key, 0);
 			pthread_mutex_unlock(&semTablaSegmentos);
 
 			pthread_mutex_lock(&semConfig);
@@ -500,6 +492,8 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 
 			pthread_mutex_unlock(&semLfs);
 			retardoMemoriaAplicado();
+			mostrarElementosTablaSegmentos();
+			mostrarDatosMarcos();
 			return value;
 			}
 		}
@@ -518,7 +512,11 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 			unsigned long int t = obtenerTimeStamp();
 			pthread_mutex_lock(&semTablaSegmentos);
 			int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
-			guardarEnTablaDePaginas(segmento, nroMarco, key, flagModificado);
+			if(nroMarco == -1){
+				pthread_mutex_unlock(&semTablaSegmentos);
+				return "FULL";
+			}
+			guardarEnTablaDePaginas(segmento, nroMarco, key, 0);
 			pthread_mutex_unlock(&semTablaSegmentos);
 
 			pthread_mutex_lock(&semConfig);
@@ -557,6 +555,10 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 			log_info(loggerMemoria,"No esta en la tabla de PAGINAS");
 			pthread_mutex_lock(&semTablaSegmentos);
 			int indice = guardarEnMemoria(nombreTabla, key, value, timeStamp);
+			if(indice == -1){
+				pthread_mutex_unlock(&semTablaSegmentos);
+				return "FULL";
+			}
 			int t = tamanioLista(tablaDeSegmentos);
 			pthread_mutex_unlock(&semTablaSegmentos);
 			if(t==0){
@@ -566,6 +568,8 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 			guardarEnTablaDePaginas(segmento, indice, key, 1);
 			pthread_mutex_unlock(&semTablaSegmentos);
 			log_info(loggerMemoria,"Se guardo en la tabla de PAGINAS y en la MEMORIA");
+			mostrarElementosTablaSegmentos();
+			mostrarDatosMarcos();
 			return "INFO: Se guardo correctamente";
 		}
 	}
@@ -573,6 +577,10 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 		log_info(loggerMemoria,"No se encontro en la tabla de SEGMENTOS");
 		pthread_mutex_lock(&semTablaSegmentos);
 		int indice = guardarEnMemoria(nombreTabla, key, value, timeStamp);
+		if(indice == -1){
+			pthread_mutex_unlock(&semTablaSegmentos);
+			return "FULL";
+		}
 		t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
 		segmento->tablaPaginas= list_create();
 

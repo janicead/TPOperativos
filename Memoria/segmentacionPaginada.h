@@ -17,6 +17,7 @@
 #include <semaphore.h>
 #include <bibliotecaFunciones/usoVariado.h>
 #include "configMemoria.h"
+#include <limits.h>
 
 
 
@@ -34,6 +35,7 @@ typedef struct {
 typedef struct{
 	t_list * tablaPaginas;
 	char* nombreTabla;
+	int id;
 }t_segmento;
 
 typedef struct{

@@ -18,7 +18,7 @@ t_LQL_operacion* parse(char* linea){
 	char* auxLine = malloc(strlen(linea)+1);
 	strcpy(auxLine, linea);
 	string_trim(&auxLine);
-	char** split = string_n_split(auxLine, 5, " ");
+	char** split = string_split(auxLine," ");
 
 	char* keyword = split[0];
 
