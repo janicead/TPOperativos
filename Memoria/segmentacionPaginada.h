@@ -79,9 +79,9 @@ int tamanioMaxMemoria;
 void definirTamanioMemoriaPrincipal(int tamanioValue);
 void iniciarSemaforos();
 int tamanioLista(t_list * lista);
+char* recibirRespuestaSELECTMemoriaLfs();
 void mostrarDatosMarcos();
 void retardoMemoriaAplicado();
-void reacomodarNumerosDePaginas();
 //-------------------------------------BORRADO------------------------------------------------------------------//
 void destructor2(t_pagina * pagina);
 void destructor(t_segmento* segmento);
