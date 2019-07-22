@@ -1,55 +1,8 @@
 #include "Kernel.h"
 
-void pruebaParser(){
-	crear_lql_run("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba.lql");
-	crear_lql_run("/home/utnso/workspace/tp-2019-1c-BEFGN/falla.lql");
-	crear_lql_run("/home/utnso/workspace/tp-2019-1c-BEFGN/prueba2.lql");
-	return;
-}
-
-void iniciarValoresParaTest(){
-	t_tabla* tabla = (t_tabla*) malloc(sizeof(t_tabla));
-	tabla->consistencia = malloc(strlen("SHC")+1);
-	strcpy(tabla->consistencia,"SHC");
-	tabla->nombre_tabla = malloc(strlen("hash")+1);
-	strcpy(tabla->nombre_tabla,"hash");
-	agregar_tabla(tabla);
-	t_tabla* tabla2 = (t_tabla*) malloc(sizeof(t_tabla));
-	tabla2->consistencia = malloc(strlen("SC")+1);
-	strcpy(tabla2->consistencia,"SC");
-	tabla2->nombre_tabla = malloc(strlen("personajes")+1);
-	strcpy(tabla2->nombre_tabla,"personajes");
-	agregar_tabla(tabla2);
-	t_tabla* tabla3 = (t_tabla*) malloc(sizeof(t_tabla));
-	tabla3->consistencia = malloc(strlen("EC")+1);
-	strcpy(tabla3->consistencia,"EC");
-	tabla3->nombre_tabla = malloc(strlen("random")+1);
-	strcpy(tabla3->nombre_tabla,"random");
-	agregar_tabla(tabla3);
-	/*crear_lql_add("sc",1);
-	agregar_memoria(5,"1",0);
-	agregar_memoria(6,"2",1);
-	agregar_memoria(7,"3",2);
-	agregar_memoria(8,"4",3);
-	agregar_memoria(8,"4",4);
-	crear_lql_add("sc",0);
-	crear_lql_add("shc",1);
-	crear_lql_add("shc",2);
-	crear_lql_add("shc",3);
-	crear_lql_add("ec",1);
-	crear_lql_add("ec",2);
-	crear_lql_add("ec",3);
-	while(queue_is_empty(queue_ready)){
-		ejecutar();
-	}*/
-}
-
 int main(void) {
 	iniciar();
 	crear_hilos_iniciales();
-	iniciarValoresParaTest();
-	//pruebaParser();
-	pthread_join(consola,NULL);
 	exit_gracefully(EXIT_SUCCESS);
 }
 
@@ -81,5 +34,6 @@ void crear_hilos_iniciales(){
 	pthread_detach(gossipKernel);
 	pthread_create(&metadata_refresh,NULL,refresh_metadata_timer,NULL);
 	pthread_detach(metadata_refresh);
+	pthread_join(consola,NULL);
 	return;
 }

@@ -86,11 +86,12 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		int id_respuesta_drop = 22;//22: RESPUESTA DE UN PROTOCOLO = 21
 
 		unDROP = deserializarT_DROP(packageRecibido->Datos);
-		log_info(loggerMemoria, "Query recibido: DESCRIBE [%s]",unDROP->nombreTabla);
+		log_info(loggerMemoria, "Query recibido: DROP [%s]",unDROP->nombreTabla);
 
 		pthread_mutex_lock(&semMemoriaPrincipal);
 
 		char* respuesta = DROPMemoria(unDROP->nombreTabla);
+		puts(respuesta);
 		enviarRespuesta(socketEmisor,id_respuesta_drop,respuesta);
 
 		freeT_DROP(unDROP);
