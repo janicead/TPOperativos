@@ -15,7 +15,7 @@ void* crearConsolaMemoria(){
 		uint16_t * key = malloc(sizeof(uint16_t));
 
 		if(string_is_empty(linea)){
-			log_error(loggerMemoria, "No se ingresó ningún comando.");
+			log_error(loggerMemoria, "Soy la MEMORIA '%d'.", configMemoria.numeroDeMemoria);
 		}
 		else{
 			if(string_equals_ignore_case(operacion[0],"INSERT")){
@@ -208,4 +208,3 @@ char* quitarEspacioFalsoMemoria(char* value){
 	return v;
 	}
 }
-
