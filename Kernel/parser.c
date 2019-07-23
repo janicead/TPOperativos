@@ -32,7 +32,6 @@ t_LQL_operacion* parse(char* linea){
 	}
 	else if(string_equals_ignore_case(keyword, "INSERT")){
 
-		char*lineadup = string_new();
 		char* value= armarValue2(split);
 		char* stringFinal= string_new();
 		string_append(&stringFinal, split[0]);
@@ -45,17 +44,9 @@ t_LQL_operacion* parse(char* linea){
 		hacerFreeArray((void**)split);
 		free(split);
 		split = string_split(stringFinal, " ");
-		int tamanio2 = tamanioArray((void**)split);
-		for(int i = 0; i <tamanio2; i++){
-			string_append(&lineadup, split[i]);
-			if(i!=tamanio2-1){
-				string_append(&lineadup, " ");
-			}
-		}
-		strcpy(linea,lineadup);
+
 		free(value);
 		free(stringFinal);
-		free(lineadup);
 		ret->_raw = split;
 		ret->keyword = INSERT;
 		ret->argumentos.INSERT.nombre_tabla =  split[1];

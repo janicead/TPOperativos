@@ -22,7 +22,9 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		char* Respuesta = SELECTMemoria(unSELECT->nombreTabla,key,0);
 		enviarRespuesta(socketEmisor,id_respuesta_select,Respuesta);
 		freeT_SELECT(unSELECT);
+		if(!string_equals_ignore_case(Respuesta, "MEMORIA DESCONECTADA")){
 		free(Respuesta);
+		}
 	}
 
 	if(packageRecibido->ID == 15){ //15: INSERT
@@ -411,7 +413,6 @@ void exitGracefully(int return_nr, t_log* logger, int servidorEscucha)
 void conectarmeAlLFS(){
 	char* ipServidor = quitarComillas(configMemoria.ipDelFileSystem);
 	struct sockaddr_in dirServidorMemoria;
-	int tamanioValue;
 	dirServidorMemoria.sin_family = AF_INET;
 	dirServidorMemoria.sin_addr.s_addr = inet_addr(ipServidor);
 	dirServidorMemoria.sin_port = htons(configMemoria.puertoDelFileSystem); //puerto al que va a escuchar
@@ -436,7 +437,6 @@ void conectarmeAlLFSHILO(){
 	while(1){
 		char* ipServidor = quitarComillas(configMemoria.ipDelFileSystem);
 		struct sockaddr_in dirServidorMemoria;
-		int tamanioValue;
 		dirServidorMemoria.sin_family = AF_INET;
 		dirServidorMemoria.sin_addr.s_addr = inet_addr(ipServidor);
 		dirServidorMemoria.sin_port = htons(configMemoria.puertoDelFileSystem); //puerto al que va a escuchar

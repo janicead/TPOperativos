@@ -1,5 +1,5 @@
 #include "consolaMemoria.h"
-#include <inttypes.h>
+
 
 void* crearConsolaMemoria(){
 	char *linea;
@@ -16,6 +16,9 @@ void* crearConsolaMemoria(){
 
 		if(string_is_empty(linea)){
 			log_error(loggerMemoria, "Soy la MEMORIA '%d'.", configMemoria.numeroDeMemoria);
+		}
+		else if(string_equals_ignore_case(linea, "BORRAR TODO")){
+			borrarTodo();
 		}
 		else{
 			if(string_equals_ignore_case(operacion[0],"INSERT")){
@@ -62,14 +65,19 @@ void* crearConsolaMemoria(){
 							char* valor  = SELECTMemoria(operacion[1], *key, 0);
 							if(string_equals_ignore_case(valor, "NO_EXISTE_TABLA")){
 								log_error(loggerMemoria, "La tabla '%s' no existe.", operacion[1]);
+								free(valor);
 							}
 							else if(string_equals_ignore_case(valor, "NO_EXISTE_KEY")){
 								log_error(loggerMemoria, "La key '%s' de la tabla '%s', no existe.", operacion[2], operacion[1]);
+								free(valor);
+							}
+							else if(string_equals_ignore_case(valor,"LFS_CAIDO")){
+								log_error(loggerMemoria, "Se desconecto el LFS.");
 							}
 							else{
 								log_info(loggerMemoria, "La respuesta de la request SELECT %s %s -> %s", operacion[1], operacion[2], valor);
+								free(valor);
 							}
-							free(valor);
 						}
 						mostrarElementosMemoriaPrincipal();
 						mostrarElementosTablaSegmentos();
@@ -94,7 +102,7 @@ void* crearConsolaMemoria(){
 						mostrarDatosMarcos();
 						break;
 					case CMD_CREATE:
-						printf("CREATE\n");
+						printf("\n");
 						int nroParticiones = atoi(operacion[3]);
 						int compactionTime = atoi(operacion[4]);
 						char* valor = CREATEMemoria(operacion[1], operacion[2], nroParticiones, compactionTime);
@@ -102,18 +110,27 @@ void* crearConsolaMemoria(){
 							log_error(loggerMemoria, "La tabla '%s' ya existe.", operacion[1]);
 						}else if(string_equals_ignore_case(valor, "NO_HAY_ESPACIO")){
 							log_error(loggerMemoria, "En estos momentos no hay espacio suficiente.");
-						}else{
-							log_info(loggerMemoria, "La tabla '%s' fue creada correctamente.", operacion[1]);
 						}
-						free(valor);
+						else if(string_equals_ignore_case(valor,"LFS_CAIDO")){
+							log_error(loggerMemoria, "Se desconecto el LFS.");
+						}
+						else {
+							log_info(loggerMemoria, "La tabla '%s' fue creada correctamente.", operacion[1]);
+							free(valor);
+						}
+
 						break;
 					case CMD_DESCRIBE:
-						printf("COMANDO DESCRIBE\n");
 						if(operacion[1]!=NULL){
 							char* valor = DESCRIBEMemoria(operacion[1]);
 							if(string_equals_ignore_case(valor, "NO_EXISTE_TABLA")){
 								log_error(loggerMemoria, "La tabla '%s' ya existe.", operacion[1]);
-							}else{
+								free(valor);
+							}
+							else if(string_equals_ignore_case(valor,"LFS_CAIDO")){
+								log_error(loggerMemoria, "Se desconecto el LFS.");
+							}
+							else{
 							char * buffer = respuestaDESCRIBEaPrintear(valor);
 							printf("EL BUFFER %s \n", buffer);
 							free(valor);
@@ -124,7 +141,12 @@ void* crearConsolaMemoria(){
 							char* valor = DESCRIBETodasLasTablasMemoria();
 							if(string_equals_ignore_case(valor, "NO_EXISTEN_TABLAS")){
 								log_error(loggerMemoria, "No existen tablas en este momento.");
-							}else{
+								free(valor);
+							}
+							else if(string_equals_ignore_case(valor,"LFS_CAIDO")){
+								log_error(loggerMemoria, "Se desconecto el LFS.");
+							}
+							else{
 							char * buffer = respuestaDESCRIBEaPrintear(valor);
 							printf("EL BUFFER %s \n", buffer);
 							free(valor);
@@ -142,10 +164,15 @@ void* crearConsolaMemoria(){
 						pthread_mutex_unlock(&semMemoriaPrincipal);
 						if(string_equals_ignore_case(value, "NO_EXISTE_TABLA")){
 							log_error(loggerMemoria,"La tabla '%s'no existe.", operacion[1] );
-						} else{
-							log_info(loggerMemoria, "Se ha borrado la tabla '%s'.", operacion[1]);
+							free(value);
 						}
-						free(value);
+						else if(string_equals_ignore_case(value,"LFS_CAIDO")){
+							log_error(loggerMemoria, "Se desconecto el LFS.");
+						}
+						else{
+							log_info(loggerMemoria, "Se ha borrado la tabla '%s'.", operacion[1]);
+							free(value);
+						}
 						break;
 					case CMD_JOURNAL:
 						pthread_mutex_lock(&semMemoriaPrincipal);

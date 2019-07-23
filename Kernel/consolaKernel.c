@@ -77,7 +77,7 @@ void* setConsole(){
 			}
 
 		}
-		//INSTRUCCIÓN DESCRIE PARÁMETROS: [NOMBRE TABLA]
+		//INSTRUCCIÓN DESCRIBE PARÁMETROS: [NOMBRE TABLA]
 		//SI NO HAY PARAMETROS SE DESCRIBEN TODAS LAS TABLAS
 		else if(!strncmp(linea,"describe",8) || !strncmp(linea,"DESCRIBE",4)){
 			cantidadParametros = 1;
@@ -187,11 +187,26 @@ void crear_lql_select(char** parametros){
 void crear_lql_insert(char** parametros){
 	t_lcb* lcb = crear_lcb();
 	t_LQL_operacion* op = (t_LQL_operacion*) malloc(sizeof(t_LQL_operacion));
+
+	char* value= armarValue3(parametros);
+	char* stringFinal= string_new();
+	string_append(&stringFinal, parametros[0]);
+	string_append(&stringFinal," ");
+	string_append(&stringFinal,parametros[1]);
+	string_append(&stringFinal," ");
+	string_append(&stringFinal,parametros[2]);
+	string_append(&stringFinal," ");
+	string_append(&stringFinal, value);
+	hacerFreeArray((void**)parametros);
+	free(parametros);
+	parametros = string_split(stringFinal, " ");
+	free(value);
+	free(stringFinal);
 	op->_raw = parametros;
 	op->keyword = INSERT;
 	op->argumentos.INSERT.key = atoi(parametros[2]);
 	op->argumentos.INSERT.nombre_tabla = parametros[1];
-	op->argumentos.INSERT.valor = quitarComillas(parametros[3]);
+	op->argumentos.INSERT.valor = quitarEspacioFalso(parametros[3]);
 	op->success = true;
 	op->consola = true;
 	agregar_op_lcb(lcb,op);
