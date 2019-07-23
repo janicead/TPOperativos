@@ -10,7 +10,9 @@
 #include <pthread.h>
 #include "configMemoria.h"
 #include "segmentacionPaginada.h"
+#include <inttypes.h>
 #include <bibliotecaFunciones/usoVariado.h>
+#include <bibliotecaFunciones/lfsVarios.h>
 
 void* crearConsolaMemoria();
 bool pasarAUint16(const char *str, uint16_t *res);

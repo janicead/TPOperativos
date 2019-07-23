@@ -16,6 +16,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <bibliotecaFunciones/usoVariado.h>
+#include <bibliotecaFunciones/lfsProtocolos.h>
 #include "configMemoria.h"
 #include <limits.h>
 

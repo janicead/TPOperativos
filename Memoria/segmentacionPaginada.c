@@ -42,6 +42,9 @@ void mostrarDatosMarcos(){
 void reacomodarNumerosDePaginas(){
 	int tamanioPag = 0;
 	int t = tamanioLista(tablaDeSegmentos);
+	if(t==0){
+		return;
+	}
 	for(int i = 0 ; i <t ; i ++){
 		void * elemento = list_get(tablaDeSegmentos, i);
 		t_segmento * segmento = (t_segmento*) elemento;
@@ -100,6 +103,7 @@ t_segmento* guardarEnTablaDeSegmentos(char* nombreTabla){
 	t_segmento* segmento = malloc(sizeof(t_segmento));
 	segmento->nombreTabla = strdup(nombreTabla);
 	segmento->tablaPaginas= list_create();
+	segmento->id =0;
 	//pthread_mutex_lock(&semTablaSegmentos);
 	list_add(tablaDeSegmentos, (void*)segmento);
 	//pthread_mutex_unlock(&semTablaSegmentos);
@@ -141,7 +145,6 @@ char* buscarTablaPaginas(t_list* tabla, uint16_t key){
 }
 
 void guardarEnTablaDePaginas(t_segmento * segmento, int nroMarco,uint16_t key, int flagModificado ){
-	int tamanioTablaPaginas = tamanioLista(segmento->tablaPaginas);
 	t_pagina * pagina = malloc(sizeof(t_pagina));
 	pagina->contadorVecesSolicitado=0;
 	pagina->flagModificado= flagModificado;
@@ -358,8 +361,6 @@ void borrarTodaMemoria(){
 
 t_LRU * LRU (){
 	int cantVecesSolicitadaMinimo = INT_MAX;
-	//int paginaMenosCantVecesSolicitada = cantMaxMarcos;
-	int esElPrimerElemento = 0;
 	t_LRU * lru = malloc (sizeof(t_LRU));
 	lru->numeroPag= -1;
 	int tamanioTablaPaginas = 0;
@@ -419,36 +420,43 @@ char* convertirAStringListaJournal(){
 
 void iniciarJournal(){
 	int tamanioTablaSegmentos = tamanioLista(tablaDeSegmentos);
-	char* elementoEnviar = string_new();
 	for(int i = 0 ; i < tamanioTablaSegmentos; i ++){
 		void * elemento = list_get(tablaDeSegmentos, i);
 		t_segmento *segmento =(t_segmento*)elemento;
+
 		int tamanioTablaPaginas = tamanioLista(segmento->tablaPaginas);
 		for(int j = 0; j<tamanioTablaPaginas; j++){
+
 			void * elemento = list_get(segmento->tablaPaginas, j);
 			t_pagina * pagina = (t_pagina *) elemento;
-			if(pagina->flagModificado ==1){
-			t_registro* registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
-			int keyEnINT = pasarUINT16AInt(registro->key);
-			if (socketLFS ==0){
-				return;
-			}
-			char* value = opINSERT(socketLFS,segmento->nombreTabla, keyEnINT, registro->value, registro->timestamp);
-			if(string_equals_ignore_case(value, "NO_EXISTE_TABLA")){
-				log_error(loggerMemoria, "La tabla '%s' no existe", segmento->nombreTabla);
-			} else if (string_equals_ignore_case(value, "MEMORIA_DESCONECTADA")){
-				socketLFS= 0;
-				log_error(loggerMemoria, "El LFS esta desconectado");
-				pthread_mutex_unlock(&semLfs);
-				free(value);
-			}else{
-				log_info(loggerMemoria, "Se ha guardado en la tabla '%s' con key '%d' el value '%s'", segmento->nombreTabla, keyEnINT, registro->value);
-			}
-			free(registro->value);
-			free(registro);
-		}
 
-	}
+			if(pagina->flagModificado ==1){
+				t_registro* registro =	buscarEnMemoriaPrincipal(pagina->numeroMarco);
+				int keyEnINT = pasarUINT16AInt(registro->key);
+				if (socketLFS ==0){
+					log_error(loggerMemoria, "El LFS esta DESCONECTADO, NO se podra realizar el JOURNAL");
+					return;
+				}
+				char* value = opINSERT(socketLFS,segmento->nombreTabla, keyEnINT, registro->value, registro->timestamp);
+
+				if(string_equals_ignore_case(value, "NO_EXISTE_TABLA")){
+					log_error(loggerMemoria, "La tabla '%s' no existe", segmento->nombreTabla);
+				}
+				else if (string_equals_ignore_case(value, "MEMORIA DESCONECTADA")){
+					socketLFS= 0;
+					log_error(loggerMemoria, "El LFS esta DESCONECTADO, NO se podra realizar el JOURNAL");
+					return;
+
+				}
+				else{
+					log_info(loggerMemoria, "Se ha guardado en la tabla '%s' con key '%d' el value '%s'", segmento->nombreTabla, keyEnINT, registro->value);
+				}
+				free(value);
+				free(registro->value);
+				free(registro);
+			}
+
+		}
 }
 
 	int t= tamanioLista(tablaDeSegmentos);
@@ -465,7 +473,6 @@ void iniciarJournal(){
 	pthread_mutex_lock(&semCantMarcosIngresados);
 	cantMarcosIngresados=0;
 	pthread_mutex_unlock(&semCantMarcosIngresados);
-	free(elementoEnviar);
 }
 
 void retardoMemoriaAplicado(){
@@ -501,8 +508,7 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		pthread_mutex_lock(&semTablaSegmentos);
 		void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
 		t_segmento *segmento =(t_segmento*)elemento;
-		char* value = malloc(tamanioDadoPorLFS);
-		value = buscarTablaPaginas(segmento->tablaPaginas, key);// aca tenemos que buscar en la tabla de paginas especifica de este segmento y meternos 1 x 1 en sus paginas para ver si en la memoria Principal esta el key
+		char* value = buscarTablaPaginas(segmento->tablaPaginas, key);// aca tenemos que buscar en la tabla de paginas especifica de este segmento y meternos 1 x 1 en sus paginas para ver si en la memoria Principal esta el key
 		pthread_mutex_unlock(&semTablaSegmentos);
 		if(value!= NULL){ //lo encontro en tabla de paginas, lo busca en memoria principal y devuelve lo que vale
 			log_info(loggerMemoria,"Esta en la tabla de PAGINAS");
@@ -562,6 +568,7 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		pthread_mutex_lock(&semLfs);
 		log_info(loggerMemoria,"No se encontro en la tabla de SEGMENTOS");
 		int keyEnINT = pasarUINT16AInt(key);
+		printf("SOCKET LFS VALE %d\n", socketLFS);
 		if (socketLFS ==0){
 			pthread_mutex_unlock(&semLfs);
 			return "LFS_CAIDO";
@@ -579,9 +586,6 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 			return "LFS_CAIDO";
 		}
 		else{
-			t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
-			segmento->tablaPaginas= list_create();
-			segmento->id = 0;
 			unsigned long int t = obtenerTimeStamp();
 			pthread_mutex_lock(&semTablaSegmentos);
 			int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
@@ -591,12 +595,13 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 				pthread_mutex_unlock(&semLfs);
 				pthread_mutex_unlock(&semTablaSegmentos);
 				log_info(loggerMemoria,"FULL");
+
 				return "FULL";
 			}
+			t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
 			guardarEnTablaDePaginas(segmento, nroMarco, key, 0);
 			reacomodarNumerosDePaginas();
 			pthread_mutex_unlock(&semTablaSegmentos);
-
 			retardoLFSAplicado();
 			pthread_mutex_unlock(&semLfs);
 			log_info(loggerMemoria,"Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
@@ -660,8 +665,6 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 			return "FULL";
 		}
 		t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
-		segmento->tablaPaginas= list_create();
-		segmento->id = 0;
 		guardarEnTablaDePaginas(segmento, indice, key, 1);
 		reacomodarNumerosDePaginas();
 		pthread_mutex_unlock(&semTablaSegmentos);
@@ -686,9 +689,9 @@ char* DROPMemoria(char* nombreTabla){
 			t_segmento *segmento =(t_segmento*)elemento;
 			quitarEspaciosGuardadosEnMemoria(segmento->tablaPaginas);
 			borrarTablaDePaginas(segmento->tablaPaginas);
-			reacomodarNumerosDePaginas();
 			pthread_mutex_unlock(&semTablaSegmentos);
 			list_remove(tablaDeSegmentos, ubicacionSegmento);
+			reacomodarNumerosDePaginas();
 			free(segmento->nombreTabla);
 			free(segmento);
 		}
@@ -701,7 +704,7 @@ char* DROPMemoria(char* nombreTabla){
 			return "LFS_CAIDO";
 		}
 		char* value = opDROP(socketLFS,nombreTabla);
-		if (string_equals_ignore_case(value, "MEMORIA_DESCONECTADA")){
+		if (string_equals_ignore_case(value, "MEMORIA DESCONECTADA")){
 			socketLFS= 0;
 			pthread_mutex_unlock(&semLfs);
 			free(value);
@@ -725,8 +728,8 @@ void JOURNALMemoria(){
 		pthread_mutex_unlock(&semLfs);
 	}else {
 		log_info(loggerMemoria, "No hay datos para poder hacer JOURNAL");
-		pthread_mutex_unlock(&semLfs);
 		pthread_mutex_unlock(&semTablaSegmentos);
+		pthread_mutex_unlock(&semLfs);
 	}
 
 
@@ -738,7 +741,7 @@ char* DESCRIBETodasLasTablasMemoria(){
 		return "LFS_CAIDO";
 	}
 	char* value = opDESCRIBE(socketLFS,"ALL_TABLES");
-	if (string_equals_ignore_case(value, "MEMORIA_DESCONECTADA")){
+	if (string_equals_ignore_case(value, "MEMORIA DESCONECTADA")){
 		socketLFS= 0;
 		pthread_mutex_unlock(&semLfs);
 		free(value);
@@ -756,7 +759,7 @@ char* DESCRIBEMemoria( char* nombreTabla){
 		return "LFS_CAIDO";
 	}
 	char* value = opDESCRIBE(socketLFS,nombreTabla);
-	if (string_equals_ignore_case(value, "MEMORIA_DESCONECTADA")){
+	if (string_equals_ignore_case(value, "MEMORIA DESCONECTADA")){
 		socketLFS= 0;
 		pthread_mutex_unlock(&semLfs);
 		free(value);
@@ -774,12 +777,13 @@ char* CREATEMemoria(char* nombreTabla, char* tipoConsistencia, int nroParticione
 		return "LFS_CAIDO";
 	}
 	char* value = opCREATE(socketLFS,nombreTabla, tipoConsistencia, nroParticiones, compactionTime);
-	if (string_equals_ignore_case(value, "MEMORIA_DESCONECTADA")){
+	if (string_equals_ignore_case(value, "MEMORIA DESCONECTADA")){
 		socketLFS= 0;
 		pthread_mutex_unlock(&semLfs);
 		free(value);
 		return "LFS_CAIDO";
 	}
 	retardoLFSAplicado();
+	pthread_mutex_unlock(&semLfs);
 	 return value;
 }
