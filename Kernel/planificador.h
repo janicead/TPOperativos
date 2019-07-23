@@ -49,5 +49,6 @@ FILE* abrirArchivo(t_LQL_operacion* op);
 t_tabla* devuelve_tabla(char* nombre);
 void describe_global(char* data, bool mostrarPorConsola);
 void describe(char* data, bool mostrarPorConsola);
+bool verificar_lfs_caido(char* resp, t_LQL_operacion* op);
 
 #endif /* PLANIFICADOR_H_ */

@@ -48,6 +48,6 @@ void crear_hilos_iniciales(){
 }
 
 void setear_path_config(char* path){
-	PATH_KERNEL_CONFIG = (char*)malloc(strlen(path+1));
+	PATH_KERNEL_CONFIG = (char*)malloc(1+strlen(path));
 	strcpy(PATH_KERNEL_CONFIG,path);
 }

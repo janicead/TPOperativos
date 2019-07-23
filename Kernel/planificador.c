@@ -110,6 +110,9 @@ void lql_select(t_LQL_operacion* operacion){
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
+	if(verificar_lfs_caido(respuesta, operacion)){
+		return;
+	}
 	if(operacion->consola){
 		if(string_equals_ignore_case(respuesta,"NO_EXISTE_TABLA")){
 			printf("ERROR: No se pudo realizar SELECT %s %d ya que la tabla %s no existe.\n", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.nombre_tabla);
@@ -123,25 +126,6 @@ void lql_select(t_LQL_operacion* operacion){
 			log_error(loggerKernel, "No se realizar SELECT %s %d ya que la key %d no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.key);
 			operacion->success = false;
 			free(respuesta);
-			return;
-		}
-		if(string_equals_ignore_case(respuesta,"FULL")){
-			printf("La memoria %d está full, se le indicará iniciar el proceso de Journaling.\n",memoria->id_mem);
-			log_info(loggerKernel,"La memoria %d está full, se le indicará iniciar el proceso de Journaling.",memoria->id_mem);
-			operacion->success = true;
-			free(respuesta);
-			pthread_mutex_lock(&(memoria->socket_mem_sem));
-			char* resp = opJOURNAL(memoria->socket_mem);
-			pthread_mutex_unlock(&(memoria->socket_mem_sem));
-			if(!verificar_memoria_caida(resp,operacion,memoria)){
-				if(operacion->consola){
-					printf("La memoria %d inició el proceso de Journal.\n", memoria->id_mem);
-					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
-				}
-				else{
-					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
-				}
-			}
 			return;
 		}
 		printf("SELECT %s %d Value -> %s \n",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
@@ -158,23 +142,6 @@ void lql_select(t_LQL_operacion* operacion){
 			log_error(loggerKernel, "No se pudo realizar SELECT %s %d ya que la key %d no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.key);
 			operacion->success = false;
 			free(respuesta);
-			return;
-		}
-		if(string_equals_ignore_case(respuesta,"FULL")){
-			log_info(loggerKernel,"La memoria %d está full, se le indicará iniciar el proceso de Journaling.",memoria->id_mem);
-			operacion->success = true;
-			free(respuesta);
-			pthread_mutex_lock(&(memoria->socket_mem_sem));
-			char* resp = opJOURNAL(memoria->socket_mem);
-			pthread_mutex_unlock(&(memoria->socket_mem_sem));
-			if(!verificar_memoria_caida(resp,operacion,memoria)){
-				if(operacion->consola){
-					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
-				}
-				else{
-					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
-				}
-			}
 			return;
 		}
 		log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
@@ -225,6 +192,9 @@ void lql_insert(t_LQL_operacion* op){
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
+	if(verificar_lfs_caido(resp, op)){
+		return;
+	}
 	if(op->consola){
 		if(string_equals_ignore_case(resp,"NO_EXISTE_TABLA")){
 			printf("ERROR: No se pudo realizar: INSERT %s %d %s ya que la tabla %s no existe.\n", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor, op->argumentos.INSERT.nombre_tabla);
@@ -232,10 +202,6 @@ void lql_insert(t_LQL_operacion* op){
 			op->success = false;
 			free(resp);
 			return;
-		}
-		else{
-			printf("INSERT %s %d %s realizado correctamente.\n", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
-			log_info(loggerKernel, "INSERT %s %d %s realizado correctamente.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
 		}
 		if(string_equals_ignore_case(resp,"FULL")){
 			printf("La memoria %d está full, se le indicará iniciar el proceso de Journaling.\n",memoria->id_mem);
@@ -255,6 +221,10 @@ void lql_insert(t_LQL_operacion* op){
 				}
 			}
 			return;
+		}
+		else{
+			printf("INSERT %s %d %s realizado correctamente.\n", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
+			log_info(loggerKernel, "INSERT %s %d %s realizado correctamente.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
 		}
 	}
 	else{
@@ -319,6 +289,9 @@ void lql_create(t_LQL_operacion* op){
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
+	if(verificar_lfs_caido(resp, op)){
+		return;
+	}
 	if(op->consola){
 		if(string_equals_ignore_case(resp,"YA_EXISTE_TABLA")){
 			printf("ERROR: CREATE %s %s %d %d falló ya que la tabla %s ya existe.\n",op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
@@ -378,7 +351,10 @@ void lql_create(t_LQL_operacion* op){
 
 void lql_describe(t_LQL_operacion* op){
 	bool memoria_asociada(t_memoria* mem){
-		return mem->asociada;
+		pthread_mutex_lock(&(mem->socket_mem_sem));
+		bool asociada = mem->asociada;
+		pthread_mutex_unlock(&(mem->socket_mem_sem));
+		return asociada;
 	}
 	if(string_is_empty(op->argumentos.DESCRIBE.nombre_tabla)){
 		pthread_mutex_lock(&memorias_sem);
@@ -395,6 +371,10 @@ void lql_describe(t_LQL_operacion* op){
 		char* resp = opDESCRIBE(mem->socket_mem, "");
 		if(verificar_memoria_caida(resp,op,mem)){
 			free(resp);
+			return;
+		}
+		if(verificar_lfs_caido(resp, op)){
+			pthread_mutex_unlock(&(mem->socket_mem_sem));
 			return;
 		}
 		if(string_equals_ignore_case(resp,"NO_EXISTEN_TABLAS")){
@@ -427,6 +407,10 @@ void lql_describe(t_LQL_operacion* op){
 		char* resp = opDESCRIBE(mem->socket_mem,op->argumentos.DESCRIBE.nombre_tabla);
 		if(verificar_memoria_caida(resp,op,mem)){
 			free(resp);
+			return;
+		}
+		if(verificar_lfs_caido(resp, op)){
+			pthread_mutex_unlock(&(mem->socket_mem_sem));
 			return;
 		}
 		if(string_equals_ignore_case(resp,"NO_EXISTE_TABLA")){
@@ -474,6 +458,9 @@ void lql_drop(t_LQL_operacion* op){
 		return;
 	}
 	pthread_mutex_unlock(&(memoria->socket_mem_sem));
+	if(verificar_lfs_caido(resp, op)){
+		return;
+	}
 	if(op->consola){
 		if(string_equals_ignore_case(resp,"NO_EXISTE_TABLA")){
 			printf("ERROR: No se pudo borrar la tabla %s ya que no existe.\n", op->argumentos.DROP.nombre_tabla);
@@ -511,7 +498,7 @@ void lql_journal(t_list* list_mem, t_LQL_operacion* op){
 			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			char* resp = opJOURNAL(memoria->socket_mem);
 			pthread_mutex_unlock(&(memoria->socket_mem_sem));
-			if(!verificar_memoria_caida(resp,op,memoria)){
+			if(!verificar_memoria_caida(resp,op,memoria) && !verificar_lfs_caido(resp,op)){
 				if(op->consola){
 					printf("La memoria %d inició el proceso de Journal.\n", memoria->id_mem);
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
@@ -953,7 +940,7 @@ void describe(char* data, bool mostrarPorConsola){
 	freeParametros(metadata_final);
 	freeParametros(metadata);
 	if(!existe_tabla(tabla->nombre_tabla)){
-		list_add(tablas,tabla);
+		agregar_tabla(tabla);
 		if(mostrarPorConsola){
 			printf("La tabla %s fue agregada a la metadata del Kernel.\n",tabla->nombre_tabla);
 		}
@@ -961,5 +948,16 @@ void describe(char* data, bool mostrarPorConsola){
 	}
 }
 
-
+bool verificar_lfs_caido(char* resp, t_LQL_operacion* op){
+	if(string_equals_ignore_case(resp,"LFS_CAIDO")){
+		if(op->consola){
+			printf("ERROR: El LFS está caído.\n");
+		}
+		log_error(loggerKernel,"ERROR: El LFS está caído.");
+		op->success = true;
+		free(resp);
+		return true;
+	}
+	return false;
+}
 
