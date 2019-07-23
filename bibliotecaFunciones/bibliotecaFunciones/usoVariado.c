@@ -95,19 +95,6 @@ char* armarValue(char** value){
 	return operacionFinal;
 }
 
-char* armarValue3(char** value){
-	char** v = string_split(value[3], " ");
-	int ultimaPosicion = tamanioArray(v);
-	char* operacionFinal = strdup(v[0]);
-	for( int i = 1 ; i < ultimaPosicion; i ++){
-		string_append(&operacionFinal, ";");
-		string_append(&operacionFinal, v[i]);
-	}
-	hacerFreeArray(v);
-	free(v);
-	return operacionFinal;
-}
-
 char * quitarComillas(char* ip){
 	return string_substring(ip,1,(string_length(ip)-2));
 }
