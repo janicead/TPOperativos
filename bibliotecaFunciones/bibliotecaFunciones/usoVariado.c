@@ -77,9 +77,9 @@ int buscarFinalValue(char** value){
 }
 
 char* armarValue2(char** value){
-	int ultimaPosicion = tamanioArray(value);
+	int ultimaPosicion = tamanioArray((void**)value);
 	char* operacionFinal = strdup(value[3]);
-	for( int i = 4 ; i <= ultimaPosicion; i ++){
+	for( int i = 4 ; i < ultimaPosicion; i ++){
 		string_append(&operacionFinal, ";");
 		string_append(&operacionFinal, value[i]);
 	}

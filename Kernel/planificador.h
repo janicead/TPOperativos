@@ -9,8 +9,12 @@
 #include "consolaKernel.h"
 #include <bibliotecaFunciones/lfsProtocolos.h>
 
+#define TIEMPO_METRICAS 30
 
+//FUNCIONES DE HILOS
 void* ejecutar();
+void* refresh_metadata_timer();
+void* metrics_timer();
 
 //FUNCIONES SOBRE LAS MEMORIAS
 t_memoria* obtener_memoria_consistencia(char* consistencia,int key);
@@ -31,10 +35,8 @@ void lql_journal(t_list* list_mem, t_LQL_operacion* op);
 void lql_add(t_LQL_operacion* op);
 void lql_run(FILE* archivo, t_LQL_operacion* op);
 void lql_metrics(bool mostrarEnConsola);
-void* refresh_metadata_timer();
 
 //FUNCIONES PARA LAS MÉTRICAS
-void* metrics_timer();
 double tiempoPromedioSelect();
 double tiempoPromedioInsert();
 int cantidadSelects();
