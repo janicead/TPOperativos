@@ -14,11 +14,11 @@
 #include "kernel_commons.h"
 #include "socketsKernel.h"
 
-
 char* ipMemoria;
 
 void iniciar();
 void crear_hilos_iniciales();
+void setear_path_config(char* path);
 
 
 #endif /* KERNEL_H_ */

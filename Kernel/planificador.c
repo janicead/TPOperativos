@@ -745,7 +745,7 @@ void lql_metrics(bool mostrarEnConsola){
 
 void* metrics_timer(){
 	while(1){
-		sleep(30);
+		sleep(TIEMPO_METRICAS);
 		lql_metrics(false);
 		pthread_mutex_lock(&queue_exit_sem);
 		queue_clean_and_destroy_elements(queue_exit,(void*) free_lcb);

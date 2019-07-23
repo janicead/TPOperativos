@@ -1,6 +1,15 @@
 #include "Kernel.h"
 
-int main(void) {
+int main(int argc, char* argv[]) {
+	if(argc == 1){
+		puts("Error no ingresó ningún archivo de configuración");
+		return EXIT_FAILURE;
+	}
+	if(argc > 2){
+		puts("ERROR ingresó más de un parámetro");
+		return EXIT_FAILURE;
+	}
+	setear_path_config(argv[1]);
 	iniciar();
 	crear_hilos_iniciales();
 	exit_gracefully(EXIT_SUCCESS);
@@ -36,4 +45,9 @@ void crear_hilos_iniciales(){
 	pthread_detach(metadata_refresh);
 	pthread_join(consola,NULL);
 	return;
+}
+
+void setear_path_config(char* path){
+	PATH_KERNEL_CONFIG = (char*)malloc(strlen(path+1));
+	strcpy(PATH_KERNEL_CONFIG,path);
 }

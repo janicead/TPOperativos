@@ -11,11 +11,6 @@
 #include "kernel_commons.h"
 #include "planificador.h"
 
-
-
-#define PATH_KERNEL_CONFIG "/home/utnso/workspace/tp-2019-1c-BEFGN/Kernel/Config/kernel.config"
-
-
 typedef struct
 {
 	char* ip_memoria;

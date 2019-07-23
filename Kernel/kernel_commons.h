@@ -117,6 +117,7 @@ typedef struct{
 }t_memoria;
 
 char* puertoMemoria;
+char* PATH_KERNEL_CONFIG;
 int idLCB;
 
 //Listas necesarias

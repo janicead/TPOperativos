@@ -14,6 +14,7 @@ void exit_gracefully(int exitInfo){
 	destruir_listas();
 	destruir_semaforos();
 	free(hilos);
+	free(PATH_KERNEL_CONFIG);
 	exit(exitInfo);
 }
 
