@@ -59,7 +59,8 @@ char *opSELECT(int socketReceptor, char* unNombreTabla, int unaKey)
 
 	if(packageRecibido->ID == 0){
 		char* rsta = malloc(strlen("MEMORIA_DESCONECTADA")+1);
-		strcpy(rsta, "MEMORIA DESCONECTADA");
+		strcpy(rsta, "MEMORIA_DESCONECTADA");
+		free(packageRecibido);
 		return rsta;
 	}
 
@@ -99,6 +100,7 @@ char *opINSERT(int socketReceptor, char* unNombreTabla, int unaKey, char* unValu
 	if(packageRecibido->ID == 0){
 		char* rsta = malloc(strlen("MEMORIA_DESCONECTADA")+1);
 		strcpy(rsta, "MEMORIA DESCONECTADA");
+		free(packageRecibido);
 		return rsta;
 	}
 
@@ -136,6 +138,7 @@ char *opCREATE(int socketReceptor, char* unNombreTabla, char* unaConsistencia, i
 	if(packageRecibido->ID == 0){
 		char* rsta = malloc(strlen("MEMORIA_DESCONECTADA")+1);
 		strcpy(rsta, "MEMORIA DESCONECTADA");
+		free(packageRecibido);
 		return rsta;
 	}
 
@@ -175,6 +178,7 @@ char *opDESCRIBE(int socketReceptor, char* unNombreTabla)
 	if(packageRecibido->ID == 0){
 		char* rsta = malloc(strlen("MEMORIA_DESCONECTADA")+1);
 		strcpy(rsta, "MEMORIA DESCONECTADA");
+		free(packageRecibido);
 		return rsta;
 	}
 
@@ -212,6 +216,7 @@ char *opDROP(int socketReceptor, char* unNombreTabla)
 	if(packageRecibido->ID == 0){
 		char* rsta = malloc(strlen("MEMORIA_DESCONECTADA")+1);
 		strcpy(rsta, "MEMORIA DESCONECTADA");
+		free(packageRecibido);
 		return rsta;
 	}
 
@@ -234,6 +239,7 @@ char* opJOURNAL(int socketReceptor){
 	if(packageRecibido->ID == 0){
 		char* rsta = malloc(strlen("MEMORIA_DESCONECTADA")+1);
 		strcpy(rsta, "MEMORIA DESCONECTADA");
+		free(packageRecibido);
 		return rsta;
 	}
 

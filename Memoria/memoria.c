@@ -5,7 +5,8 @@ int main(void) {
 	configurarLoggerMemoria();
 	configMemoria =leerConfigMemoria();
 	mostrarDatosArchivoConfig();
-	tamanioDadoPorLFS = conectarmeAlLFS();
+	socketLFS = 0;
+	conectarmeAlLFS();
 	log_info(loggerMemoria, "Esperando Conexiones");
 	iniciarEscucha();
 	crearTablaGossip();
@@ -33,8 +34,11 @@ void crearHilos(){
 	pthread_create(&hacerJournal,NULL, (void*)JOURNALMemoria, NULL);
 
 	pthread_create(&config_observer,NULL,observer_config,NULL);
-
 	pthread_detach(config_observer);
+
+	pthread_create(&conexionLFS, NULL, (void*)conectarmeAlLFSHILO, NULL);
+	pthread_join(conexionLFS, NULL);
+
 	pthread_join(consola, NULL);
 	pthread_join(multiplexacionMemoria, NULL);
 	pthread_join(gossip, NULL);

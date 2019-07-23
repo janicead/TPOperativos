@@ -28,6 +28,7 @@ pthread_t config_observer;
 pthread_t hacerJournal;
 pthread_t consola;
 pthread_t gossip;
+pthread_t conexionLFS;
 
 int socketLFS;
 

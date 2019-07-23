@@ -57,6 +57,7 @@ pthread_mutex_t semMarcosOcupados;
 pthread_mutex_t semMemoriaPrincipal;
 pthread_mutex_t semMP;
 pthread_mutex_t semLfs;
+pthread_mutex_t tamPorLFS;
 
 
 

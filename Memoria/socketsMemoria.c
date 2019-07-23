@@ -407,23 +407,58 @@ void exitGracefully(int return_nr, t_log* logger, int servidorEscucha)
 	exit(return_nr);
 }
 
-
-int conectarmeAlLFS() {
+void conectarmeAlLFS(){
 	char* ipServidor = quitarComillas(configMemoria.ipDelFileSystem);
 	struct sockaddr_in dirServidorMemoria;
 	int tamanioValue;
 	dirServidorMemoria.sin_family = AF_INET;
 	dirServidorMemoria.sin_addr.s_addr = inet_addr(ipServidor);
 	dirServidorMemoria.sin_port = htons(configMemoria.puertoDelFileSystem); //puerto al que va a escuchar
-	int cliente = socket(AF_INET,SOCK_STREAM,0);
-	if (connect (cliente, (void*)&dirServidorMemoria, sizeof(dirServidorMemoria))!=0){
-		log_info(loggerMemoria,"No me he podido conectar con el LFS");
-	}else{
-		char *msjEnviado = string_from_format("Memoria %d",configMemoria.numeroDeMemoria); //ACA EN VEZ DEL 1, IRIA EL NrO Q TIENE LA MEMORIA
-		tamanioValue = realizarHandshakeAlLFS(loggerMemoria,cliente,msjEnviado);
-		free(msjEnviado);
+	if(socketLFS ==0){
+		pthread_mutex_lock(&semLfs);
+		int cliente = socket(AF_INET,SOCK_STREAM,0);
+
+		if (connect (cliente, (void*)&dirServidorMemoria, sizeof(dirServidorMemoria))!=0){
+			log_error(loggerMemoria,"No me he podido conectar con el LFS");
+		}else{
+			char *msjEnviado = string_from_format("Memoria %d",configMemoria.numeroDeMemoria); //ACA EN VEZ DEL 1, IRIA EL NrO Q TIENE LA MEMORIA
+			tamanioDadoPorLFS = realizarHandshakeAlLFS(loggerMemoria,cliente,msjEnviado);
+			free(msjEnviado);
 		}
-	socketLFS= cliente;
+		socketLFS= cliente;
+		pthread_mutex_unlock(&semLfs);
+	}
 	free(ipServidor);
-	return tamanioValue;
+}
+
+void conectarmeAlLFSHILO(){
+	while(1){
+		char* ipServidor = quitarComillas(configMemoria.ipDelFileSystem);
+		struct sockaddr_in dirServidorMemoria;
+		int tamanioValue;
+		dirServidorMemoria.sin_family = AF_INET;
+		dirServidorMemoria.sin_addr.s_addr = inet_addr(ipServidor);
+		dirServidorMemoria.sin_port = htons(configMemoria.puertoDelFileSystem); //puerto al que va a escuchar
+		sleep(10);
+		if(socketLFS ==0){
+			int cliente = socket(AF_INET,SOCK_STREAM,0);
+			pthread_mutex_lock(&semLfs);
+			if (connect (cliente, (void*)&dirServidorMemoria, sizeof(dirServidorMemoria))!=0){
+				log_error(loggerMemoria,"El LFS sigue desconectado");
+				socketLFS=0;
+				close(cliente);
+			}else{
+				char *msjEnviado = string_from_format("Memoria %d",configMemoria.numeroDeMemoria); //ACA EN VEZ DEL 1, IRIA EL NrO Q TIENE LA MEMORIA
+				tamanioDadoPorLFS = realizarHandshakeAlLFS(loggerMemoria,cliente,msjEnviado);
+				free(msjEnviado);
+				log_info(loggerMemoria, "Me conecte con el LFS nuevamente");
+				socketLFS= cliente;
+			}
+
+
+			pthread_mutex_unlock(&semLfs);
+		}
+		free(ipServidor);
+	}
+
 }
