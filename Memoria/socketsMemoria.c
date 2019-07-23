@@ -463,3 +463,10 @@ void conectarmeAlLFSHILO(){
 	}
 
 }
+
+void hacerElJOURNAL(){
+	while(1){
+		sleep(configMemoria.tiempoJournal);
+		JOURNALMemoria();
+	}
+}

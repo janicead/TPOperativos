@@ -1,6 +1,15 @@
 #include "memoria.h"
 
-int main(void) {
+int main(int argc, char* argv[]) {
+
+	if(argc == 1){
+		puts("Error no ingresó ningún archivo de configuración");
+		return EXIT_FAILURE;
+	}
+	if(argc > 2){
+		puts("ERROR ingresó más de un parámetro");
+		return EXIT_FAILURE;
+	}
 
 	configurarLoggerMemoria();
 	configMemoria =leerConfigMemoria();
@@ -31,7 +40,7 @@ void crearHilos(){
 
 	pthread_create(&gossip, NULL, (void*)realizarGossip, NULL);
 
-	pthread_create(&hacerJournal,NULL, (void*)JOURNALMemoria, NULL);
+	pthread_create(&hacerJournal,NULL, (void*)hacerElJOURNAL, NULL);
 
 	pthread_create(&config_observer,NULL,observer_config,NULL);
 	pthread_detach(config_observer);

@@ -44,6 +44,7 @@ int aceptarConexiones(int socket, t_log* logger);
 void exitGracefully(int return_nr, t_log* logger, int servidorEscucha);
 void conectarmeAlLFS();
 void conectarmeAlLFSHILO();
+void hacerElJOURNAL();
 
 
 //AGREGADAS POR ERIC
