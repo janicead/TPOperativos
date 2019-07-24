@@ -435,6 +435,8 @@ void iniciarJournal(){
 				int keyEnINT = pasarUINT16AInt(registro->key);
 				if (socketLFS ==0){
 					log_error(loggerMemoria, "El LFS esta DESCONECTADO, NO se podra realizar el JOURNAL");
+					free(registro->value);
+					free(registro);
 					return;
 				}
 				char* value = opINSERT(socketLFS,segmento->nombreTabla, keyEnINT, registro->value, registro->timestamp);
@@ -445,6 +447,9 @@ void iniciarJournal(){
 				else if (string_equals_ignore_case(value, "MEMORIA DESCONECTADA")){
 					socketLFS= 0;
 					log_error(loggerMemoria, "El LFS esta DESCONECTADO, NO se podra realizar el JOURNAL");
+					free(registro->value);
+					free(registro);
+					free(value);
 					return;
 
 				}

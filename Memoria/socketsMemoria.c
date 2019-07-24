@@ -472,7 +472,10 @@ void conectarmeAlLFSHILO(){
 
 void hacerElJOURNAL(){
 	while(1){
-		sleep(configMemoria.tiempoJournal);
+		int valor = configMemoria.tiempoGossiping;
+		sleep(valor);
+		log_info(loggerMemoria, "Hare JOURNAL");
 		JOURNALMemoria();
+		log_info(loggerMemoria, "Hice JOURNAL");
 	}
 }
