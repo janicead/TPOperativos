@@ -121,10 +121,10 @@ void lql_select(t_LQL_operacion* operacion){
 			free(respuesta);
 			return;
 		}
-		if(string_equals_ignore_case(respuesta,"NO_EXISTE_VALUE")){
+		if(string_equals_ignore_case(respuesta,"NO_EXISTE_KEY")){
 			printf("ERROR: No se pudo realizar SELECT %s %d ya que la key %d no existe.\n", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.key);
 			log_error(loggerKernel, "No se realizar SELECT %s %d ya que la key %d no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.key);
-			operacion->success = false;
+			operacion->success = true;
 			free(respuesta);
 			return;
 		}
@@ -140,7 +140,7 @@ void lql_select(t_LQL_operacion* operacion){
 		}
 		if(string_equals_ignore_case(respuesta,"NO_EXISTE_KEY")){
 			log_error(loggerKernel, "No se pudo realizar SELECT %s %d ya que la key %d no existe", operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,operacion->argumentos.SELECT.key);
-			operacion->success = false;
+			operacion->success = true;
 			free(respuesta);
 			return;
 		}
@@ -405,6 +405,7 @@ void lql_describe(t_LQL_operacion* op){
 		}
 		pthread_mutex_lock(&(mem->socket_mem_sem));
 		char* resp = opDESCRIBE(mem->socket_mem,op->argumentos.DESCRIBE.nombre_tabla);
+		printf("La respuesta es %s\n", resp);
 		if(verificar_memoria_caida(resp,op,mem)){
 			free(resp);
 			return;

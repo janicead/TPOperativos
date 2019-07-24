@@ -35,8 +35,6 @@ void conectarmeAMP(){
 	int cliente;
 	char* ipServidor = quitarComillas(configKernel.ip_memoria);
 	struct sockaddr_in dirServidorMemoria;
-	//struct sockaddr_in dirCliente;
-	//unsigned int tamanioDireccion;
 	dirServidorMemoria.sin_family = AF_INET;
 	dirServidorMemoria.sin_addr.s_addr = inet_addr(ipServidor);
 	dirServidorMemoria.sin_port = htons(configKernel.puerto_memoria); //puerto al que va a escuchar
