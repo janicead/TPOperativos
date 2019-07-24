@@ -27,7 +27,7 @@ bool verificar_memoria_caida2(char* respuesta, t_memoria* mem_id);
 
 //FUNCIONES DE COMANDOS
 void lql_select(t_LQL_operacion* operacion);
-void lql_insert(t_LQL_operacion* op);
+void lql_insert(t_LQL_operacion* op, t_memoria* mem);
 void lql_create(t_LQL_operacion* op);
 void lql_describe(t_LQL_operacion* op);
 void lql_drop(t_LQL_operacion* op);

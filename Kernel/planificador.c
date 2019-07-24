@@ -19,7 +19,7 @@ void* ejecutar(){
 					lql_select(operacion);
 					break;
 				case INSERT:
-					lql_insert(operacion);
+					lql_insert(operacion, NULL);
 					break;
 				case CREATE:
 					lql_create(operacion);
@@ -161,31 +161,41 @@ void lql_select(t_LQL_operacion* operacion){
 	return;
 }
 
-void lql_insert(t_LQL_operacion* op){
-	time_t tiempo_inicio = time(NULL);
-	pthread_mutex_lock(&tablas_sem);
-	t_tabla* tabla = devuelve_tabla(op->argumentos.INSERT.nombre_tabla);
-	pthread_mutex_unlock(&tablas_sem);
-	if(tabla == NULL){
-		if(op->consola){
-			printf("ERROR: La tabla de nombre:  %s no existe.\n",op->argumentos.INSERT.nombre_tabla);
-		}
-		log_error(loggerKernel,"La tabla de nombre:  %s no existe",op->argumentos.INSERT.nombre_tabla);
-		op->success = false;
-		return;
+void lql_insert(t_LQL_operacion* op, t_memoria * mem){
+	t_memoria* memoria;
+	unsigned long int timestamp;
+	bool insert_recursivo = false;
+	time_t tiempo_inicio;
+	if(mem != NULL){
+		memoria = mem;
+		timestamp = obtenerTimeStamp();
+		insert_recursivo = true;
 	}
-	t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia,op->argumentos.INSERT.key);
-	if(!memoria->valida){
-		if(op->consola){
-			printf("ERROR: No hay memoria para el criterio: %s de la tabla: %s.\n",tabla->consistencia,op->argumentos.INSERT.nombre_tabla);
+	else{
+		tiempo_inicio = time(NULL);
+		pthread_mutex_lock(&tablas_sem);
+		t_tabla* tabla = devuelve_tabla(op->argumentos.INSERT.nombre_tabla);
+		pthread_mutex_unlock(&tablas_sem);
+		if(tabla == NULL){
+			if(op->consola){
+				printf("ERROR: La tabla de nombre:  %s no existe.\n",op->argumentos.INSERT.nombre_tabla);
+			}
+			log_error(loggerKernel,"La tabla de nombre:  %s no existe",op->argumentos.INSERT.nombre_tabla);
+			op->success = false;
+			return;
 		}
-		log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,op->argumentos.INSERT.nombre_tabla);
-		free_memoria(memoria);
-		op->success = false;
-		return;
+		memoria = obtener_memoria_consistencia(tabla->consistencia,op->argumentos.INSERT.key);
+		if(!memoria->valida){
+			if(op->consola){
+				printf("ERROR: No hay memoria para el criterio: %s de la tabla: %s.\n",tabla->consistencia,op->argumentos.INSERT.nombre_tabla);
+			}
+			log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,op->argumentos.INSERT.nombre_tabla);
+			free_memoria(memoria);
+			op->success = false;
+			return;
+		}
 	}
 	pthread_mutex_lock(&(memoria->socket_mem_sem));
-	unsigned long int timestamp = obtenerTimeStamp();
 	char* resp = opINSERT(memoria->socket_mem, op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key,op->argumentos.INSERT.valor,timestamp);
 	if(verificar_memoria_caida(resp,op,memoria)){
 		free(resp);
@@ -219,6 +229,7 @@ void lql_insert(t_LQL_operacion* op){
 				else{
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
 				}
+				lql_insert(op,memoria);
 			}
 			return;
 		}
@@ -249,11 +260,16 @@ void lql_insert(t_LQL_operacion* op){
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
 				}
 			}
+			lql_insert(op,memoria);
 			return;
 		}
 		else{
 			log_info(loggerKernel, "INSERT %s %d %s realizado correctamente.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
 		}
+	}
+	if(insert_recursivo){
+		free(resp);
+		return;
 	}
 	time_t tiempo_fin = time(NULL);
 	t_insert_ejecutado* insert = (t_insert_ejecutado*)malloc(sizeof(t_insert_ejecutado));
@@ -867,7 +883,7 @@ bool verificar_memoria_caida2(char* respuesta, t_memoria* memoria){
 }
 
 void describe_global(char* data, bool mostrarPorConsola){
-	if(data ==NULL || string_is_empty(data)|| string_equals_ignore_case(data, "NO_EXISTEN_TABLAS")){
+	if(data ==NULL || string_is_empty(data)|| string_equals_ignore_case(data, "NO_EXISTEN_TABLAS") || string_equals_ignore_case(data, "LFS_CAIDO")){
 		return;
 	}
 	char** metadata = string_split(data,"#");
