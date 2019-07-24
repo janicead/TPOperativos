@@ -16,7 +16,7 @@ void* ejecutar(){
 			t_LQL_operacion* operacion = obtener_op_actual(lcb);
 			switch(operacion->keyword){
 				case SELECT:
-					lql_select(operacion);
+					lql_select(operacion, NULL);
 					break;
 				case INSERT:
 					lql_insert(operacion, NULL);
@@ -81,30 +81,38 @@ FILE* abrirArchivo(t_LQL_operacion* op){
 	return f;
 }
 
-void lql_select(t_LQL_operacion* operacion){
-	time_t tiempo_inicio = time(NULL);
-	pthread_mutex_lock(&tablas_sem);
-	t_tabla* tabla = devuelve_tabla(operacion->argumentos.SELECT.nombre_tabla);
-	pthread_mutex_unlock(&tablas_sem);
-	if(tabla == NULL){
-		if(operacion->consola){
-			printf("ERROR: La tabla de nombre:  %s no existe.\n",operacion->argumentos.SELECT.nombre_tabla);
-		}
-		log_error(loggerKernel,"La tabla de nombre:  %s no existe",operacion->argumentos.SELECT.nombre_tabla);
-		operacion->success = false;
-		return;
+void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
+	t_memoria* memoria;
+	bool select_recursivo = false;
+	time_t tiempo_inicio;
+	if(mem != NULL){
+		memoria = mem;
+		select_recursivo = true;
 	}
-	t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia,operacion->argumentos.SELECT.key);
-	if(!memoria->valida){
-		printf("ERROR: No hay memoria para el criterio: %s de la tabla: %s.\n",tabla->consistencia,operacion->argumentos.SELECT.nombre_tabla);
-		log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,operacion->argumentos.SELECT.nombre_tabla);
-		free_memoria(memoria);
-		operacion->success = false;
-		return;
+	else{
+		tiempo_inicio = time(NULL);
+		pthread_mutex_lock(&tablas_sem);
+		t_tabla* tabla = devuelve_tabla(operacion->argumentos.SELECT.nombre_tabla);
+		pthread_mutex_unlock(&tablas_sem);
+		if(tabla == NULL){
+			if(operacion->consola){
+				printf("ERROR: La tabla de nombre:  %s no existe.\n",operacion->argumentos.SELECT.nombre_tabla);
+			}
+			log_error(loggerKernel,"La tabla de nombre:  %s no existe",operacion->argumentos.SELECT.nombre_tabla);
+			operacion->success = false;
+			return;
+		}
+		t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia,operacion->argumentos.SELECT.key);
+		if(!memoria->valida){
+			printf("ERROR: No hay memoria para el criterio: %s de la tabla: %s.\n",tabla->consistencia,operacion->argumentos.SELECT.nombre_tabla);
+			log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,operacion->argumentos.SELECT.nombre_tabla);
+			free_memoria(memoria);
+			operacion->success = false;
+			return;
+		}
 	}
 	pthread_mutex_lock(&(memoria->socket_mem_sem));
 	char* respuesta = opSELECT(memoria->socket_mem,operacion->argumentos.SELECT.nombre_tabla, operacion->argumentos.SELECT.key);
-
 	if(verificar_memoria_caida(respuesta,operacion,memoria)){
 		free(respuesta);
 		return;
@@ -128,6 +136,26 @@ void lql_select(t_LQL_operacion* operacion){
 			free(respuesta);
 			return;
 		}
+		if(string_equals_ignore_case(respuesta,"FULL")){
+			printf("La memoria %d está full, se le indicará iniciar el proceso de Journaling.\n",memoria->id_mem);
+			log_info(loggerKernel,"La memoria %d está full, se le indicará iniciar el proceso de Journaling.",memoria->id_mem);
+			operacion->success = true;
+			free(respuesta);
+			pthread_mutex_lock(&(memoria->socket_mem_sem));
+			char* resp = opJOURNAL(memoria->socket_mem);
+			pthread_mutex_unlock(&(memoria->socket_mem_sem));
+			if(!verificar_memoria_caida(resp,operacion,memoria)){
+				if(operacion->consola){
+					printf("La memoria %d inició el proceso de Journal.\n", memoria->id_mem);
+					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+				}
+				else{
+					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+				}
+				lql_select(operacion,memoria);
+			}
+			return;
+		}
 		printf("SELECT %s %d Value -> %s \n",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
 		log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
 	}
@@ -144,7 +172,29 @@ void lql_select(t_LQL_operacion* operacion){
 			free(respuesta);
 			return;
 		}
+		if(string_equals_ignore_case(respuesta,"FULL")){
+			log_info(loggerKernel,"La memoria %d está full, se le indicará iniciar el proceso de Journaling.",memoria->id_mem);
+			operacion->success = true;
+			free(respuesta);
+			pthread_mutex_lock(&(memoria->socket_mem_sem));
+			char* resp = opJOURNAL(memoria->socket_mem);
+			pthread_mutex_unlock(&(memoria->socket_mem_sem));
+			if(!verificar_memoria_caida(resp,operacion,memoria)){
+				if(operacion->consola){
+					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+				}
+				else{
+					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+				}
+				lql_select(operacion,memoria);
+			}
+			return;
+		}
 		log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
+	}
+	if(select_recursivo){
+		free(respuesta);
+		return;
 	}
 	time_t tiempo_fin = time(NULL);
 	t_select_ejecutado* select = (t_select_ejecutado*)malloc(sizeof(t_select_ejecutado));
