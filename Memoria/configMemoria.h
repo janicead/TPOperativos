@@ -13,11 +13,10 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-
-
-#define configMemoriaDir "../Config/memoria.conf"
 t_log *loggerMemoria;
 t_config *archivoConfigMemoria;
+
+char* PATH_MEMORIA_CONFIG;
 
 typedef struct
 {

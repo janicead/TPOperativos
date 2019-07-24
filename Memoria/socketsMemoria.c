@@ -22,9 +22,6 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		char* Respuesta = SELECTMemoria(unSELECT->nombreTabla,key,0);
 		enviarRespuesta(socketEmisor,id_respuesta_select,Respuesta);
 		freeT_SELECT(unSELECT);
-		if(!string_equals_ignore_case(Respuesta, "MEMORIA DESCONECTADA")){
-		free(Respuesta);
-		}
 	}
 
 	if(packageRecibido->ID == 15){ //15: INSERT

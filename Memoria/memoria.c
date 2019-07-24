@@ -10,6 +10,7 @@ int main(int argc, char* argv[]) {
 		puts("ERROR ingresó más de un parámetro");
 		return EXIT_FAILURE;
 	}
+	setear_path_config(argv[1]);
 
 	configurarLoggerMemoria();
 	configMemoria =leerConfigMemoria();
@@ -52,5 +53,10 @@ void crearHilos(){
 	pthread_join(gossip, NULL);
 	pthread_join(hacerJournal, NULL);
 	pthread_join(conexionLFS, NULL);
+}
+
+void setear_path_config(char* path){
+	PATH_MEMORIA_CONFIG = (char*)malloc(1+strlen(path));
+	strcpy(PATH_MEMORIA_CONFIG,path);
 }
 

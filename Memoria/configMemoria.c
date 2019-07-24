@@ -2,7 +2,7 @@
 
 
 t_ConfigMemoria leerConfigMemoria(){
-	archivoConfigMemoria = config_create(configMemoriaDir);
+	archivoConfigMemoria = config_create(PATH_MEMORIA_CONFIG);
 	log_info(loggerMemoria, "Leyendo archivo de configuracion...");
 
 	if (config_has_property(archivoConfigMemoria, "PUERTO_DE_ESCUCHA")) {
@@ -134,7 +134,7 @@ void* observer_config(){
 	char buffer[buffer_size];
 
 	file_descriptor = inotify_init();
-	file_observer = inotify_add_watch(file_descriptor,configMemoriaDir,IN_MODIFY);
+	file_observer = inotify_add_watch(file_descriptor,PATH_MEMORIA_CONFIG,IN_MODIFY);
 	pthread_mutex_init(&semConfig, NULL);
 	while(1){
 		read(file_descriptor,buffer,buffer_size);
@@ -149,7 +149,7 @@ void* observer_config(){
 }
 
 void actualizarArchivoConfig(){
-	archivoConfigMemoria = config_create(configMemoriaDir);
+	archivoConfigMemoria = config_create(PATH_MEMORIA_CONFIG);
 	if(config_has_property(archivoConfigMemoria, "RETARDO_ACCESO_MEMORIA_PRINCIPAL")) {
 		configMemoria.retardoAccesoMemoriaPrincipal = config_get_int_value(archivoConfigMemoria,"RETARDO_ACCESO_MEMORIA_PRINCIPAL");
 	}
