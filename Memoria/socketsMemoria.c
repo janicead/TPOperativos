@@ -21,6 +21,8 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		uint16_t key = (uint16_t) unSELECT->KEY;
 		char* Respuesta = SELECTMemoria(unSELECT->nombreTabla,key,0);
 		enviarRespuesta(socketEmisor,id_respuesta_select,Respuesta);
+		if(!string_equals_ignore_case(Respuesta,"LFS_CAIDO")){
+		free(Respuesta);}
 		freeT_SELECT(unSELECT);
 	}
 
@@ -36,6 +38,7 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 
 		char* respuesta = INSERTMemoria(unINSERT->nombreTabla,key, unINSERT->Value,  (unsigned long int)unINSERT->timeStamp);
 		enviarRespuesta(socketEmisor,id_respuesta_insert,respuesta);
+
 		freeT_INSERT(unINSERT);
 
 		pthread_mutex_lock(&semConfig);
@@ -56,8 +59,9 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 
 		char* Respuesta = CREATEMemoria(unCREATE->nombreTabla,unCREATE->tipoConsistencia, unCREATE->nParticiones, unCREATE->tiempoCompactacion);
 		enviarRespuesta(socketEmisor,id_respuesta_create,Respuesta);
+		if(!string_equals_ignore_case(Respuesta,"LFS_CAIDO")){
+		free(Respuesta);}
 
-		free(Respuesta);
 		freeT_CREATE(unCREATE);
 	}
 
@@ -72,10 +76,14 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		if(string_is_empty(unDESCRIBE->nombreTabla)){
 			char* respuesta = DESCRIBETodasLasTablasMemoria();
 			enviarRespuesta(socketEmisor,id_respuesta_describe, respuesta);
+			if(!string_equals_ignore_case(respuesta,"LFS_CAIDO")){
+			free(respuesta);}
 		}
 		else{
 			char* respuesta = DESCRIBEMemoria(unDESCRIBE->nombreTabla);
 			enviarRespuesta(socketEmisor,id_respuesta_describe,respuesta);
+			if(!string_equals_ignore_case(respuesta,"LFS_CAIDO")){
+			free(respuesta);}
 		}
 		freeT_DESCRIBE(unDESCRIBE);
 	}
@@ -92,7 +100,8 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 		char* respuesta = DROPMemoria(unDROP->nombreTabla);
 		puts(respuesta);
 		enviarRespuesta(socketEmisor,id_respuesta_drop,respuesta);
-
+		if(!string_equals_ignore_case(respuesta,"LFS_CAIDO")){
+		free(respuesta);}
 		freeT_DROP(unDROP);
 		pthread_mutex_lock(&semConfig);
 		int retardoMemoriaPrincipal = configMemoria.retardoAccesoMemoriaPrincipal;
