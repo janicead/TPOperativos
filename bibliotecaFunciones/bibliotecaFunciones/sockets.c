@@ -164,7 +164,7 @@ void empaquetarEnviarMensaje(int socketReceptor, int unID, int longitudDatos, ch
 	offset += sizeof(package->longDatos);
 	memcpy(paqueteListo + offset, package->Datos, package->longDatos);
 
-	int bytesEnviados;
+	int bytesEnviados = 0;
 
 	bytesEnviados = send(socketReceptor,paqueteListo,(sizeof(uint32_t)*2) + (package->longDatos),0);
 	if( bytesEnviados== -1)

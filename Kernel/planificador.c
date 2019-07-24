@@ -102,7 +102,7 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 			operacion->success = false;
 			return;
 		}
-		t_memoria* memoria = obtener_memoria_consistencia(tabla->consistencia,operacion->argumentos.SELECT.key);
+		memoria = obtener_memoria_consistencia(tabla->consistencia,operacion->argumentos.SELECT.key);
 		if(!memoria->valida){
 			printf("ERROR: No hay memoria para el criterio: %s de la tabla: %s.\n",tabla->consistencia,operacion->argumentos.SELECT.nombre_tabla);
 			log_error(loggerKernel,"No hay memoria para el criterio: %s de la tabla: %s",tabla->consistencia,operacion->argumentos.SELECT.nombre_tabla);
@@ -140,7 +140,6 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 			printf("La memoria %d está full, se le indicará iniciar el proceso de Journaling.\n",memoria->id_mem);
 			log_info(loggerKernel,"La memoria %d está full, se le indicará iniciar el proceso de Journaling.",memoria->id_mem);
 			operacion->success = true;
-			free(respuesta);
 			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			char* resp = opJOURNAL(memoria->socket_mem);
 			pthread_mutex_unlock(&(memoria->socket_mem_sem));
@@ -152,9 +151,9 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 				else{
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
 				}
+				free(resp);
 				lql_select(operacion,memoria);
 			}
-			return;
 		}
 		printf("SELECT %s %d Value -> %s \n",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
 		log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
@@ -175,7 +174,6 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 		if(string_equals_ignore_case(respuesta,"FULL")){
 			log_info(loggerKernel,"La memoria %d está full, se le indicará iniciar el proceso de Journaling.",memoria->id_mem);
 			operacion->success = true;
-			free(respuesta);
 			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			char* resp = opJOURNAL(memoria->socket_mem);
 			pthread_mutex_unlock(&(memoria->socket_mem_sem));
@@ -186,9 +184,9 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 				else{
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
 				}
+				free(resp);
 				lql_select(operacion,memoria);
 			}
-			return;
 		}
 		log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
 	}
@@ -218,7 +216,6 @@ void lql_insert(t_LQL_operacion* op, t_memoria * mem){
 	time_t tiempo_inicio;
 	if(mem != NULL){
 		memoria = mem;
-		timestamp = obtenerTimeStamp();
 		insert_recursivo = true;
 	}
 	else{
@@ -246,6 +243,7 @@ void lql_insert(t_LQL_operacion* op, t_memoria * mem){
 		}
 	}
 	pthread_mutex_lock(&(memoria->socket_mem_sem));
+	timestamp = obtenerTimeStamp();
 	char* resp = opINSERT(memoria->socket_mem, op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key,op->argumentos.INSERT.valor,timestamp);
 	if(verificar_memoria_caida(resp,op,memoria)){
 		free(resp);
@@ -279,9 +277,9 @@ void lql_insert(t_LQL_operacion* op, t_memoria * mem){
 				else{
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
 				}
+				free(resp);
 				lql_insert(op,memoria);
 			}
-			return;
 		}
 		else{
 			printf("INSERT %s %d %s realizado correctamente.\n", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
@@ -298,20 +296,14 @@ void lql_insert(t_LQL_operacion* op, t_memoria * mem){
 		if(string_equals_ignore_case(resp,"FULL")){
 			log_info(loggerKernel,"La memoria %d está full, se le indicará iniciar el proceso de Journaling.",memoria->id_mem);
 			op->success = true;
-			free(resp);
 			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			char* resp = opJOURNAL(memoria->socket_mem);
 			pthread_mutex_unlock(&(memoria->socket_mem_sem));
 			if(!verificar_memoria_caida(resp,op,memoria)){
-				if(op->consola){
-					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
-				}
-				else{
-					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
-				}
+				log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+				free(resp);
+				lql_insert(op,memoria);
 			}
-			lql_insert(op,memoria);
-			return;
 		}
 		else{
 			log_info(loggerKernel, "INSERT %s %d %s realizado correctamente.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);

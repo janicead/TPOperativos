@@ -284,15 +284,18 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 			log_info(loggerMemoria,"La PAGINA que voy a reemplazar es la nro %d del SEGMENTO '%s' cuyo value es '%s' ", lru->numeroPag, lru->nombreTabla, registro->value);
 			settearMarcoEnMP(pagina->numeroMarco, 0);
 			guardarEnMPLugarEspecifico(key, value, pagina->numeroMarco, timestamp);
+			free(lru->nombreTabla);
 			free(lru);
 			int nroMarco = pagina->numeroMarco;
 			free(pagina);
+			free(registro->value);
 			free(registro);
 			return nroMarco;
 		}
 		else {
 			pthread_mutex_unlock(&semCantMaxMarcos);
 			log_info(loggerMemoria,"Tengo que realizar JOURNAL\n");
+			free(lru->nombreTabla);
 			free(lru);
 			return -1;
 		}
@@ -552,6 +555,7 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 				pthread_mutex_unlock(&semLfs);
 				pthread_mutex_unlock(&semTablaSegmentos);
 				log_info(loggerMemoria,"FULL");
+				free(value);
 				return "FULL";
 			}
 			guardarEnTablaDePaginas(segmento, nroMarco, key, 0);
