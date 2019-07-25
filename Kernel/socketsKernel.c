@@ -17,10 +17,10 @@ void conectarAMemoria(char* ip, int puerto){
 	recibirMemoriasTablaDeGossip(socketServer,KERNELOMEMORIA,loggerKernel, tablaDeGossipKernel);
 	agregarAMemoriasConectadasAKernel(puerto, ip, true, nroMemoria);
 	conectarmeAMemorias();
-	//puts("MEMORIAS A LAS QUE ME CONECTE \n");
-	//mostrarmeMemoriasTablaGossip(memoriasALasQueMeConecte);
-	//puts("MEMORIAS EN MI TABLA DE GOSSIP \n");
-	//mostrarmeMemoriasTablaGossip(tablaDeGossipKernel);
+	puts("MEMORIAS A LAS QUE ME CONECTE \n");
+	mostrarmeMemoriasTablaGossip(memoriasALasQueMeConecte);
+	puts("MEMORIAS EN MI TABLA DE GOSSIP \n");
+	mostrarmeMemoriasTablaGossip(tablaDeGossipKernel);
 	free(memoriasDondeEstoyConectado);
 
 	}
@@ -80,13 +80,13 @@ void gossipDeKernel(){
 		if(cantMemorias!=0){
 			pthread_mutex_lock(&memorias_sem);
 			t_memoria * memoria = random_memory(memorias);
+			pthread_mutex_unlock(&memorias_sem);
 			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			pedirTablaGossip(memoria->socket_mem, 50, "Dame tabla gossip", memoria->id_mem);
 			char* respuesta = recibirMemoriasTablaDeGossipKernel(memoria->socket_mem,KERNELOMEMORIA,loggerKernel);
 			if(!verificar_memoria_caida2(respuesta,memoria)){
 				conectarmeAMemorias();
 				pthread_mutex_unlock(&(memoria->socket_mem_sem));
-				pthread_mutex_unlock(&memorias_sem);
 			}
 		}
 	}
@@ -118,7 +118,7 @@ char* recibirMemoriasTablaDeGossipKernel(int emisor,t_identidad identidad, t_log
 			return "OK";
 		}
 	}
-	else if(paquete->ID <= 0 ||paquete->Datos==NULL){
+	else if(paquete->ID == 0){
 		free(paquete);
 		return "MEMORIA_DESCONECTADA";
 	}
