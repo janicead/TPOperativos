@@ -463,7 +463,6 @@ void lql_describe(t_LQL_operacion* op){
 		}
 		pthread_mutex_lock(&(mem->socket_mem_sem));
 		char* resp = opDESCRIBE(mem->socket_mem,op->argumentos.DESCRIBE.nombre_tabla);
-		printf("La respuesta es %s\n", resp);
 		if(verificar_memoria_caida(resp,op,mem)){
 			free(resp);
 			return;
@@ -1005,6 +1004,7 @@ void describe(char* data, bool mostrarPorConsola){
 		}
 		log_info(loggerKernel,"La tabla %s fue agregada a la metadata del Kernel",tabla->nombre_tabla);
 	}
+	free_tabla(tabla);
 }
 
 bool verificar_lfs_caido(char* resp, t_LQL_operacion* op){
