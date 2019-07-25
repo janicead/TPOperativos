@@ -16,7 +16,6 @@
 #include <libgen.h>
 #include <pthread.h>
 #include <signal.h> //para el 	pthread_kill
-#include <sys/inotify.h> //para el monitoreo de un archivo
 
 
 #include <commons/log.h>
@@ -41,8 +40,6 @@
 pthread_mutex_t laMEMTABLE;
 pthread_mutex_t elFS;
 pthread_mutex_t LISSANDRA;
-
-pthread_mutex_t config_sem;
 
 //### CONFIG #################
 t_config *archivoConfig;
@@ -136,17 +133,13 @@ char *realizarDESCRIBE(t_DESCRIBE *unDESCRIBE);
 char *realizarDROP(t_DROP *unDROP);
 
 //####################################
-void realizarRetardo(int cantSegundos);
+void realiarRetardo(int cantSegundos);
 //####################################
 //compactador.h  NO ME RECONCE t_Tabla  SI ESTA AHI,  NI IDEA
 //char *getNombreArchivoTEMP(t_Tabla *unaTabla);
 //void persistirRegistrarDUMP(t_Tabla *unaTabla,char *laTablaDUMPEADA);
 //####################################
 
-int esUnComando(char *unComando);
 void consolaAPI(void);
-void LISSANDRAFS(void);
-
-void* observer_config();
 
 #endif /* LFS_H_ */
