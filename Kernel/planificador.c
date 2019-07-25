@@ -142,14 +142,15 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 			operacion->success = true;
 			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			char* resp = opJOURNAL(memoria->socket_mem);
-			pthread_mutex_unlock(&(memoria->socket_mem_sem));
 			if(!verificar_memoria_caida(resp,operacion,memoria)){
 				if(operacion->consola){
 					printf("La memoria %d inició el proceso de Journal.\n", memoria->id_mem);
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+					pthread_mutex_unlock(&(memoria->socket_mem_sem));
 				}
 				else{
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+					pthread_mutex_unlock(&(memoria->socket_mem_sem));
 				}
 				free(resp);
 				lql_select(operacion,memoria);
@@ -176,13 +177,15 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 			operacion->success = true;
 			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			char* resp = opJOURNAL(memoria->socket_mem);
-			pthread_mutex_unlock(&(memoria->socket_mem_sem));
+
 			if(!verificar_memoria_caida(resp,operacion,memoria)){
 				if(operacion->consola){
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+					pthread_mutex_unlock(&(memoria->socket_mem_sem));
 				}
 				else{
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+					pthread_mutex_unlock(&(memoria->socket_mem_sem));
 				}
 				free(resp);
 				lql_select(operacion,memoria);
@@ -555,17 +558,19 @@ void lql_journal(t_list* list_mem, t_LQL_operacion* op){
 		if(memoria->asociada){
 			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			char* resp = opJOURNAL(memoria->socket_mem);
-			pthread_mutex_unlock(&(memoria->socket_mem_sem));
 			if(!verificar_memoria_caida(resp,op,memoria) && !verificar_lfs_caido(resp,op)){
 				if(op->consola){
 					printf("La memoria %d inició el proceso de Journal.\n", memoria->id_mem);
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+					pthread_mutex_unlock(&(memoria->socket_mem_sem));
 				}
 				else{
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
+					pthread_mutex_unlock(&(memoria->socket_mem_sem));
 				}
 				j++;
 			}
+
 			free(resp);
 		}
 	}
@@ -580,17 +585,19 @@ void lql_journal(t_list* list_mem, t_LQL_operacion* op){
 }
 
 void lql_add(t_LQL_operacion* op){
+	pthread_mutex_lock(&memorias_sem);
 	if(!memoria_existente(memorias, op->argumentos.ADD.nro_memoria)){
 		if(op->consola){
 			printf("ERROR: La memoria %d no existe o no es conocida por el Kernel.\n",op->argumentos.ADD.nro_memoria);
 		}
 		log_error(loggerKernel,"La memoria %d no existe o no es conocida por el Kernel",op->argumentos.ADD.nro_memoria);
 		op->success = false;
+		pthread_mutex_unlock(&memorias_sem);
 		return;
 	}
 	if(string_equals_ignore_case(op->argumentos.ADD.criterio,"SC")){
-		pthread_mutex_lock(&strong_consistency_sem);
 		if(strong_consistency == NULL){
+			pthread_mutex_lock(&strong_consistency_sem);
 			strong_consistency = obtener_memoria_por_id(op->argumentos.ADD.nro_memoria);
 			strong_consistency->valida = true;
 			if(op->consola){
@@ -599,6 +606,7 @@ void lql_add(t_LQL_operacion* op){
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Strong Consistency",strong_consistency->id_mem);
 			strong_consistency->asociada = true;
 			pthread_mutex_unlock(&strong_consistency_sem);
+			pthread_mutex_unlock(&memorias_sem);
 			op->success = true;
 			return;
 		}
@@ -632,6 +640,7 @@ void lql_add(t_LQL_operacion* op){
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Strong Hash Consistency",op->argumentos.ADD.nro_memoria);
 			t_memoria* mem = obtener_memoria_por_id(op->argumentos.ADD.nro_memoria);
 			mem->asociada = true;
+			pthread_mutex_unlock(&memorias_sem);
 			pthread_mutex_unlock(&strong_hash_consistency_sem);
 			op->success = true;
 			return;
@@ -656,6 +665,7 @@ void lql_add(t_LQL_operacion* op){
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Eventual Consistency",op->argumentos.ADD.nro_memoria);
 			t_memoria* mem = obtener_memoria_por_id(op->argumentos.ADD.nro_memoria);
 			mem->asociada = true;
+			pthread_mutex_unlock(&memorias_sem);
 			pthread_mutex_unlock(&eventual_consistency_sem);
 			op->success = true;
 			return;
@@ -917,6 +927,7 @@ bool verificar_memoria_caida2(char* respuesta, t_memoria* memoria){
 	if(string_equals_ignore_case(respuesta,"MEMORIA_DESCONECTADA")){
 		log_error(loggerKernel,"La memoria %d fue desconectada.", memoria->id_mem);
 		pthread_mutex_unlock(&(memoria->socket_mem_sem));
+		pthread_mutex_unlock(&memorias_sem);
 		sacar_memoria(memoria->id_mem);
 		return true;
 	}

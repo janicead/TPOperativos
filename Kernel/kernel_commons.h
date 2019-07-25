@@ -158,6 +158,7 @@ pthread_mutex_t queue_ready_sem;
 pthread_mutex_t queue_exit_sem;
 pthread_mutex_t config_sem;
 pthread_mutex_t memorias_sem;
+pthread_mutex_t memorias_sem2;
 pthread_mutex_t strong_consistency_sem;
 pthread_mutex_t strong_hash_consistency_sem;
 pthread_mutex_t eventual_consistency_sem;
