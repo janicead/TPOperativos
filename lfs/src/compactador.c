@@ -106,12 +106,16 @@ void freeListaDeTemporales(t_list *unaListaTemporales)
 }
 
 void *hiloDUMP(void *arg)
-{
+{ int tiempoDUMP;
 	while(1)
 	{
-		sleep(configLFS.tiempoDump);
-		//printf("\nPASO SLEEP(DUMP)\n");
-		//(&laMEMTABLE);
+		pthread_mutex_lock(&config_sem);
+		tiempoDUMP = configLFS.tiempoDump;
+		//printf("\nconfigLFS.tiempoDump: %d\n",tiempoDUMP);
+		pthread_mutex_unlock(&config_sem);
+
+		sleep(tiempoDUMP);
+
 		pthread_mutex_lock(&LISSANDRA);
 		realizarDUMP();
 		pthread_mutex_unlock(&LISSANDRA);
@@ -149,6 +153,8 @@ void realizarDUMP(void)
 			//pthread_mutex_unlock(&unaTabla->noBloqueado);
 			//free(unaTablaDUMPEADA);  //SE LIBERA EN persistirRegistrarDUMP()
 		}
+
+		log_info(logger,"Fin de DUMP de tablas\n------------------------------------------");
 	}
 	//DEFNIR COMO JUNTAR LOS ARCHIOS TEMPORALES Y REALIZRA LO DUMPEADO AL FS
 
@@ -231,10 +237,12 @@ void *hiloCOMPACTADOR(void *algunaTabla)
 {
 	t_Tabla *unaTabla = (t_Tabla*)algunaTabla;
 	t_MetadataTabla *unMetadataTabla = obtenerMetadataTabla(unaTabla->nombreTabla);
+	int microSegundos = unMetadataTabla->Compaction_Time * 1000;
 
 	while(1)
 	{
-		sleep(unMetadataTabla->Compaction_Time);
+		usleep(microSegundos);
+		//sleep(unMetadataTabla->Compaction_Time);
 
 		//pthread_mutex_lock(&unaTabla->noBloqueado);
 		//pthread_mutex_lock(&elFS);
@@ -295,8 +303,8 @@ void realizarCOMPACTAR(t_Tabla *unaTabla, int cantParticiones)
 			free(unNombreTablaBIN);
 		}
 	}
-	else // LO COLOCO POR LAS DUDAS
-		log_info(logger,"\nNo hay archivos .TMP para compactar en tabla [%s]",unaTabla->nombreTabla);
+	//else // LO COLOCO POR LAS DUDAS
+		//log_info(logger,"\nNo hay archivos .TMP para compactar en tabla [%s]",unaTabla->nombreTabla);
 
 
 	//CAMBIAR EXTENCION
@@ -428,7 +436,9 @@ void realizarCOMPACTAR(t_Tabla *unaTabla, int cantParticiones)
 
 		time_t finDeCOMPACTADOR = time(NULL); //#######
 
-		log_info(logger,"\nTiempo de bloqueo de tabla [%s]: %f seg.",unaTabla->nombreTabla, difftime(finDeCOMPACTADOR, inicioDeCOMPACTADOR));
+		log_info(logger,"Fin de compactacion");
+		log_info(logger,"\nTiempo de bloqueo de tabla [%s]: %f seg.\n------------------------------------------",unaTabla->nombreTabla, difftime(finDeCOMPACTADOR, inicioDeCOMPACTADOR));
+
 	}
 }
 
