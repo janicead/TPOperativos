@@ -142,6 +142,7 @@ void exitLFS(int return_nr)
 	pthread_mutex_destroy(&laMEMTABLE);
 	pthread_mutex_destroy(&elFS);
 
+	pthread_mutex_unlock(&LISSANDRA);
 	pthread_mutex_destroy(&LISSANDRA);
 
 	pthread_mutex_destroy(&config_sem);
@@ -214,6 +215,7 @@ void consolaAPI()
 	    {
 	    	if(cantArgumentos == 0)
 	    	{
+	    		pthread_mutex_lock(&LISSANDRA);
 	    		log_info(logger,"Finalizo LISSANDRA FS");
 	    		printf("Finalizo LISSANDRA FS~\n");
 	    		break;
@@ -424,9 +426,11 @@ void consolaAPI()
 
 	    }
 
-	    //freeArrayDePunteros(operacion);
+	    freeArrayDePunteros(operacion);
 	 }//if
 	}
+
+	freeArrayDePunteros(operacion);
 }
 
 void iniciarEscucha()

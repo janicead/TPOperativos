@@ -632,9 +632,13 @@ void obtenerBitArrayPersistido()
 
 	//printf("EXISTE_ARCHIVO (bitmap.bin)\n");
 	//char *array = (char *) mmap(0,tamanioArchivoAMapear,PROT_READ | PROT_WRITE,MAP_PRIVATE,(int) fd,(off_t) 0);
-    void *starting_addr = malloc(tamanioArchivoAMapear);
 
-	char *arrayMap = mmap(starting_addr, tamanioArchivoAMapear, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, fd, 0);
+	void *starting_addr = malloc(tamanioArchivoAMapear);
+	//void *starting_addr = calloc(tamanioArchivoAMapear, sizeof(void));
+
+	char *arrayMap = mmap(NULL, tamanioArchivoAMapear, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, fd, 0);
+	//char *arrayMap = mmap(starting_addr, tamanioArchivoAMapear, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE, fd, 0);
+
 
 	if (arrayMap == MAP_FAILED)
 	{
@@ -954,6 +958,7 @@ char *existeTablaEnFS(char* unNombreTabla)
 	}
 
 	free(unPath);
+	free(respuesta);
 
 	return r;
 }
@@ -987,10 +992,12 @@ char *crearTablaEnFS(t_CREATE *unCREATE)
 			escribirLineaEn(nombreAbsoluto,bufferLinea);
 			free(nombreAbsoluto);
 			free(bufferLinea);
+			free(r); //PUEDE SER Q AL VOLVER A USAR string_from_format, PIERDA LO ANTERIRO ALLOCADO
 			r = string_from_format("SUCCESSFUL_CREATE");
 		}
 		else
 		{
+			free(r);
 			r = string_from_format("NO_HAY_ESPACIO");
 		}
 	}
@@ -1239,4 +1246,5 @@ void cargarTablasPersistidasEnMEMTABLE(void)
 	}
 
 	freeArrayDePunteros(listaTablas);
+	free(pathTablas);
 }
