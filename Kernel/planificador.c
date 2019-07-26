@@ -32,7 +32,7 @@ void* ejecutar(){
 					break;
 				case JOURNAL:
 					pthread_mutex_lock(&memorias_sem);
-					lql_journal(memorias, operacion);
+					lql_journal(memorias, operacion, "JOURNAL");
 					pthread_mutex_unlock(&memorias_sem);
 					break;
 				case ADD:
@@ -113,7 +113,7 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 	}
 	pthread_mutex_lock(&(memoria->socket_mem_sem));
 	char* respuesta = opSELECT(memoria->socket_mem,operacion->argumentos.SELECT.nombre_tabla, operacion->argumentos.SELECT.key);
-	if(verificar_memoria_caida(respuesta,operacion,memoria)){
+	if(verificar_memoria_caida(respuesta,operacion,memoria,"n")){
 		free(respuesta);
 		return;
 	}
@@ -143,7 +143,7 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			char* resp = opJOURNAL(memoria->socket_mem);
 			pthread_mutex_unlock(&(memoria->socket_mem_sem));
-			if(!verificar_memoria_caida(resp,operacion,memoria)){
+			if(!verificar_memoria_caida(resp,operacion,memoria,"n")){
 				if(operacion->consola){
 					printf("La memoria %d inició el proceso de Journal.\n", memoria->id_mem);
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
@@ -155,8 +155,10 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 				lql_select(operacion,memoria);
 			}
 		}
-		printf("SELECT %s %d Value -> %s \n",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
-		log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
+		else{
+			printf("SELECT %s %d Value -> %s \n",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
+			log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
+		}
 	}
 	else{
 		if(string_equals_ignore_case(respuesta,"NO_EXISTE_TABLA")){
@@ -177,7 +179,7 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			char* resp = opJOURNAL(memoria->socket_mem);
 			pthread_mutex_unlock(&(memoria->socket_mem_sem));
-			if(!verificar_memoria_caida(resp,operacion,memoria)){
+			if(!verificar_memoria_caida(resp,operacion,memoria,"n")){
 				if(operacion->consola){
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
 				}
@@ -188,7 +190,9 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 				lql_select(operacion,memoria);
 			}
 		}
-		log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
+		else{
+			log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
+		}
 	}
 	if(select_recursivo){
 		free(respuesta);
@@ -245,7 +249,7 @@ void lql_insert(t_LQL_operacion* op, t_memoria * mem){
 	pthread_mutex_lock(&(memoria->socket_mem_sem));
 	timestamp = obtenerTimeStamp();
 	char* resp = opINSERT(memoria->socket_mem, op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key,op->argumentos.INSERT.valor,timestamp);
-	if(verificar_memoria_caida(resp,op,memoria)){
+	if(verificar_memoria_caida(resp,op,memoria,"n")){
 		free(resp);
 		return;
 	}
@@ -269,7 +273,7 @@ void lql_insert(t_LQL_operacion* op, t_memoria * mem){
 			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			char* resp = opJOURNAL(memoria->socket_mem);
 			pthread_mutex_unlock(&(memoria->socket_mem_sem));
-			if(!verificar_memoria_caida(resp,op,memoria)){
+			if(!verificar_memoria_caida(resp,op,memoria,"n")){
 				if(op->consola){
 					printf("La memoria %d inició el proceso de Journal.\n", memoria->id_mem);
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
@@ -299,7 +303,7 @@ void lql_insert(t_LQL_operacion* op, t_memoria * mem){
 			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			char* resp = opJOURNAL(memoria->socket_mem);
 			pthread_mutex_unlock(&(memoria->socket_mem_sem));
-			if(!verificar_memoria_caida(resp,op,memoria)){
+			if(!verificar_memoria_caida(resp,op,memoria,"n")){
 				log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
 				free(resp);
 				lql_insert(op,memoria);
@@ -342,7 +346,7 @@ void lql_create(t_LQL_operacion* op){
 	pthread_mutex_lock(&(memoria->socket_mem_sem));
 	char* resp = opCREATE(memoria->socket_mem, op->argumentos.CREATE.nombre_tabla, op->argumentos.CREATE.tipo_consistencia,
 			op->argumentos.CREATE.numero_particiones, op->argumentos.CREATE.compactation_time);
-	if(verificar_memoria_caida(resp,op,memoria)){
+	if(verificar_memoria_caida(resp,op,memoria,"n")){
 		free(resp);
 		return;
 	}
@@ -427,7 +431,7 @@ void lql_describe(t_LQL_operacion* op){
 		}
 		pthread_mutex_lock(&(mem->socket_mem_sem));
 		char* resp = opDESCRIBE(mem->socket_mem, "");
-		if(verificar_memoria_caida(resp,op,mem)){
+		if(verificar_memoria_caida(resp,op,mem,"n")){
 			free(resp);
 			return;
 		}
@@ -463,7 +467,7 @@ void lql_describe(t_LQL_operacion* op){
 		}
 		pthread_mutex_lock(&(mem->socket_mem_sem));
 		char* resp = opDESCRIBE(mem->socket_mem,op->argumentos.DESCRIBE.nombre_tabla);
-		if(verificar_memoria_caida(resp,op,mem)){
+		if(verificar_memoria_caida(resp,op,mem,"n")){
 			free(resp);
 			return;
 		}
@@ -511,7 +515,7 @@ void lql_drop(t_LQL_operacion* op){
 	}
 	pthread_mutex_lock(&(memoria->socket_mem_sem));
 	char* resp = opDROP(memoria->socket_mem, op->argumentos.DROP.nombre_tabla);
-	if(verificar_memoria_caida(resp,op,memoria)){
+	if(verificar_memoria_caida(resp,op,memoria,"n")){
 		free(resp);
 		return;
 	}
@@ -548,15 +552,14 @@ void lql_drop(t_LQL_operacion* op){
 	return;
 }
 
-void lql_journal(t_list* list_mem, t_LQL_operacion* op){
+void lql_journal(t_list* list_mem, t_LQL_operacion* op, char* flag){
 	int j = 0;
 	for(int i = 0; i < list_size(list_mem); i++){
 		t_memoria* memoria = list_get(list_mem,i);
 		if(memoria->asociada){
 			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			char* resp = opJOURNAL(memoria->socket_mem);
-			pthread_mutex_unlock(&(memoria->socket_mem_sem));
-			if(!verificar_memoria_caida(resp,op,memoria) && !verificar_lfs_caido(resp,op)){
+			if(!verificar_memoria_caida(resp,op,memoria,flag) && !verificar_lfs_caido(resp,op)){
 				if(op->consola){
 					printf("La memoria %d inició el proceso de Journal.\n", memoria->id_mem);
 					log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
@@ -566,6 +569,7 @@ void lql_journal(t_list* list_mem, t_LQL_operacion* op){
 				}
 				j++;
 			}
+			pthread_mutex_unlock(&(memoria->socket_mem_sem));
 			free(resp);
 		}
 	}
@@ -625,13 +629,15 @@ void lql_add(t_LQL_operacion* op){
 		}
 		else{
 			list_add(strong_hash_consistency,obtener_memoria_por_id(op->argumentos.ADD.nro_memoria));
-			lql_journal(strong_hash_consistency, op);
+			lql_journal(strong_hash_consistency, op, "HASH");
 			if(op->consola){
 				printf("Se ha asignado la memoria %d al criterio Strong Hash Consistency.\n",op->argumentos.ADD.nro_memoria);
 			}
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Strong Hash Consistency",op->argumentos.ADD.nro_memoria);
 			t_memoria* mem = obtener_memoria_por_id(op->argumentos.ADD.nro_memoria);
+			pthread_mutex_lock(&(mem->socket_mem_sem));
 			mem->asociada = true;
+			pthread_mutex_unlock(&(mem->socket_mem_sem));
 			pthread_mutex_unlock(&strong_hash_consistency_sem);
 			op->success = true;
 			return;
@@ -655,7 +661,9 @@ void lql_add(t_LQL_operacion* op){
 			}
 			log_info(loggerKernel,"Se ha asignado la memoria %d al criterio Eventual Consistency",op->argumentos.ADD.nro_memoria);
 			t_memoria* mem = obtener_memoria_por_id(op->argumentos.ADD.nro_memoria);
+			pthread_mutex_lock(&(mem->socket_mem_sem));
 			mem->asociada = true;
+			pthread_mutex_unlock(&(mem->socket_mem_sem));
 			pthread_mutex_unlock(&eventual_consistency_sem);
 			op->success = true;
 			return;
@@ -899,7 +907,7 @@ t_memoria* random_memory(t_list* lista){
 	return list_get(lista,index);
 }
 
-bool verificar_memoria_caida(char* respuesta,t_LQL_operacion* op, t_memoria* mem){
+bool verificar_memoria_caida(char* respuesta,t_LQL_operacion* op, t_memoria* mem, char* flag){
 	if(string_equals_ignore_case(respuesta,"MEMORIA_DESCONECTADA")){
 		if(op->consola){
 			printf("La memoria %d fue desconectada.\n", mem->id_mem);
@@ -907,7 +915,7 @@ bool verificar_memoria_caida(char* respuesta,t_LQL_operacion* op, t_memoria* mem
 		log_error(loggerKernel,"La memoria %d fue desconectada.", mem->id_mem);
 		pthread_mutex_unlock(&(mem->socket_mem_sem));
 		op->success = true; //ESTE TIPO DE ERROR NO CORTA LA EJECUCIÓN DEL RESTO DE ARCHIVO LQL
-		sacar_memoria(mem->id_mem);
+		sacar_memoria(mem->id_mem, flag);
 		return true;
 	}
 	return false;
@@ -917,7 +925,7 @@ bool verificar_memoria_caida2(char* respuesta, t_memoria* memoria){
 	if(string_equals_ignore_case(respuesta,"MEMORIA_DESCONECTADA")){
 		log_error(loggerKernel,"La memoria %d fue desconectada.", memoria->id_mem);
 		pthread_mutex_unlock(&(memoria->socket_mem_sem));
-		sacar_memoria(memoria->id_mem);
+		sacar_memoria(memoria->id_mem,"n");
 		return true;
 	}
 	return false;

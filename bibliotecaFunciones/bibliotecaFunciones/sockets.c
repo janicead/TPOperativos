@@ -341,6 +341,7 @@ t_PaqueteDeDatos *recibirPaquete(int socketEmisor)  //v1.5
 	t_PaqueteDeDatos *package;
 
 	package = (t_PaqueteDeDatos*) malloc(sizeof(t_PaqueteDeDatos));
+	package->Datos=NULL;
 
 	bytesRecibidos = recv(socketEmisor, &package->ID,sizeof(uint32_t),MSG_WAITALL);
 	//printf("los bytes recibidos son %d\n", bytesRecibidos);

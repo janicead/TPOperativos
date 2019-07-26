@@ -295,7 +295,6 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 		else {
 			pthread_mutex_unlock(&semCantMaxMarcos);
 			log_info(loggerMemoria,"Tengo que realizar JOURNAL\n");
-			free(lru->nombreTabla);
 			free(lru);
 			return -1;
 		}
@@ -560,14 +559,14 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 			}
 			guardarEnTablaDePaginas(segmento, nroMarco, key, 0);
 			reacomodarNumerosDePaginas();
+			mostrarElementosTablaSegmentos();
+			mostrarDatosMarcos();
 			pthread_mutex_unlock(&semTablaSegmentos);
 
 			retardoLFSAplicado();
 
 			pthread_mutex_unlock(&semLfs);
 
-			mostrarElementosTablaSegmentos();
-			mostrarDatosMarcos();
 			log_info(loggerMemoria,value);
 			return value;
 			}
@@ -656,11 +655,11 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 			pthread_mutex_lock(&semTablaSegmentos);
 			guardarEnTablaDePaginas(segmento, indice, key, 1);
 			reacomodarNumerosDePaginas();
-			pthread_mutex_unlock(&semTablaSegmentos);
 			log_info(loggerMemoria,"Se guardo en la tabla de PAGINAS y en la MEMORIA");
 			mostrarElementosTablaSegmentos();
 			mostrarDatosMarcos();
 			log_info(loggerMemoria,"Se guardo correctamente");
+			pthread_mutex_unlock(&semTablaSegmentos);
 			return "INFO: Se guardo correctamente";
 		}
 	}

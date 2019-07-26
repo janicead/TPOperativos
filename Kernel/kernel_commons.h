@@ -196,7 +196,7 @@ void agregar_tabla(t_tabla* tabla);
 void agregar_memoria(int puerto, char* ip, int nro_memoria);
 bool memoria_existente(t_list* l_memorias,int id);
 void agregar_socket_mem(int nro_memoria, int socket);
-void sacar_memoria(int nro_memoria);
+void sacar_memoria(int nro_memoria, char* flag);
 void free_memoria_gossip(t_memoriaTablaDeGossip* memoria);
 bool validar_consistencia(char* consistencia);
 bool existe_tabla(char* nombre_tabla);

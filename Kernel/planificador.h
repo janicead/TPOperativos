@@ -22,7 +22,7 @@ t_memoria* obtener_memoria_por_id(int id);
 bool memoria_existente(t_list* l_memorias,int id);
 t_memoria* hash_memory(int key);
 t_memoria* random_memory(t_list* lista);
-bool verificar_memoria_caida(char* respuesta,t_LQL_operacion* op, t_memoria* mem);
+bool verificar_memoria_caida(char* respuesta,t_LQL_operacion* op, t_memoria* mem, char* flag);
 bool verificar_memoria_caida2(char* respuesta, t_memoria* mem_id);
 
 //FUNCIONES DE COMANDOS
@@ -31,7 +31,7 @@ void lql_insert(t_LQL_operacion* op, t_memoria* mem);
 void lql_create(t_LQL_operacion* op);
 void lql_describe(t_LQL_operacion* op);
 void lql_drop(t_LQL_operacion* op);
-void lql_journal(t_list* list_mem, t_LQL_operacion* op);
+void lql_journal(t_list* list_mem, t_LQL_operacion* op, char* flag);
 void lql_add(t_LQL_operacion* op);
 void lql_run(FILE* archivo, t_LQL_operacion* op);
 void lql_metrics(bool mostrarEnConsola);

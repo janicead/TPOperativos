@@ -17,10 +17,10 @@ void conectarAMemoria(char* ip, int puerto){
 	recibirMemoriasTablaDeGossip(socketServer,KERNELOMEMORIA,loggerKernel, tablaDeGossipKernel);
 	agregarAMemoriasConectadasAKernel(puerto, ip, true, nroMemoria);
 	conectarmeAMemorias();
-	puts("MEMORIAS A LAS QUE ME CONECTE \n");
+	/*puts("MEMORIAS A LAS QUE ME CONECTE \n");
 	mostrarmeMemoriasTablaGossip(memoriasALasQueMeConecte);
 	puts("MEMORIAS EN MI TABLA DE GOSSIP \n");
-	mostrarmeMemoriasTablaGossip(tablaDeGossipKernel);
+	mostrarmeMemoriasTablaGossip(tablaDeGossipKernel);*/
 	free(memoriasDondeEstoyConectado);
 
 	}
@@ -180,7 +180,7 @@ void conectarmeAMemorias(){
 		t_memoriaTablaDeGossip *memoriaTablaGossip =(t_memoriaTablaDeGossip*)elemento;
 		int nroMemoriaTablaGossip = memoriaTablaGossip->numeroDeMemoria;
 		if(revisarQueNoEsteEnListaMemoriasConectadas(nroMemoriaTablaGossip)==1){
-			printf("Aca entre porque la memoria %d no estaba activa\n", memoriaTablaGossip->numeroDeMemoria);
+			//printf("Aca entre porque la memoria %d no estaba activa\n", memoriaTablaGossip->numeroDeMemoria);
 			conectarAMemoria(memoriaTablaGossip->ip, memoriaTablaGossip->puerto);
 		}
 	}
