@@ -277,7 +277,7 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 			int t = tamanioLista(lru->tablaPaginas);
 			if(t==0){
 				pthread_mutex_unlock(&semTablaSegmentos);
-				DROPMemoria(lru->nombreTabla);
+				DROPMemoriaExclusivoLRU(lru->nombreTabla);
 				pthread_mutex_lock(&semTablaSegmentos);
 			}
 			t_registro* registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
@@ -722,6 +722,30 @@ char* DROPMemoria(char* nombreTabla){
 		pthread_mutex_unlock(&semLfs);
 		return  value;
 
+}
+
+
+void DROPMemoriaExclusivoLRU(char* nombreTabla){
+	pthread_mutex_lock(&semTablaSegmentos);
+	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
+	int cantSegmentos = tamanioLista(tablaDeSegmentos);
+	pthread_mutex_unlock(&semTablaSegmentos);
+		if(ubicacionSegmento!=(cantSegmentos+1)){
+			log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
+			pthread_mutex_lock(&semTablaSegmentos);
+			void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
+			t_segmento *segmento =(t_segmento*)elemento;
+			quitarEspaciosGuardadosEnMemoria(segmento->tablaPaginas);
+			borrarTablaDePaginas(segmento->tablaPaginas);
+			pthread_mutex_unlock(&semTablaSegmentos);
+			list_remove(tablaDeSegmentos, ubicacionSegmento);
+			reacomodarNumerosDePaginas();
+			free(segmento->nombreTabla);
+			free(segmento);
+		}
+		else{
+			log_info(loggerMemoria,"Dicha tabla no se encuentra en la tabla de SEGMENTOS");
+		}
 }
 
 //------------------------------------------------JOURNAL------------------------------------------------//
