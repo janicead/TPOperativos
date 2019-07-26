@@ -123,6 +123,7 @@ void descomposicionDelJOURNAL(char* journalGigante);
 char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado);
 char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long int timeStamp);
 char* DROPMemoria(char* nombreTabla);
+void DROPMemoriaExclusivoLRU(char* nombreTabla);
 void JOURNALMemoria();
 char* DESCRIBETodasLasTablasMemoria();
 char* DESCRIBEMemoria( char* nombreTabla);

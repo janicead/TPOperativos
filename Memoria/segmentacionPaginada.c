@@ -277,7 +277,7 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 			int t = tamanioLista(lru->tablaPaginas);
 			if(t==0){
 				pthread_mutex_unlock(&semTablaSegmentos);
-				DROPMemoria(lru->nombreTabla);
+				DROPMemoriaExclusivoLRU(lru->nombreTabla);
 				pthread_mutex_lock(&semTablaSegmentos);
 			}
 			t_registro* registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
@@ -295,7 +295,6 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 		else {
 			pthread_mutex_unlock(&semCantMaxMarcos);
 			log_info(loggerMemoria,"Tengo que realizar JOURNAL\n");
-			free(lru->nombreTabla);
 			free(lru);
 			return -1;
 		}
@@ -560,14 +559,14 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 			}
 			guardarEnTablaDePaginas(segmento, nroMarco, key, 0);
 			reacomodarNumerosDePaginas();
+			mostrarElementosTablaSegmentos();
+			mostrarDatosMarcos();
 			pthread_mutex_unlock(&semTablaSegmentos);
 
 			retardoLFSAplicado();
 
 			pthread_mutex_unlock(&semLfs);
 
-			mostrarElementosTablaSegmentos();
-			mostrarDatosMarcos();
 			log_info(loggerMemoria,value);
 			return value;
 			}
@@ -656,11 +655,11 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 			pthread_mutex_lock(&semTablaSegmentos);
 			guardarEnTablaDePaginas(segmento, indice, key, 1);
 			reacomodarNumerosDePaginas();
-			pthread_mutex_unlock(&semTablaSegmentos);
 			log_info(loggerMemoria,"Se guardo en la tabla de PAGINAS y en la MEMORIA");
 			mostrarElementosTablaSegmentos();
 			mostrarDatosMarcos();
 			log_info(loggerMemoria,"Se guardo correctamente");
+			pthread_mutex_unlock(&semTablaSegmentos);
 			return "INFO: Se guardo correctamente";
 		}
 	}
@@ -723,6 +722,30 @@ char* DROPMemoria(char* nombreTabla){
 		pthread_mutex_unlock(&semLfs);
 		return  value;
 
+}
+
+
+void DROPMemoriaExclusivoLRU(char* nombreTabla){
+	pthread_mutex_lock(&semTablaSegmentos);
+	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
+	int cantSegmentos = tamanioLista(tablaDeSegmentos);
+	pthread_mutex_unlock(&semTablaSegmentos);
+		if(ubicacionSegmento!=(cantSegmentos+1)){
+			log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
+			pthread_mutex_lock(&semTablaSegmentos);
+			void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
+			t_segmento *segmento =(t_segmento*)elemento;
+			quitarEspaciosGuardadosEnMemoria(segmento->tablaPaginas);
+			borrarTablaDePaginas(segmento->tablaPaginas);
+			pthread_mutex_unlock(&semTablaSegmentos);
+			list_remove(tablaDeSegmentos, ubicacionSegmento);
+			reacomodarNumerosDePaginas();
+			free(segmento->nombreTabla);
+			free(segmento);
+		}
+		else{
+			log_info(loggerMemoria,"Dicha tabla no se encuentra en la tabla de SEGMENTOS");
+		}
 }
 
 //------------------------------------------------JOURNAL------------------------------------------------//
