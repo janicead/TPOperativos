@@ -361,9 +361,9 @@ void leerConfigMetadata(int showMetadata)
 
 	if(showMetadata)
 	{
-		log_info(logger,"TAMANIO_BLOQUES: %d\nCANTIDAD_BLOQUES: %d\nMAGIC_NUMBER: %s\n\n",metadata.tamanioBloque,metadata.cantidadBloques,metadata.numeroMagico);
-		//log_info(logger,"CANTIDAD_BLOQUES: %d\n",metadata.cantidadBloques);
-		//log_info(logger,"MAGIC_NUMBER: %s\n\n",metadata.numeroMagico);
+		log_info(logger,"TAMANIO_BLOQUES: %d\n",metadata.tamanioBloque);
+		log_info(logger,"CANTIDAD_BLOQUES: %d\n",metadata.cantidadBloques);
+		log_info(logger,"MAGIC_NUMBER: %s\n\n",metadata.numeroMagico);
 	}
 
 }
@@ -587,9 +587,7 @@ void obtenerBitArrayPersistido()
 	}
 	else
 	{
-		//printf("No exite el archivo Bitmap.bin, fopen()\n");
-		log_info(logger,"No exite el archivo Bitmap.bin");
-		log_info(logger,"Bitmap.bin creado, correspondiente a Metadata.bin");
+		printf("No exite el archivo Bitmap.bin, fopen()\n");
 		//exit(EXIT_FAILURE);
 		//free(nombreAbsoluto);
 		//exitLFS(1); //exitGracefully(EXIT_FAILURE);
