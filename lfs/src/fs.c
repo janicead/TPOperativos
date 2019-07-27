@@ -361,9 +361,9 @@ void leerConfigMetadata(int showMetadata)
 
 	if(showMetadata)
 	{
-		log_info(logger,"TAMANIO_BLOQUES: %d\n",metadata.tamanioBloque);
-		log_info(logger,"CANTIDAD_BLOQUES: %d\n",metadata.cantidadBloques);
-		log_info(logger,"MAGIC_NUMBER: %s\n\n",metadata.numeroMagico);
+		log_info(logger,"TAMANIO_BLOQUES: %d\nCANTIDAD_BLOQUES: %d\nMAGIC_NUMBER: %s\n\n",metadata.tamanioBloque,metadata.cantidadBloques,metadata.numeroMagico);
+		//log_info(logger,"CANTIDAD_BLOQUES: %d\n",metadata.cantidadBloques);
+		//log_info(logger,"MAGIC_NUMBER: %s\n\n",metadata.numeroMagico);
 	}
 
 }
@@ -555,13 +555,13 @@ char *leerBloqueDe(char *pathArchivoBloque,int nBytes)
 	f = fopen(pathArchivoBloque,"rb");
 	if (f == NULL)
 	{
-		puts(pathArchivoBloque);
 		printf("Error no existe el archivo bloque \n");
 		exitGracefully(EXIT_FAILURE);
 	}
 
 	fread(bloqueNBytes,sizeof(char),nBytes,f);
 	bloqueNBytes[nBytes] = '\0';
+
 	fclose(f);
 	return bloqueNBytes;
 }
@@ -588,7 +588,9 @@ void obtenerBitArrayPersistido()
 	}
 	else
 	{
-		printf("No exite el archivo Bitmap.bin, fopen()\n");
+		//printf("No exite el archivo Bitmap.bin, fopen()\n");
+		log_info(logger,"No exite el archivo Bitmap.bin");
+		log_info(logger,"Bitmap.bin creado, correspondiente a Metadata.bin");
 		//exit(EXIT_FAILURE);
 		//free(nombreAbsoluto);
 		//exitLFS(1); //exitGracefully(EXIT_FAILURE);
