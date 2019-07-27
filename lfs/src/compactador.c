@@ -230,11 +230,13 @@ int numeroDeParticion(int cantParticiones, int unaKey)
 void *hiloCOMPACTADOR(void *algunaTabla)
 {
 	t_Tabla *unaTabla = (t_Tabla*)algunaTabla;
+	pthread_mutex_lock(&LISSANDRA);
 	t_MetadataTabla *unMetadataTabla = obtenerMetadataTabla(unaTabla->nombreTabla);
+	pthread_mutex_unlock(&LISSANDRA);
 
 	while(1)
 	{
-		sleep(unMetadataTabla->Compaction_Time);
+		usleep(unMetadataTabla->Compaction_Time*1000);
 
 		//pthread_mutex_lock(&unaTabla->noBloqueado);
 		//pthread_mutex_lock(&elFS);

@@ -14,6 +14,7 @@ int main(void) {
 	pthread_mutex_init(&laMEMTABLE,NULL);
 	pthread_mutex_init(&elFS,NULL);
 	pthread_mutex_init(&LISSANDRA,NULL);
+	//pthread_mutex_init(&semaforoSocketLFS, NULL);
 
 	iniciarFileSystemLISSANDRA();
 
@@ -1023,7 +1024,7 @@ void enviarRespuesta(int socketReceptor, int protocoloID, char *respuesta)
 void *asignadorLISSANDRA(void *arg)
 {
 	int socketNuevaConexion;
-
+	//pthread_mutex_lock(&semaforoSocketLFS);
 	while( (socketNuevaConexion = aceptarConexiones(socketLFS)) )
 	{
 		t_Memoria *unaMemoria = malloc(sizeof(t_Memoria));
@@ -1045,7 +1046,7 @@ void *asignadorLISSANDRA(void *arg)
 		perror("accept failed");
 		exitLFS(1);
 	}
-
+	//pthread_mutex_unlock(&semaforoSocketLFS);
 	return 0;
 }
 

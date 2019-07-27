@@ -555,13 +555,14 @@ char *leerBloqueDe(char *pathArchivoBloque,int nBytes)
 	f = fopen(pathArchivoBloque,"rb");
 	if (f == NULL)
 	{
+		puts(pathArchivoBloque);
 		printf("Error no existe el archivo bloque \n");
 		exitGracefully(EXIT_FAILURE);
 	}
 
 	fread(bloqueNBytes,sizeof(char),nBytes,f);
 	bloqueNBytes[nBytes] = '\0';
-
+	fclose(f);
 	return bloqueNBytes;
 }
 

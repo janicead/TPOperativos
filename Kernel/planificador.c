@@ -49,7 +49,7 @@ void* ejecutar(){
 					operacion->success = true;
 					break;
 			}
-			sleep(sleep_time);
+			usleep(sleep_time*1000);
 			if(!operacion->success){
 				lcb->abortar = true;
 				break;

@@ -384,7 +384,6 @@ t_LRU * LRU (){
 				lru->tablaPaginas= segmento->tablaPaginas;
 				lru->nombreTabla= malloc(strlen(segmento->nombreTabla)+1);
 				strcpy(lru->nombreTabla, segmento->nombreTabla);
-
 			}
 		}
 	}
@@ -735,7 +734,7 @@ void DROPMemoriaExclusivoLRU(char* nombreTabla){
 			pthread_mutex_lock(&semTablaSegmentos);
 			void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
 			t_segmento *segmento =(t_segmento*)elemento;
-			quitarEspaciosGuardadosEnMemoria(segmento->tablaPaginas);
+			//quitarEspaciosGuardadosEnMemoria(segmento->tablaPaginas);
 			borrarTablaDePaginas(segmento->tablaPaginas);
 			pthread_mutex_unlock(&semTablaSegmentos);
 			list_remove(tablaDeSegmentos, ubicacionSegmento);

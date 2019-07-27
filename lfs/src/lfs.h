@@ -40,6 +40,7 @@
 pthread_mutex_t laMEMTABLE;
 pthread_mutex_t elFS;
 pthread_mutex_t LISSANDRA;
+//pthread_mutex_t semaforoSocketLFS;
 
 //### CONFIG #################
 t_config *archivoConfig;
