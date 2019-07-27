@@ -3,11 +3,11 @@
 //
 int socketLFS; //SOCKET ESCUCHANDO, SERVIDOR
 #define printLOGGER 0  //SI=1,  NO=0
-char *pathLFSconf;
+char *pathLFSconf = "../../lfs.conf";
 
 int main(int argc, char *argv[])
 {
-	if(argc!=2)
+	/*if(argc!=2)
 	{
 	    printf("No ingreso el Nro de lfs.conf\n");
 	    return 0;
@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 	{
 		pathLFSconf = string_from_format("../../lfs%s.conf",argv[1]);
 		printf("%s\n",pathLFSconf);
-	}
+	}*/
 
 	logger = log_create("lfs.log", "lfs", printLOGGER,LOG_LEVEL_INFO);
 	log_info(logger,"\n\nINICIANDO PROCESO LFS...");
@@ -147,7 +147,7 @@ void exitLFS(int return_nr)
 
 	pthread_mutex_destroy(&config_sem);
 
-	free(pathLFSconf);
+	//free(pathLFSconf);
 	//close(socketLFS);
 	exit(return_nr);
 }

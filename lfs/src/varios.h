@@ -2,6 +2,7 @@
 #define VARIOS_H_
 
 #include <stdio.h>
+#include <stdlib.h>
 
 
 /* EL ARRAY DEBE TERMINAR CON EL ULTIMO ELEMENTO EN NULL */
