@@ -1,6 +1,7 @@
 #include "varios.h"
 
 
+
 void freeArrayDePunteros(char **unArrayDePunteros)
 {
 	int i;

@@ -6,7 +6,7 @@ int socketLFS; //SOCKET ESCUCHANDO, SERVIDOR
 char *pathLFSconf = "../../lfs.conf";
 
 int main(int argc, char *argv[])
-{
+{//
 	/*if(argc!=2)
 	{
 	    printf("No ingreso el Nro de lfs.conf\n");
