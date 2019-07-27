@@ -3,24 +3,8 @@
 //
 int socketLFS; //SOCKET ESCUCHANDO, SERVIDOR
 #define printLOGGER 0  //SI=1,  NO=0
-char *pathLFSconf;
 
-int main(int argc, char *argv[])
-{
-	if(argc!=2)
-	{
-	    printf("No ingreso el Nro de lfs.conf\n");
-	    return 0;
-
-	}
-	else
-	{
-		pathLFSconf = string_from_format("../../lfs%s.conf",argv[1]);
-		printf("%s\n",pathLFSconf);
-	}
-
-	logger = log_create("lfs.log", "lfs", printLOGGER,LOG_LEVEL_INFO);
-	log_info(logger,"\n\nINICIANDO PROCESO LFS...");
+int main(void) {
 
 	leerConfigLFS();
 	mostrarValoresDeConfig();
@@ -30,8 +14,7 @@ int main(int argc, char *argv[])
 	pthread_mutex_init(&laMEMTABLE,NULL);
 	pthread_mutex_init(&elFS,NULL);
 	pthread_mutex_init(&LISSANDRA,NULL);
-
-	pthread_mutex_init(&config_sem,NULL);
+	//pthread_mutex_init(&semaforoSocketLFS, NULL);
 
 	iniciarFileSystemLISSANDRA();
 
@@ -48,16 +31,7 @@ int main(int argc, char *argv[])
 		exitLFS(1);
 	}
 
-
-	pthread_t hiloIdConfig;
-	if( pthread_create(&hiloIdConfig,NULL,observer_config,NULL) < 0)
-	{
-		perror("No se pudo crear el hilo observer config");
-		exitLFS(1);
-	}
-
-	LISSANDRAFS();
-	//printf("\nCONSOLA...\n");
+	printf("\nCONSOLA...\n");
 	consolaAPI();
 
 	destruirListasGenerales();
@@ -69,11 +43,11 @@ int main(int argc, char *argv[])
 
 void leerConfigLFS()
 {
-	archivoConfig = config_create(pathLFSconf);
+	archivoConfig = config_create("../../lfs.conf");
 	//archivoConfig = config_create("/home/utnso/workspace/backUpTP1C2019/tp-2019-1c-BEFGN/lfs.conf");
-	//logger = log_create("lfs.log", "lfs", printLOGGER,LOG_LEVEL_INFO);
+	logger = log_create("lfs.log", "lfs", printLOGGER,LOG_LEVEL_INFO);
 
-	//log_info(logger,"\n\nINICIANDO PROCESO LFS...");
+	log_info(logger,"\n\nINICIANDO PROCESO LFS...");
 	log_info(logger, "Leyendo archivo de configuracion...");
 
 
@@ -144,35 +118,15 @@ void exitLFS(int return_nr)
 
 	pthread_mutex_unlock(&LISSANDRA);
 	pthread_mutex_destroy(&LISSANDRA);
-
-	pthread_mutex_destroy(&config_sem);
-
-	free(pathLFSconf);
 	//close(socketLFS);
 	exit(return_nr);
 }
 
-int esUnComando(char *unComando)
-{
-	int r = 0;
-
-	if(strcmp(unComando,"EXIT") == 0) return 1;
-	if(strcmp(unComando,"LFS") == 0) return 1;
-	if(strcmp(unComando,"BITMAP") == 0) return 1;
-	if(strcmp(unComando,"SELECT") == 0) return 1;
-	if(strcmp(unComando,"INSERT") == 0) return 1;
-	if(strcmp(unComando,"CREATE") == 0) return 1;
-	if(strcmp(unComando,"DESCRIBE") == 0) return 1;
-	if(strcmp(unComando,"DROP") == 0) return 1;
-
-	return r;
-}
 void consolaAPI()
 {
 	char *linea;
 	char **operacion;
 	int cantArgumentos;
-	int tiempoRETARDO;
 
 	while(1)
 	{
@@ -189,50 +143,21 @@ void consolaAPI()
 	    cantArgumentos = longitudArrayDePunteros(operacion) - 1; //XQ LA OPERACION CUENTA
 	    string_to_upper(operacion[0]);
 
-	    if(esUnComando(operacion[0]))
-	    {
-	    if(!strcmp(operacion[0], "BITMAP")) //###
-	    {
-	    	if(cantArgumentos == 0)
-	    	{
-	    		mostrarBitsDeBloques(8);
-	    	}
-	    	else
-	    		printf("Esta operacion no admite parametros\n");
+	    //realiarRetardo(configLFS.retardo);
 
-	    }
-	    else if(!strcmp(operacion[0], "LFS")) //###
-	    {
-	    	if(cantArgumentos == 0)
-	    	{
-	    		LISSANDRAFS();
-	    	}
-	    	else
-	    		printf("Esta operacion no admite parametros\n");
-
-	    }
-	    else if(!strcmp(operacion[0], "EXIT")) //###
+	    if(!strcmp(operacion[0], "EXIT")) //###
 	    {
 	    	if(cantArgumentos == 0)
 	    	{
 	    		pthread_mutex_lock(&LISSANDRA);
 	    		log_info(logger,"Finalizo LISSANDRA FS");
-	    		printf("Finalizo LISSANDRA FS~\n");
 	    		break;
 	    	}
 	    	else
 	    		printf("Esta operacion no admite parametros\n");
 
 	    }
-
-	    pthread_mutex_lock(&config_sem);
-	    tiempoRETARDO = configLFS.retardo;
-	    pthread_mutex_unlock(&config_sem);
-
-	    //printf("\nconfigLFS.retardo: %d\n",tiempoRETARDO);
-	    realizarRetardo(tiempoRETARDO);
-
-	    if(!strcmp(operacion[0], "SELECT")) //###
+	    else if(!strcmp(operacion[0], "SELECT")) //###
 	    {
 	    	if(cantArgumentos == 2)
 	    	{
@@ -384,10 +309,9 @@ void consolaAPI()
 	    		printf("DROP [NOMBRE_TABLA]\n\n");
 	    	}
 	    }
-	    }
 	    else
 	    {
-	    	printf("\nOperacion no valida por la API\n");
+	    	log_info(logger,"Operacion no valida por la API");
 	    	//realizarDUMP(); ///
 	    	/*t_list *unArchivoComoLista;
 	    	unArchivoComoLista = obtenerArchivoComoLista("t4/dump0.tmp");
@@ -534,25 +458,14 @@ void realizarMultiplexacion(int socketEscuchando) //EN LISTEN()
 
 void realizarProtocoloDelPackage(t_PaqueteDeDatos *packageRecibido, int socketEmisor)
 {
-	int tiempoRETARDO;
-	pthread_mutex_lock(&config_sem);
-	tiempoRETARDO = configLFS.retardo;
-	pthread_mutex_unlock(&config_sem);
-
-	//printf("\nconfigLFS.retardo: %d\n",tiempoRETARDO);
-	realizarRetardo(tiempoRETARDO);
-
+	//
 	if(packageRecibido->ID == 11) //11; HANDSHAKE. 12: ES LA RESPUESTA
 	{
 		log_info(logger,"Realizando respectivo HandShake");
 		char *tamanioValue = string_from_format("%d",configLFS.tamanioValue);
 		realizarHandshakeAMemoria(logger,socketEmisor,packageRecibido,tamanioValue);
 	}
-
-	//pthread_mutex_lock(&config_sem);
-	//realizarRetardo(configLFS.retardo);
-	//pthread_mutex_unlock(&config_sem);
-
+	//realiarRetardo(configLFS.retardo);
 	if(packageRecibido->ID == 13) //13: SELECT, osea q DATOS es una structura t_SELECT
 	{
 		t_SELECT *unSELECT;
@@ -617,8 +530,7 @@ void realizarProtocoloDelPackage(t_PaqueteDeDatos *packageRecibido, int socketEm
 		log_info(logger,"\nQuery recibido: DESCRIBE [%s]",unDESCRIBE->nombreTabla);
 
 		char *respuesta = realizarDESCRIBE(unDESCRIBE);
-		//log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
-		log_info(logger,"Respuesta: DESCRIBE_SENDED (serializado)\n------------------------------------------");
+		log_info(logger,"Respuesta: %s\n------------------------------------------",respuesta);
 
 		enviarRespuesta(socketEmisor,20,respuesta); //20: RESPUESTA DE UN PROTOCOLO = 19
 
@@ -1112,7 +1024,7 @@ void enviarRespuesta(int socketReceptor, int protocoloID, char *respuesta)
 void *asignadorLISSANDRA(void *arg)
 {
 	int socketNuevaConexion;
-
+	//pthread_mutex_lock(&semaforoSocketLFS);
 	while( (socketNuevaConexion = aceptarConexiones(socketLFS)) )
 	{
 		t_Memoria *unaMemoria = malloc(sizeof(t_Memoria));
@@ -1134,7 +1046,7 @@ void *asignadorLISSANDRA(void *arg)
 		perror("accept failed");
 		exitLFS(1);
 	}
-
+	//pthread_mutex_unlock(&semaforoSocketLFS);
 	return 0;
 }
 
@@ -1207,41 +1119,11 @@ void freeT_Tabla(t_Tabla *unaTabla)
 	free(unaTabla);
 }
 
-void realizarRetardo(int cantSegundos)
+void realiarRetardo(int cantSegundos)
 {
 	sleep(cantSegundos);
 }
 
-void LISSANDRAFS(void)
-{
-	printf("\033[01;31m       _      _____  _____ _____         _   _ _____  _____            \n");
-	printf("      | |    |_   _|/ ____/ ____|  /\\   | \\ | |  __ \\|  __ \\     /\\    \n");
-	printf("      | |      | | | (___| (___   /  \\  |  \\| | |  | | |__) |   /  \\   \n");
-	printf("      | |      | |  \\___ \\\\___ \\ / /\\ \\ | . ` | |  | |  _  /   / /\\ \\  \n");
-	printf("      | |____ _| |_ ____) |___) / ____ \\| |\\  | |__| | | \\ \\  / ____ \\ \n");
-	printf("      |______|_____|_____/_____/_/    \\_\\_| \\_|_____/|_|  \\_\\/_/    \\_\\\n");
-	printf("\033[01;36m                                     ......");
-	//printf("        \033[01;37mUTN ~ Sistemas Operativos\n");
-	printf("              \033[01;31mFILE SYSTEM~\n");
-	printf("\033[01;36m        ....                        .;loool::,...                              \n");
-	printf("        .,;,..  ....                 .';cxkkkxo:..                             \n");
-	printf("      ....:lc;...';..                  ..,coxkkkd:'...                         \n");
-	printf("      .,;;;:loc,.,:;.   ....              ..,cxOOkxdc;'....                    \n");
-	printf("       .:oolcclc::c:'.  .,;.                 .'cxOOOOxdolc:;,,'.               \n");
-	printf("        .,cddolloolc:,...,:,.                  .'cxO00OOOkkxxdoc;'.            \n");
-	printf("          .;odddoooollc:;,;,'..                  .:xO0000OOkkxxdoc;'.          \n");
-	printf("            .:ldkkxxdoolcc:;;,'...............,,,,:dO0000OOkkxddollc;..        \n");
-	printf("              .'cdkOkxdooolc:;;;;;;;;;,;;;;cldxxdoxO000OOOkkxxddooolc;,.       \n");
-	printf("                .,coxkkOOOkxdooodxdddolooxkOO00OOO0000OOkkkxxxddooolc:;,.      \n");
-	printf("                  ..;loxkkOkk00JOSELUIS~00OOO00000OOOOkkkkxxddddooollc:,.      \n");
-	printf("                     ..;cldxxxk00SIñANI00kkkOOOOOOOkkkkkxxxddddooolllc:,'.     \n");
-	printf("                       ...,:looooRAMOSddddddddddddxdddddddddoooooolllc:;,.     \n");
-	printf("\033[01;37m          UTN BA\033[01;36m           .',;:::ccc:ccccclllllllllllllooollloolllllc:;;,.    \n");
-	printf("\033[01;37m    Sistemas Operativos\033[01;36m        .............''''''',',,,;:::cllllllccc:;;;.    \n");
-	printf("\033[01;37m          1C2019\033[01;36m                                       ...',;;:::c:::::;;;,.   \n");
-	printf("                                                       ...'',,,;;:::;;;;;;'.  \n");
-	printf("\033[22;32m");
-}
 
 //####################################
 //compactador.c
@@ -1286,28 +1168,3 @@ void persistirRegistrarDUMP(t_Tabla *unaTabla,char *laTablaDUMPEADA)
 		}
 	}
 }*/
-
-void* observer_config()
-{
-	int file_descriptor,file_observer;
-	int event_size = sizeof(struct inotify_event);
-	int max_cant_cambios = 1024;
-	int max_file_name_size = 24;
-	int buffer_size = max_cant_cambios* (event_size + max_file_name_size);
-	char buffer[buffer_size];
-
-	file_descriptor = inotify_init();
-	file_observer = inotify_add_watch(file_descriptor,pathLFSconf,IN_MODIFY);
-
-	while(1)
-	{
-		read(file_descriptor,buffer,buffer_size);
-		pthread_mutex_lock(&config_sem);
-		leerConfigLFS();
-		pthread_mutex_unlock(&config_sem);
-	}
-
-	inotify_rm_watch(file_descriptor,file_observer);
-	close(file_descriptor);
-	return NULL;
-}
