@@ -75,6 +75,7 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 
 		if(string_is_empty(unDESCRIBE->nombreTabla)){
 			char* respuesta = DESCRIBETodasLasTablasMemoria();
+			puts(respuesta);
 			enviarRespuesta(socketEmisor,id_respuesta_describe, respuesta);
 			if(!string_equals_ignore_case(respuesta,"LFS_CAIDO")){
 			free(respuesta);}

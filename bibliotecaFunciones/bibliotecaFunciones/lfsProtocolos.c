@@ -173,7 +173,6 @@ char *opDESCRIBE(int socketReceptor, char* unNombreTabla)
 	t_PaqueteDeDatos *packageRecibido = recibirPaquete(socketReceptor);
 	//printf("fd: %d\n",socketReceptor); ///
 	//printf("package->ID: %d\n",packageRecibido->ID); ///
-
 	if(packageRecibido->ID == 0 || packageRecibido->Datos==NULL){
 		char* rsta = malloc(strlen("MEMORIA_DESCONECTADA")+1);
 		strcpy(rsta, "MEMORIA_DESCONECTADA");
@@ -183,7 +182,6 @@ char *opDESCRIBE(int socketReceptor, char* unNombreTabla)
 
 	char *respuesta = deserializarRespuesta(packageRecibido->Datos);
 	freePackage(packageRecibido);
-
 	return respuesta;
 }
 

@@ -101,7 +101,8 @@ int buscarTablaSegmentos(char* nombreTabla){
 
 t_segmento* guardarEnTablaDeSegmentos(char* nombreTabla){
 	t_segmento* segmento = malloc(sizeof(t_segmento));
-	segmento->nombreTabla = strdup(nombreTabla);
+	segmento->nombreTabla = malloc(strlen(nombreTabla)+1);
+	strcpy(segmento->nombreTabla, nombreTabla);
 	segmento->tablaPaginas= list_create();
 	segmento->id =0;
 	//pthread_mutex_lock(&semTablaSegmentos);
@@ -445,7 +446,7 @@ void iniciarJournal(){
 				if(string_equals_ignore_case(value, "NO_EXISTE_TABLA")){
 					log_error(loggerMemoria, "La tabla '%s' no existe", segmento->nombreTabla);
 				}
-				else if (string_equals_ignore_case(value, "MEMORIA DESCONECTADA")){
+				else if (string_equals_ignore_case(value, "MEMORIA_DESCONECTADA")){
 					socketLFS= 0;
 					log_error(loggerMemoria, "El LFS esta DESCONECTADO, NO se podra realizar el JOURNAL");
 					free(registro->value);
@@ -602,7 +603,7 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 				pthread_mutex_unlock(&semLfs);
 				pthread_mutex_unlock(&semTablaSegmentos);
 				log_info(loggerMemoria,"FULL");
-
+				free(value);
 				return "FULL";
 			}
 			t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
@@ -711,7 +712,7 @@ char* DROPMemoria(char* nombreTabla){
 			return "LFS_CAIDO";
 		}
 		char* value = opDROP(socketLFS,nombreTabla);
-		if (string_equals_ignore_case(value, "MEMORIA DESCONECTADA")){
+		if (string_equals_ignore_case(value, "MEMORIA_DESCONECTADA")){
 			socketLFS= 0;
 			pthread_mutex_unlock(&semLfs);
 			free(value);
@@ -772,7 +773,7 @@ char* DESCRIBETodasLasTablasMemoria(){
 		return "LFS_CAIDO";
 	}
 	char* value = opDESCRIBE(socketLFS,"ALL_TABLES");
-	if (string_equals_ignore_case(value, "MEMORIA DESCONECTADA")){
+	if (string_equals_ignore_case(value, "MEMORIA_DESCONECTADA")){
 		socketLFS= 0;
 		pthread_mutex_unlock(&semLfs);
 		free(value);
@@ -790,7 +791,7 @@ char* DESCRIBEMemoria( char* nombreTabla){
 		return "LFS_CAIDO";
 	}
 	char* value = opDESCRIBE(socketLFS,nombreTabla);
-	if (string_equals_ignore_case(value, "MEMORIA DESCONECTADA")){
+	if (string_equals_ignore_case(value, "MEMORIA_DESCONECTADA")){
 		socketLFS= 0;
 		pthread_mutex_unlock(&semLfs);
 		free(value);
@@ -808,7 +809,7 @@ char* CREATEMemoria(char* nombreTabla, char* tipoConsistencia, int nroParticione
 		return "LFS_CAIDO";
 	}
 	char* value = opCREATE(socketLFS,nombreTabla, tipoConsistencia, nroParticiones, compactionTime);
-	if (string_equals_ignore_case(value, "MEMORIA DESCONECTADA")){
+	if (string_equals_ignore_case(value, "MEMORIA_DESCONECTADA")){
 		socketLFS= 0;
 		pthread_mutex_unlock(&semLfs);
 		free(value);
