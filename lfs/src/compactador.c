@@ -1,7 +1,6 @@
 #include "compactador.h"
 //#include "lfs.h"
 
-/* LA LISTA Q RETORNA ES DE REGISTROS */
 t_list *obtenerArchivoComoLista(char *unNombreTablaArchivo)
 {
 	t_list *unaLista = list_create();
@@ -54,7 +53,6 @@ char *dumpearUnaListaDeRegistros(t_list *unaListaRegistros)
 	//printf("\ndumpearUnaListaDeRegistros.tope: %d\n",tope); ///
 	if(tope == 0)
 	{
-		free(listaDumpeada);
 		return string_from_format("sinRegistros");
 	}
 
@@ -153,7 +151,7 @@ void realizarDUMP(void)
 			persistirRegistrarDUMP(unaTabla,unaTablaDUMPEADA);
 
 			//pthread_mutex_unlock(&unaTabla->noBloqueado);
-			free(unaTablaDUMPEADA);  //SE LIBERA EN persistirRegistrarDUMP().guardarDatosEnArchivoEnFS()
+			//free(unaTablaDUMPEADA);  //SE LIBERA EN persistirRegistrarDUMP()
 		}
 
 		log_info(logger,"Fin de DUMP de tablas\n------------------------------------------");
@@ -240,8 +238,6 @@ void *hiloCOMPACTADOR(void *algunaTabla)
 	t_Tabla *unaTabla = (t_Tabla*)algunaTabla;
 	t_MetadataTabla *unMetadataTabla = obtenerMetadataTabla(unaTabla->nombreTabla);
 	int microSegundos = unMetadataTabla->Compaction_Time * 1000;
-	int cantParticiones = unMetadataTabla->Partitions;
-	freeT_MetadataTabla(unMetadataTabla);
 
 	while(1)
 	{
@@ -251,7 +247,7 @@ void *hiloCOMPACTADOR(void *algunaTabla)
 		//pthread_mutex_lock(&unaTabla->noBloqueado);
 		//pthread_mutex_lock(&elFS);
 		pthread_mutex_lock(&LISSANDRA);
-		realizarCOMPACTAR(unaTabla,cantParticiones);
+		realizarCOMPACTAR(unaTabla,unMetadataTabla->Partitions);
 		pthread_mutex_unlock(&LISSANDRA);
 		//pthread_mutex_unlock(&elFS);
 		//pthread_mutex_unlock(&unaTabla->noBloqueado);
@@ -260,7 +256,7 @@ void *hiloCOMPACTADOR(void *algunaTabla)
 
 	}
 
-	//freeT_MetadataTabla(unMetadataTabla);
+	freeT_MetadataTabla(unMetadataTabla);
 	return 0;
 }
 
@@ -308,7 +304,7 @@ void realizarCOMPACTAR(t_Tabla *unaTabla, int cantParticiones)
 		}
 	}
 	else // LO COLOCO POR LAS DUDAS
-		log_info(logger,"\nNo hay archivos .TMP para compactar en tabla [%s]\n------------------------------------------",unaTabla->nombreTabla);
+		log_info(logger,"\nNo hay archivos .TMP para compactar en tabla [%s]",unaTabla->nombreTabla);
 
 
 	//CAMBIAR EXTENCION

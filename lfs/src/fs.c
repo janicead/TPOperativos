@@ -352,17 +352,16 @@ void leerConfigMetadata(int showMetadata)
 	}
 
 	if (config_has_property(archivoMetadata, "MAGIC_NUMBER")) {
-		metadata.numeroMagico = string_from_format("%s",config_get_string_value(archivoMetadata,"MAGIC_NUMBER"));
+		metadata.numeroMagico = config_get_string_value(archivoMetadata,"MAGIC_NUMBER");
 	} else {
 		log_error(logger,"No se encontro la key MAGIC_NUMBER en el archivo Metadata.bin");
 		exit(EXIT_FAILURE);
 	}
 
-	config_destroy(archivoMetadata);
 
 	if(showMetadata)
 	{
-		log_info(logger,"\n\nTAMANIO_BLOQUES: %d\nCANTIDAD_BLOQUES: %d\nMAGIC_NUMBER: %s\n\n",metadata.tamanioBloque,metadata.cantidadBloques,metadata.numeroMagico);
+		log_info(logger,"TAMANIO_BLOQUES: %d\nCANTIDAD_BLOQUES: %d\nMAGIC_NUMBER: %s\n\n",metadata.tamanioBloque,metadata.cantidadBloques,metadata.numeroMagico);
 		//log_info(logger,"CANTIDAD_BLOQUES: %d\n",metadata.cantidadBloques);
 		//log_info(logger,"MAGIC_NUMBER: %s\n\n",metadata.numeroMagico);
 	}
@@ -485,7 +484,6 @@ void guardarBufferArchivoEn(char *pathAbsoluto,char* bufferArchivo,int longBuffe
 	{
 		pathBloque = string_from_format("%s%s%s.bin",configLFS.puntoMontaje,dirBloques,unaMetadataArchivo->Bloques[i]);
 		escribirLineaEn(pathBloque,bufferEnBloques[i]);
-		free(pathBloque);
 	}
 
 	freeArrayDePunteros(bufferEnBloques);
@@ -1221,7 +1219,6 @@ char **enlistarCarpetaTabla(char *unPath)
 void cargarTablasPersistidasEnMEMTABLE(void)
 {
 	char *pathTablas = string_from_format("%s/Tables",configLFS.puntoMontaje);
-	//printf("[%s]\n",pathTablas); ///
 	char **listaTablas = enlistarElPath(pathTablas);
 	char *pathUnaTabla;
 	char **listaArchivosTMP;
