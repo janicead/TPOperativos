@@ -3,26 +3,27 @@
 //
 int socketLFS; //SOCKET ESCUCHANDO, SERVIDOR
 #define printLOGGER 0  //SI=1,  NO=0
-char *pathLFSconf = "../../lfs.conf";
+char *pathLFSconf;// = "../../lfs.conf";
 
 int main(int argc, char *argv[])
-{//
-	/*if(argc!=2)
+{
+	if(argc!=2)
 	{
-	    printf("No ingreso el Nro de lfs.conf\n");
+	    printf("No ingreso el Nro de archivo config\n");
 	    return 0;
 
 	}
 	else
 	{
 		pathLFSconf = string_from_format("../../lfs%s.conf",argv[1]);
-		printf("%s\n",pathLFSconf);
-	}*/
+		printf("\nEjecutando segun [%s]...\n",pathLFSconf);
+	}
 
 	logger = log_create("lfs.log", "lfs", printLOGGER,LOG_LEVEL_INFO);
 	log_info(logger,"\n\nINICIANDO PROCESO LFS...");
 
 	leerConfigLFS();
+
 	mostrarValoresDeConfig();
 
 	crearListasGenerales();
@@ -70,6 +71,7 @@ int main(int argc, char *argv[])
 void leerConfigLFS()
 {
 	archivoConfig = config_create(pathLFSconf);
+
 	//archivoConfig = config_create("/home/utnso/workspace/backUpTP1C2019/tp-2019-1c-BEFGN/lfs.conf");
 	//logger = log_create("lfs.log", "lfs", printLOGGER,LOG_LEVEL_INFO);
 
@@ -86,7 +88,7 @@ void leerConfigLFS()
 	}
 
 	if (config_has_property(archivoConfig, "PUNTO_MONTAJE"))
-		configLFS.puntoMontaje = config_get_string_value(archivoConfig,"PUNTO_MONTAJE");
+		configLFS.puntoMontaje = string_from_format("%s",config_get_string_value(archivoConfig,"PUNTO_MONTAJE"));
 	else
 	{
 		log_error(logger,"No se encontro la key PUNTO_MONTAJE en el archivo de configuracion");
@@ -116,6 +118,8 @@ void leerConfigLFS()
 		log_error(logger,"No se encontro la key TIEMPO_DUMP en el archivo de configuracion");
 		exitLFS(EXIT_FAILURE);
 	}
+
+	config_destroy(archivoConfig);
 }
 
 void mostrarValoresDeConfig(void)
@@ -133,10 +137,10 @@ void mostrarValoresDeConfig(void)
 
 void exitLFS(int return_nr)
 {
-	config_destroy(archivoConfig);
+	//config_destroy(archivoConfig);
 	//config_destroy(archivoMetadata);
 
-	config_destroy(archivoMetadata);
+	//config_destroy(archivoMetadata);
 	log_destroy(logger);
 
 	pthread_mutex_destroy(&laMEMTABLE);
@@ -684,6 +688,7 @@ char *realizarSELECT(t_SELECT *unSELECT)
 
 			list_add_all(listaRegistrosDeKEY,listaRegistrosFiltrados);
 			//VERIFICAR SI LUEGO listaRegistrosFiltrados ESTA VACIO O HAY Q LIBERAR
+
 		}
 
 		//--------------------------------------------------------
@@ -780,6 +785,7 @@ char *realizarINSERT(t_INSERT *unINSERT)
 
 	if(strcmp(respuesta,"YA_EXISTE_TABLA") == 0)
 	{
+		free(respuesta);
 		t_Tabla *tablaEncontrada = existeEnMemtable(unINSERT->nombreTabla);
 
 		if(tablaEncontrada!= NULL)
@@ -960,6 +966,7 @@ char *realizarDESCRIBE(t_DESCRIBE *unDESCRIBE)
 	}
 	else
 	{
+		free(r);
 		r = existeTablaEnFS(unDESCRIBE->nombreTabla);
 
 		if(strcmp(r,"YA_EXISTE_TABLA") == 0)
@@ -1024,6 +1031,7 @@ char *realizarDROP(t_DROP *unDROP)
 		borrarTablaEnMEMTABLE(unDROP->nombreTabla);
 		//printf("\ntamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
 
+		free(pathTabla);
 		r = string_from_format("SUCCESSFUL_DROP");
 
 	}
