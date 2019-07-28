@@ -114,6 +114,7 @@ typedef struct{
 	int cant_selects_inserts_ejecutados;
 	pthread_mutex_t socket_mem_sem;
 	bool asociada;
+	bool conectada;
 }t_memoria;
 
 char* puertoMemoria;

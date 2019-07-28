@@ -70,6 +70,7 @@ void agregar_memoria(int puerto, char* ip, int nro_memoria){
 	memoria->valida = true;
 	memoria->cant_selects_inserts_ejecutados = 0;
 	memoria->asociada = false;
+	memoria->conectada = true;
 	pthread_mutex_init(&(memoria->socket_mem_sem),NULL);
 	pthread_mutex_lock(&memorias_sem);
 	if(!list_any_satisfy(memorias,(void*) sameID)){
@@ -290,6 +291,7 @@ void free_memoria(t_memoria* memoria){
 		pthread_mutex_destroy(&(memoria->socket_mem_sem));
 	}
 	free(memoria);
+	memoria = NULL;
 	return;
 }
 
