@@ -148,6 +148,7 @@ void empaquetarEnviarMensaje(int socketReceptor, int unID, int longitudDatos, ch
 	t_PaqueteDeDatos *package;
 	char * paqueteListo;
 	int offset;
+
 	package = (t_PaqueteDeDatos *) malloc(sizeof(t_PaqueteDeDatos));
 	definirHeader(package, unID,longitudDatos);
 	package->Datos = datos;
@@ -184,6 +185,7 @@ int empaquetarEnviarMensaje2(int socketReceptor, int unID, int longitudDatos, ch
 	int offset;
 	package = (t_PaqueteDeDatos *) malloc(sizeof(t_PaqueteDeDatos));
 	definirHeader(package, unID,longitudDatos);
+
 	package->Datos = datos;
 
 	paqueteListo = malloc((sizeof(uint32_t)*2) + (package->longDatos));
@@ -341,8 +343,7 @@ t_PaqueteDeDatos *recibirPaquete(int socketEmisor)  //v1.5
 	t_PaqueteDeDatos *package;
 
 	package = (t_PaqueteDeDatos*) malloc(sizeof(t_PaqueteDeDatos));
-	package->Datos=NULL;
-
+	package->Datos = NULL;
 	bytesRecibidos = recv(socketEmisor, &package->ID,sizeof(uint32_t),MSG_WAITALL);
 	//printf("los bytes recibidos son %d\n", bytesRecibidos);
 	if(bytesRecibidos <= 0)
@@ -548,7 +549,7 @@ int cantMemoriasTablaDeGossip(t_list* tablaDeGossip){
 void agregarATablaDeGossip(int puerto, char* ipServidor, int nroMemoria,bool estado, t_list* tablaDeGossip){
 	t_memoriaTablaDeGossip * memoriaConectada = malloc (sizeof(t_memoriaTablaDeGossip));
 	memoriaConectada->puerto = puerto;
-	memoriaConectada->ip = (char*) malloc((strlen(ipServidor)+1)*sizeof(char));
+	memoriaConectada->ip = malloc((strlen(ipServidor)+1));
 	strcpy(memoriaConectada->ip,ipServidor);
 	memoriaConectada->numeroDeMemoria = nroMemoria;
 	memoriaConectada->conectado =estado;
