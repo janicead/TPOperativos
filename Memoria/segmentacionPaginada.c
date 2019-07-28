@@ -14,6 +14,7 @@ void definirTamanioMemoriaPrincipal(int tamanioValue){
 	marcosOcupados=(int*)calloc(cantMaxMarcos,sizeof(int));
 	tablaDeSegmentos= list_create();
 	iniciarSemaforos();
+	valorVerificador=0;
 
 
 }
@@ -96,7 +97,7 @@ int buscarTablaSegmentos(char* nombreTabla){
 			return i;
 		}
 	}
-	return cantSegmentos+1;
+	return -1;
 }
 
 t_segmento* guardarEnTablaDeSegmentos(char* nombreTabla){
@@ -279,6 +280,7 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 			if(t==0){
 				pthread_mutex_unlock(&semTablaSegmentos);
 				DROPMemoriaExclusivoLRU(lru->nombreTabla);
+				valorVerificador ++;
 				pthread_mutex_lock(&semTablaSegmentos);
 			}
 			t_registro* registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
@@ -457,6 +459,7 @@ void iniciarJournal(){
 				}
 				else{
 					log_info(loggerMemoria, "Se ha guardado en la tabla '%s' con key '%d' el value '%s'", segmento->nombreTabla, keyEnINT, registro->value);
+					log_error(loggerMemoria, "El valor verificador vale %d\n", valorVerificador);
 				}
 				free(value);
 				free(registro->value);
@@ -509,10 +512,8 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 	pthread_mutex_lock(&semTablaSegmentos);
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
-	pthread_mutex_unlock(&semTablaSegmentos);
-	if(ubicacionSegmento!=(cantSegmentos+1)){ //esta en tabla de segmentos
+	if(ubicacionSegmento!=-1){ //esta en tabla de segmentos
 		log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
-		pthread_mutex_lock(&semTablaSegmentos);
 		void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
 		t_segmento *segmento =(t_segmento*)elemento;
 		char* value = buscarTablaPaginas(segmento->tablaPaginas, key);// aca tenemos que buscar en la tabla de paginas especifica de este segmento y meternos 1 x 1 en sus paginas para ver si en la memoria Principal esta el key
@@ -579,23 +580,25 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		printf("SOCKET LFS VALE %d\n", socketLFS);
 		if (socketLFS ==0){
 			pthread_mutex_unlock(&semLfs);
+			pthread_mutex_unlock(&semTablaSegmentos);
 			return "LFS_CAIDO";
 		}
 		char* value = opSELECT(socketLFS,nombreTabla, keyEnINT);
 		if(string_equals_ignore_case(value, "NO_EXISTE_TABLA")||string_equals_ignore_case(value, "NO_EXISTE_KEY")){
 			retardoLFSAplicado();
 			pthread_mutex_unlock(&semLfs);
+			pthread_mutex_unlock(&semTablaSegmentos);
 			log_info(loggerMemoria,value);
 			return value;
 		} else if (string_equals_ignore_case(value, "MEMORIA_DESCONECTADA")){
 			socketLFS= 0;
 			pthread_mutex_unlock(&semLfs);
+			pthread_mutex_unlock(&semTablaSegmentos);
 			free(value);
 			return "LFS_CAIDO";
 		}
 		else{
 			unsigned long int t = obtenerTimeStamp();
-			pthread_mutex_lock(&semTablaSegmentos);
 			int nroMarco = guardarEnMemoria(nombreTabla, key, value, t);
 			if(nroMarco == -1){
 				reacomodarNumerosDePaginas();
@@ -624,10 +627,8 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 	pthread_mutex_lock(&semTablaSegmentos);
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
-	pthread_mutex_unlock(&semTablaSegmentos);
-	if(ubicacionSegmento!=(cantSegmentos+1)){ //esta en tabla de SEGMENTOS
+	if(ubicacionSegmento!=-1){ //esta en tabla de SEGMENTOS
 		log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
-		pthread_mutex_lock(&semTablaSegmentos);
 		void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
 		t_segmento *segmento =(t_segmento*)elemento;
 		int valor =  buscarEnTablaPaginasINSERT(segmento->tablaPaginas, key, timeStamp, value );// aca tenemos que buscar en la tabla de paginas especifica de este segmento y meternos 1 x 1 en sus paginas para ver si en la memoria Principal esta el key
@@ -665,7 +666,6 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 	}
 	else{ // no esta en tabla de SEGMENTOS
 		log_info(loggerMemoria,"No se encontro en la tabla de SEGMENTOS");
-		pthread_mutex_lock(&semTablaSegmentos);
 		int indice = guardarEnMemoria(nombreTabla, key, value, timeStamp);
 		if(indice == -1){
 			pthread_mutex_unlock(&semTablaSegmentos);
@@ -689,21 +689,20 @@ char* DROPMemoria(char* nombreTabla){
 	pthread_mutex_lock(&semTablaSegmentos);
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
-	pthread_mutex_unlock(&semTablaSegmentos);
-		if(ubicacionSegmento!=(cantSegmentos+1)){
+		if(ubicacionSegmento!=-1){
 			log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
-			pthread_mutex_lock(&semTablaSegmentos);
 			void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
 			t_segmento *segmento =(t_segmento*)elemento;
 			quitarEspaciosGuardadosEnMemoria(segmento->tablaPaginas);
 			borrarTablaDePaginas(segmento->tablaPaginas);
-			pthread_mutex_unlock(&semTablaSegmentos);
 			list_remove(tablaDeSegmentos, ubicacionSegmento);
+			pthread_mutex_unlock(&semTablaSegmentos);
 			reacomodarNumerosDePaginas();
 			free(segmento->nombreTabla);
 			free(segmento);
 		}
 		else{
+			pthread_mutex_unlock(&semTablaSegmentos);
 			log_info(loggerMemoria,"Dicha tabla no se encuentra en la tabla de SEGMENTOS");
 		}
 		pthread_mutex_lock(&semLfs);
@@ -729,14 +728,12 @@ void DROPMemoriaExclusivoLRU(char* nombreTabla){
 	pthread_mutex_lock(&semTablaSegmentos);
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	int cantSegmentos = tamanioLista(tablaDeSegmentos);
-	pthread_mutex_unlock(&semTablaSegmentos);
-		if(ubicacionSegmento!=(cantSegmentos+1)){
+		if(ubicacionSegmento!=-1){
 			log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
-			pthread_mutex_lock(&semTablaSegmentos);
 			void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
 			t_segmento *segmento =(t_segmento*)elemento;
 			//quitarEspaciosGuardadosEnMemoria(segmento->tablaPaginas);
-			borrarTablaDePaginas(segmento->tablaPaginas);
+			list_destroy(segmento->tablaPaginas);
 			pthread_mutex_unlock(&semTablaSegmentos);
 			list_remove(tablaDeSegmentos, ubicacionSegmento);
 			reacomodarNumerosDePaginas();
@@ -744,6 +741,7 @@ void DROPMemoriaExclusivoLRU(char* nombreTabla){
 			free(segmento);
 		}
 		else{
+			pthread_mutex_unlock(&semTablaSegmentos);
 			log_info(loggerMemoria,"Dicha tabla no se encuentra en la tabla de SEGMENTOS");
 		}
 }

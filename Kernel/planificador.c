@@ -154,6 +154,9 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 				free(resp);
 				lql_select(operacion,memoria);
 			}
+			else{
+				return;
+			}
 		}
 		else{
 			printf("SELECT %s %d Value -> %s \n",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
@@ -188,6 +191,9 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 				}
 				free(resp);
 				lql_select(operacion,memoria);
+			}
+			else{
+				return;
 			}
 		}
 		else{
@@ -284,6 +290,9 @@ void lql_insert(t_LQL_operacion* op, t_memoria * mem){
 				free(resp);
 				lql_insert(op,memoria);
 			}
+			else{
+				return;
+			}
 		}
 		else{
 			printf("INSERT %s %d %s realizado correctamente.\n", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
@@ -307,6 +316,9 @@ void lql_insert(t_LQL_operacion* op, t_memoria * mem){
 				log_info(loggerKernel, "La memoria %d inició el proceso de Journal", memoria->id_mem);
 				free(resp);
 				lql_insert(op,memoria);
+			}
+			else{
+				return;
 			}
 		}
 		else{
