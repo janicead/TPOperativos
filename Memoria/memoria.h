@@ -34,4 +34,6 @@ int socketLFS;
 
 void crearTablaGossip();
 void crearHilos();
+void setear_path_config(char* path);
+
 #endif /* MEMORIA_H_ */

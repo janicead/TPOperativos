@@ -237,7 +237,6 @@ char* opJOURNAL(int socketReceptor){
 		char* rsta = malloc(strlen("MEMORIA_DESCONECTADA")+1);
 		strcpy(rsta, "MEMORIA_DESCONECTADA");
 		free(packageRecibido);
-		puts(rsta);
 		return rsta;
 	}
 

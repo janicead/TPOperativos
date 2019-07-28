@@ -201,6 +201,7 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 		}
 	}
 	if(select_recursivo){
+		free(respuesta);
 		return;
 	}
 	time_t tiempo_fin = time(NULL);
@@ -274,6 +275,7 @@ void lql_insert(t_LQL_operacion* op, t_memoria * mem){
 			printf("La memoria %d está full, se le indicará iniciar el proceso de Journaling.\n",memoria->id_mem);
 			log_info(loggerKernel,"La memoria %d está full, se le indicará iniciar el proceso de Journaling.",memoria->id_mem);
 			op->success = true;
+			free(resp);
 			pthread_mutex_lock(&(memoria->socket_mem_sem));
 			char* resp = opJOURNAL(memoria->socket_mem);
 			pthread_mutex_unlock(&(memoria->socket_mem_sem));
@@ -324,6 +326,7 @@ void lql_insert(t_LQL_operacion* op, t_memoria * mem){
 		}
 	}
 	if(insert_recursivo){
+		free(resp);
 		return;
 	}
 	time_t tiempo_fin = time(NULL);

@@ -23,7 +23,6 @@
 
 
 int socketLFS;
-int valorVerificador;
 
 typedef struct {
 	int numeroPag;

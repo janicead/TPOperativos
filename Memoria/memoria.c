@@ -11,7 +11,6 @@ int main(int argc, char* argv[]) {
 		return EXIT_FAILURE;
 	}
 	setear_path_config(argv[1]);
-
 	configurarLoggerMemoria();
 	configMemoria =leerConfigMemoria();
 	mostrarDatosArchivoConfig();

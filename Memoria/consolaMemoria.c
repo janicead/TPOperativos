@@ -74,6 +74,9 @@ void* crearConsolaMemoria(){
 							else if(string_equals_ignore_case(valor,"LFS_CAIDO")){
 								log_error(loggerMemoria, "Se desconecto el LFS.");
 							}
+							else if(string_equals_ignore_case(valor,"FULL")){
+								log_error(loggerMemoria, "La MEMORIA esta FULL, debe hacer JOURNAL y reingresar la request.");
+							}
 							else{
 								log_info(loggerMemoria, "La respuesta de la request SELECT %s %s -> %s", operacion[1], operacion[2], valor);
 								free(valor);

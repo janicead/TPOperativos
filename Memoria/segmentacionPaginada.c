@@ -14,9 +14,6 @@ void definirTamanioMemoriaPrincipal(int tamanioValue){
 	marcosOcupados=(int*)calloc(cantMaxMarcos,sizeof(int));
 	tablaDeSegmentos= list_create();
 	iniciarSemaforos();
-	valorVerificador=0;
-
-
 }
 
 void iniciarSemaforos(){
@@ -153,11 +150,8 @@ void guardarEnTablaDePaginas(t_segmento * segmento, int nroMarco,uint16_t key, i
 	pagina->key = key;
 	pagina->numeroMarco= nroMarco;
 	pagina->numeroPag= segmento->id;
-	puts("hola");
 	segmento->id = pagina->numeroPag +1;
-	puts("Chau");
 	list_add(segmento->tablaPaginas,(void*)pagina);
-	puts("rufus");
 }
 
 void mostrarElementosTablaPaginas(t_list * lista){
@@ -283,7 +277,6 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 			if(t==0){
 				pthread_mutex_unlock(&semTablaSegmentos);
 				DROPMemoriaExclusivoLRU(lru->nombreTabla);
-				valorVerificador ++;
 				pthread_mutex_lock(&semTablaSegmentos);
 			}
 			t_registro* registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
@@ -462,7 +455,6 @@ void iniciarJournal(){
 				}
 				else{
 					log_info(loggerMemoria, "Se ha guardado en la tabla '%s' con key '%d' el value '%s'", segmento->nombreTabla, keyEnINT, registro->value);
-					log_error(loggerMemoria, "El valor verificador vale %d\n", valorVerificador);
 				}
 				free(value);
 				free(registro->value);
@@ -514,7 +506,6 @@ void retardoLFSAplicado(){
 char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 	pthread_mutex_lock(&semTablaSegmentos);
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
-	int cantSegmentos = tamanioLista(tablaDeSegmentos);
 	if(ubicacionSegmento!=-1){ //esta en tabla de segmentos
 		log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
 		void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
@@ -566,7 +557,6 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 				segmento = guardarEnTablaDeSegmentos(nombreTabla);
 			}
 			guardarEnTablaDePaginas(segmento, nroMarco, key, 0);
-			puts("select1");
 			reacomodarNumerosDePaginas();
 			mostrarElementosTablaSegmentos();
 			mostrarDatosMarcos();
@@ -618,9 +608,7 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 				return "FULL";
 			}
 			t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
-			puts("select2");
 			guardarEnTablaDePaginas(segmento, nroMarco, key, 0);
-			puts("select2");
 			reacomodarNumerosDePaginas();
 			pthread_mutex_unlock(&semTablaSegmentos);
 			retardoLFSAplicado();
@@ -636,7 +624,6 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long int timeStamp){
 	pthread_mutex_lock(&semTablaSegmentos);
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
-	int cantSegmentos = tamanioLista(tablaDeSegmentos);
 	if(ubicacionSegmento!=-1){ //esta en tabla de SEGMENTOS
 		log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
 		void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
@@ -654,7 +641,7 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 			int indice = guardarEnMemoria(nombreTabla, key, value, timeStamp);
 			if(indice == -1){
 				pthread_mutex_unlock(&semTablaSegmentos);
-				log_info(loggerMemoria,"FULL");
+				log_info(loggerMemoria,"La memoria esta FULL");
 				return "FULL";
 			}
 			int t = tamanioLista(tablaDeSegmentos);
@@ -667,12 +654,9 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 			reacomodarNumerosDePaginas();
 
 			log_info(loggerMemoria,"Se guardo en la tabla de PAGINAS y en la MEMORIA");
-			puts("aqui llegue3");
 			mostrarElementosTablaSegmentos();
-			puts("aqui llegue4");
 			mostrarDatosMarcos();
 			log_info(loggerMemoria,"Se guardo correctamente");
-			puts("aqui llegue5");
 			pthread_mutex_unlock(&semTablaSegmentos);
 			return "INFO: Se guardo correctamente";
 		}
@@ -703,7 +687,6 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 char* DROPMemoria(char* nombreTabla){
 	pthread_mutex_lock(&semTablaSegmentos);
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
-	int cantSegmentos = tamanioLista(tablaDeSegmentos);
 		if(ubicacionSegmento!=-1){
 			log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
 			void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
@@ -742,13 +725,11 @@ char* DROPMemoria(char* nombreTabla){
 void DROPMemoriaExclusivoLRU(char* nombreTabla){
 	pthread_mutex_lock(&semTablaSegmentos);
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
-	int cantSegmentos = tamanioLista(tablaDeSegmentos);
 		if(ubicacionSegmento!=-1){
 			log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
 			void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
 			t_segmento *segmento =(t_segmento*)elemento;
-			//quitarEspaciosGuardadosEnMemoria(segmento->tablaPaginas);
-			//list_destroy(segmento->tablaPaginas);
+			list_destroy(segmento->tablaPaginas);
 			pthread_mutex_unlock(&semTablaSegmentos);
 			list_remove(tablaDeSegmentos, ubicacionSegmento);
 			reacomodarNumerosDePaginas();
