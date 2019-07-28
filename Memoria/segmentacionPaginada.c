@@ -153,8 +153,11 @@ void guardarEnTablaDePaginas(t_segmento * segmento, int nroMarco,uint16_t key, i
 	pagina->key = key;
 	pagina->numeroMarco= nroMarco;
 	pagina->numeroPag= segmento->id;
+	puts("hola");
 	segmento->id = pagina->numeroPag +1;
+	puts("Chau");
 	list_add(segmento->tablaPaginas,(void*)pagina);
+	puts("rufus");
 }
 
 void mostrarElementosTablaPaginas(t_list * lista){
@@ -558,7 +561,12 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 				free(value);
 				return "FULL";
 			}
+			ubicacionSegmento = buscarTablaSegmentos(nombreTabla);
+			if(ubicacionSegmento==-1){
+				segmento = guardarEnTablaDeSegmentos(nombreTabla);
+			}
 			guardarEnTablaDePaginas(segmento, nroMarco, key, 0);
+			puts("select1");
 			reacomodarNumerosDePaginas();
 			mostrarElementosTablaSegmentos();
 			mostrarDatosMarcos();
@@ -610,7 +618,9 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 				return "FULL";
 			}
 			t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
+			puts("select2");
 			guardarEnTablaDePaginas(segmento, nroMarco, key, 0);
+			puts("select2");
 			reacomodarNumerosDePaginas();
 			pthread_mutex_unlock(&semTablaSegmentos);
 			retardoLFSAplicado();
@@ -632,16 +642,15 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 		void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
 		t_segmento *segmento =(t_segmento*)elemento;
 		int valor =  buscarEnTablaPaginasINSERT(segmento->tablaPaginas, key, timeStamp, value );// aca tenemos que buscar en la tabla de paginas especifica de este segmento y meternos 1 x 1 en sus paginas para ver si en la memoria Principal esta el key
-		pthread_mutex_unlock(&semTablaSegmentos);
 		if(valor!= 0){ //lo encontro en tabla de paginas
 			//tengo que verificar los timestamps entre ambos a ver cual se queda en memoria principal
 			log_info(loggerMemoria,"Esta en la tabla de PAGINAS");
 			log_info(loggerMemoria,"Se ha actualizado el value de la tabla");
+			pthread_mutex_unlock(&semTablaSegmentos);
 			return "INFO: Se ha actualizado el value de la tabla";
 		}
 		else{ //no lo encontro en tabla de paginas
 			log_info(loggerMemoria,"No esta en la tabla de PAGINAS");
-			pthread_mutex_lock(&semTablaSegmentos);
 			int indice = guardarEnMemoria(nombreTabla, key, value, timeStamp);
 			if(indice == -1){
 				pthread_mutex_unlock(&semTablaSegmentos);
@@ -649,17 +658,21 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 				return "FULL";
 			}
 			int t = tamanioLista(tablaDeSegmentos);
-			pthread_mutex_unlock(&semTablaSegmentos);
-			if(t==0){
+			ubicacionSegmento = buscarTablaSegmentos(nombreTabla);
+			if(ubicacionSegmento==-1 || t==0){
 				segmento = guardarEnTablaDeSegmentos(nombreTabla);
 			}
-			pthread_mutex_lock(&semTablaSegmentos);
 			guardarEnTablaDePaginas(segmento, indice, key, 1);
+
 			reacomodarNumerosDePaginas();
+
 			log_info(loggerMemoria,"Se guardo en la tabla de PAGINAS y en la MEMORIA");
+			puts("aqui llegue3");
 			mostrarElementosTablaSegmentos();
+			puts("aqui llegue4");
 			mostrarDatosMarcos();
 			log_info(loggerMemoria,"Se guardo correctamente");
+			puts("aqui llegue5");
 			pthread_mutex_unlock(&semTablaSegmentos);
 			return "INFO: Se guardo correctamente";
 		}
@@ -674,7 +687,9 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 		}
 		t_segmento* segmento = guardarEnTablaDeSegmentos(nombreTabla);
 		guardarEnTablaDePaginas(segmento, indice, key, 1);
+
 		reacomodarNumerosDePaginas();
+
 		pthread_mutex_unlock(&semTablaSegmentos);
 		log_info(loggerMemoria, "Se guardo en MP, en tabla de PAGINAS y en tabla de SEGMENTOS");
 		log_info(loggerMemoria,"Se guardo correctamente");
@@ -733,7 +748,7 @@ void DROPMemoriaExclusivoLRU(char* nombreTabla){
 			void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
 			t_segmento *segmento =(t_segmento*)elemento;
 			//quitarEspaciosGuardadosEnMemoria(segmento->tablaPaginas);
-			list_destroy(segmento->tablaPaginas);
+			//list_destroy(segmento->tablaPaginas);
 			pthread_mutex_unlock(&semTablaSegmentos);
 			list_remove(tablaDeSegmentos, ubicacionSegmento);
 			reacomodarNumerosDePaginas();
