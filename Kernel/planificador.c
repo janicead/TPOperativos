@@ -694,7 +694,9 @@ void lql_journal(t_list* list_mem, t_LQL_operacion* op, char* flag){
 				free(resp);
 			}
 			if(memoria != NULL){
-				pthread_mutex_unlock(&(memoria->socket_mem_sem));
+				if(memoria->conectada){
+					pthread_mutex_unlock(&(memoria->socket_mem_sem));
+				}
 			}
 		}
 	}
