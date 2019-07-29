@@ -153,7 +153,7 @@ void realizarGossip(){
 
 	       if (elapsedsec >= sec) {
 	    	   pthread_create(&clienteM, NULL,(void*) hacermeClienteDeMisServers, NULL);
-
+	    	   pthread_detach(clienteM);
 	           iterations++;
 	           break;
 	       }

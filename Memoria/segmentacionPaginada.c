@@ -275,9 +275,7 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 			t_pagina*  pagina = eliminarElementoEspecifico(lru->tablaPaginas, lru->numeroPag);
 			int t = tamanioLista(lru->tablaPaginas);
 			if(t==0){
-				pthread_mutex_unlock(&semTablaSegmentos);
 				DROPMemoriaExclusivoLRU(lru->nombreTabla);
-				pthread_mutex_lock(&semTablaSegmentos);
 			}
 			t_registro* registro = buscarEnMemoriaPrincipal(pagina->numeroMarco);
 			log_info(loggerMemoria,"La PAGINA que voy a reemplazar es la nro %d del SEGMENTO '%s' cuyo value es '%s' ", lru->numeroPag, lru->nombreTabla, registro->value);
@@ -294,6 +292,7 @@ int guardarEnMemoria(char* nombreTabla, uint16_t key, char* value, unsigned long
 		else {
 			pthread_mutex_unlock(&semCantMaxMarcos);
 			log_info(loggerMemoria,"Tengo que realizar JOURNAL\n");
+			free(lru->nombreTabla);
 			free(lru);
 			return -1;
 		}
@@ -364,6 +363,8 @@ t_LRU * LRU (){
 	int cantVecesSolicitadaMinimo = INT_MAX;
 	t_LRU * lru = malloc (sizeof(t_LRU));
 	lru->numeroPag= -1;
+	lru->nombreTabla = malloc(strlen("NO")+1);
+	strcpy(lru->nombreTabla, "NO");
 	int tamanioTablaPaginas = 0;
 	int tamanioTablaSegmentos = tamanioLista(tablaDeSegmentos);
 	for(int i = 0; i< tamanioTablaSegmentos; i++){
@@ -379,6 +380,7 @@ t_LRU * LRU (){
 
 			if(pagina->flagModificado==0 && (pagina->contadorVecesSolicitado)<cantVecesSolicitadaMinimo){
 				cantVecesSolicitadaMinimo = pagina->contadorVecesSolicitado;
+				free(lru->nombreTabla);
 				lru->numeroPag= pagina->numeroPag;
 				lru->tablaPaginas= segmento->tablaPaginas;
 				lru->nombreTabla= malloc(strlen(segmento->nombreTabla)+1);
@@ -723,21 +725,18 @@ char* DROPMemoria(char* nombreTabla){
 
 
 void DROPMemoriaExclusivoLRU(char* nombreTabla){
-	pthread_mutex_lock(&semTablaSegmentos);
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 		if(ubicacionSegmento!=-1){
 			log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
 			void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
 			t_segmento *segmento =(t_segmento*)elemento;
 			list_destroy(segmento->tablaPaginas);
-			pthread_mutex_unlock(&semTablaSegmentos);
 			list_remove(tablaDeSegmentos, ubicacionSegmento);
 			reacomodarNumerosDePaginas();
 			free(segmento->nombreTabla);
 			free(segmento);
 		}
 		else{
-			pthread_mutex_unlock(&semTablaSegmentos);
 			log_info(loggerMemoria,"Dicha tabla no se encuentra en la tabla de SEGMENTOS");
 		}
 }
