@@ -222,9 +222,6 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 				}
 				free(resp);
 				lql_select(operacion,memoria);
-				if(!select_recursivo){
-					pthread_mutex_unlock(&(memoria->socket_mem_sem));
-				}
 			}
 			else{
 				return;
@@ -342,9 +339,6 @@ void lql_insert(t_LQL_operacion* op, t_memoria * mem){
 				}
 				free(resp);
 				lql_insert(op,memoria);
-				if(!insert_recursivo){
-					pthread_mutex_unlock(&(memoria->socket_mem_sem));
-				}
 			}
 			else{
 				return;
@@ -586,11 +580,12 @@ void lql_describe(t_LQL_operacion* op){
 		}
 		if(string_equals_ignore_case(resp,"NO_EXISTE_TABLA")){
 			if(op->consola){
-				printf("La tabla %s no existe.",op->argumentos.DESCRIBE.nombre_tabla);
+				printf("La tabla %s no existe.\n",op->argumentos.DESCRIBE.nombre_tabla);
 			}
 			log_error(loggerKernel,"La tabla %s no existe.",op->argumentos.DESCRIBE.nombre_tabla);
 			op->success = false;
 			free(resp);
+			pthread_mutex_unlock(&(mem->socket_mem_sem));
 			return;
 		}
 		describe(resp,op->consola);
@@ -698,7 +693,9 @@ void lql_journal(t_list* list_mem, t_LQL_operacion* op, char* flag){
 				}
 				free(resp);
 			}
-			pthread_mutex_unlock(&(memoria->socket_mem_sem));
+			if(memoria != NULL){
+				pthread_mutex_unlock(&(memoria->socket_mem_sem));
+			}
 		}
 	}
 	if(j==0){
@@ -1071,6 +1068,8 @@ void describe_global(char* data, bool mostrarPorConsola){
 	t_list* lista_aux = list_create();
 	for(int i = 0;metadata[i] != NULL;i++){
 		char** metadata_final = string_split(metadata[i],";");
+		//puts(metadata_final[0]);
+		//puts(metadata_final[1]);
 		t_tabla* tabla = malloc(sizeof(t_tabla));
 		tabla->nombre_tabla = malloc(strlen(metadata_final[0])+1);
 		strcpy(tabla->nombre_tabla,metadata_final[0]);
@@ -1097,7 +1096,7 @@ void describe_global(char* data, bool mostrarPorConsola){
 					printf("La tabla %s fue removida de la metadata del Kernel.\n",tabla->nombre_tabla);
 				}
 				log_info(loggerKernel,"La tabla %s fue removida de la metadata del Kernel",tabla->nombre_tabla);
-				list_remove_and_destroy_element(tablas,i,(void*)free_tabla);
+				list_remove_and_destroy_by_condition(tablas,(void*)existe_tabla,(void*)free_tabla);
 				i--;
 				tablas_size--;
 			}
