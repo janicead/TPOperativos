@@ -139,7 +139,7 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 
 void realizarGossip(){
 
-	clock_t start, diff;
+	/*clock_t start, diff;
 	int elapsedsec;
 	int sec = configMemoria.tiempoGossiping; //aca debe ir configMemoria.tiempoGossiping
 	int iterations = 0;
@@ -158,6 +158,16 @@ void realizarGossip(){
 	           break;
 	       }
 	   }
+	}
+
+*/
+
+
+	while(1){
+		int valor = configMemoria.tiempoGossiping;
+		sleep(valor);
+		pthread_create(&clienteM, NULL,(void*) hacermeClienteDeMisServers, NULL);
+		pthread_detach(clienteM);
 	}
 }
 
@@ -473,7 +483,7 @@ void conectarmeAlLFSHILO(){
 
 void hacerElJOURNAL(){
 	while(1){
-		int valor = configMemoria.tiempoGossiping;
+		int valor = configMemoria.tiempoJournal;
 		sleep(valor);
 		log_info(loggerMemoria, "Hare JOURNAL");
 		JOURNALMemoria();
