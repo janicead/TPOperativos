@@ -3,26 +3,28 @@
 //
 int socketLFS; //SOCKET ESCUCHANDO, SERVIDOR
 #define printLOGGER 0  //SI=1,  NO=0
-char *pathLFSconf = "../../lfs.conf";
+
+char *pathLFSconf;
+//char *pathLFSconf = "../../lfs.conf";
 
 int main(int argc, char *argv[])
-{//
-	/*if(argc!=2)
+{
+	if(argc!=2)
 	{
-	    printf("No ingreso el Nro de lfs.conf\n");
+	    printf("No ingreso el Nro de archivo config\n");
 	    return 0;
-
 	}
 	else
 	{
 		pathLFSconf = string_from_format("../../lfs%s.conf",argv[1]);
-		printf("%s\n",pathLFSconf);
-	}*/
+		printf("\nEjecutando segun [%s]...\n",pathLFSconf);
+	}
 
 	logger = log_create("lfs.log", "lfs", printLOGGER,LOG_LEVEL_INFO);
 	log_info(logger,"\n\nINICIANDO PROCESO LFS...");
 
 	leerConfigLFS();
+
 	mostrarValoresDeConfig();
 
 	crearListasGenerales();
@@ -70,6 +72,7 @@ int main(int argc, char *argv[])
 void leerConfigLFS()
 {
 	archivoConfig = config_create(pathLFSconf);
+
 	//archivoConfig = config_create("/home/utnso/workspace/backUpTP1C2019/tp-2019-1c-BEFGN/lfs.conf");
 	//logger = log_create("lfs.log", "lfs", printLOGGER,LOG_LEVEL_INFO);
 
@@ -86,7 +89,7 @@ void leerConfigLFS()
 	}
 
 	if (config_has_property(archivoConfig, "PUNTO_MONTAJE"))
-		configLFS.puntoMontaje = config_get_string_value(archivoConfig,"PUNTO_MONTAJE");
+		configLFS.puntoMontaje = string_from_format("%s",config_get_string_value(archivoConfig,"PUNTO_MONTAJE"));
 	else
 	{
 		log_error(logger,"No se encontro la key PUNTO_MONTAJE en el archivo de configuracion");
@@ -116,6 +119,8 @@ void leerConfigLFS()
 		log_error(logger,"No se encontro la key TIEMPO_DUMP en el archivo de configuracion");
 		exitLFS(EXIT_FAILURE);
 	}
+
+	config_destroy(archivoConfig);
 }
 
 void mostrarValoresDeConfig(void)
@@ -133,10 +138,10 @@ void mostrarValoresDeConfig(void)
 
 void exitLFS(int return_nr)
 {
-	config_destroy(archivoConfig);
+	//config_destroy(archivoConfig);
 	//config_destroy(archivoMetadata);
 
-	config_destroy(archivoMetadata);
+	//config_destroy(archivoMetadata);
 	log_destroy(logger);
 
 	pthread_mutex_destroy(&laMEMTABLE);
@@ -322,7 +327,7 @@ void consolaAPI()
 	    		//printf("\nPor SOCKET: %s\n",respuesta);
 	    		if(strcmp(respuesta,"NO_EXISTEN_TABLAS") == 0)
 	    		{
-	    			printf("Respuesta: \n%s\n",respuesta);
+	    			printf("Respuesta: %s\n",respuesta);
 	    			log_info(logger,"Respuesta: \n%s\n------------------------------------------",respuesta);
 	    		}
 	    		else
@@ -345,7 +350,7 @@ void consolaAPI()
 	    		//printf("\nPor SOCKET: %s\n",respuesta);
 	    		if(strcmp(respuesta,"NO_EXISTE_TABLA") == 0)
 	    		{
-	    			printf("Respuesta: \n%s\n",respuesta);
+	    			printf("Respuesta: %s\n",respuesta);
 	    			log_info(logger,"Respuesta: \n%s\n------------------------------------------",respuesta);
 	    		}
 	    		else
@@ -678,12 +683,17 @@ char *realizarSELECT(t_SELECT *unSELECT)
 			{
 				return (((t_Registro*)elemento)->KEY == unSELECT->KEY);
 			}
-			listaRegistrosFiltrados = list_filter(listaAUX,conLaMismaKEY);
+			//listaRegistrosFiltrados = list_filter(listaAUX,conLaMismaKEY);
+			t_Registro *unRegistroDeBIN = list_remove_by_condition(listaAUX,conLaMismaKEY);
 			//freeListaDeRegistros(listaAUX); //NO TENGO IDEA XQ NO LO TENGO Q HACER
-			//ver si filter referencia o copia
+			//ver si filter referencia o copia  --> REFERENCIA
 
-			list_add_all(listaRegistrosDeKEY,listaRegistrosFiltrados);
-			//VERIFICAR SI LUEGO listaRegistrosFiltrados ESTA VACIO O HAY Q LIBERAR
+			//list_add_all(listaRegistrosDeKEY,listaRegistrosFiltrados);
+			if(unRegistroDeBIN != NULL)
+				list_add(listaRegistrosDeKEY,unRegistroDeBIN);
+
+			freeListaDeRegistros(listaAUX);
+
 		}
 
 		//--------------------------------------------------------
@@ -696,6 +706,9 @@ char *realizarSELECT(t_SELECT *unSELECT)
 			int topeTEMPs = list_size(tablaEncontrada->temporales);
 			//pthread_mutex_unlock(&laMEMTABLE);
 			int i;
+			int j;
+			int topeRegistrosMismaKEY;
+
 			t_ArchivoTemp *unArchivoTemp;
 
 			for(i=0; i < topeTEMPs ;i++)
@@ -714,10 +727,18 @@ char *realizarSELECT(t_SELECT *unSELECT)
 				{
 					return (((t_Registro*)elemento)->KEY == unSELECT->KEY);
 				}
-				listaRegistrosFiltrados = list_filter(listaAUX,conLaMismaKEY);
-				//freeListaDeRegistros(listaAUX);
 
-				list_add_all(listaRegistrosDeKEY,listaRegistrosFiltrados);
+				topeRegistrosMismaKEY = list_count_satisfying(listaAUX,conLaMismaKEY);
+
+				for(j=0; j < topeRegistrosMismaKEY ;j++)
+				{
+					t_Registro *unRegistroDeBIN = list_remove_by_condition(listaAUX,conLaMismaKEY);
+					list_add(listaRegistrosDeKEY,unRegistroDeBIN);
+				}
+				//listaRegistrosFiltrados = list_filter(listaAUX,conLaMismaKEY);
+				freeListaDeRegistros(listaAUX);
+
+				//list_add_all(listaRegistrosDeKEY,listaRegistrosFiltrados);
 				//VERIFICAR SI LUEGO listaRegistrosFiltrados ESTA VACIO O HAY Q LIBERAR
 			}
 			//-----------------------------------------------------
@@ -726,13 +747,30 @@ char *realizarSELECT(t_SELECT *unSELECT)
 				return (((t_Registro*)elemento)->KEY == unSELECT->KEY);
 			}
 
-			//pthread_mutex_lock(&laMEMTABLE);
 			listaRegistrosFiltrados = list_filter(tablaEncontrada->registros,conLaMismaKEY);
+
+			topeRegistrosMismaKEY = list_size(listaRegistrosFiltrados);
+			t_Registro *unRegistroDeMEMTABLE;
+			t_Registro *unRegistroCopia;
+
+			for(j=0; j < topeRegistrosMismaKEY ;j++)
+			{
+				unRegistroDeMEMTABLE = list_get(listaRegistrosFiltrados,j);
+				unRegistroCopia = copiarRegistro(unRegistroDeMEMTABLE);
+
+				list_add(listaRegistrosDeKEY,unRegistroCopia);
+			}
+
+			list_clean(listaRegistrosFiltrados);
+			list_destroy(listaRegistrosFiltrados);
+
+			//pthread_mutex_lock(&laMEMTABLE);
+			//listaRegistrosFiltrados = list_filter(tablaEncontrada->registros,conLaMismaKEY);
 			//pthread_mutex_unlock(&laMEMTABLE);
 
 			//freeListaDeRegistros(listaAUX);
 
-			list_add_all(listaRegistrosDeKEY,listaRegistrosFiltrados);
+			//list_add_all(listaRegistrosDeKEY,listaRegistrosFiltrados);
 			//
 		}
 
@@ -757,7 +795,8 @@ char *realizarSELECT(t_SELECT *unSELECT)
 			//NO SE HACE FREE DE elRegistro XQ TIENE Q SEGUIR
 			//freeListaDeRegistros(listaRegistrosDeKEY);
 		}
-		//freeListaDeRegistros(listaRegistrosDeKEY);
+
+		freeListaDeRegistros(listaRegistrosDeKEY);
 		//AL PARECER SON REFERENCIAS DE LOS REGISTROS
 
 
@@ -768,6 +807,7 @@ char *realizarSELECT(t_SELECT *unSELECT)
 	pthread_mutex_unlock(&LISSANDRA);
 	return respuesta;
 }
+
 
 //SE VA A TENER Q USAR MUTEX
 char *realizarINSERT(t_INSERT *unINSERT)
@@ -780,6 +820,7 @@ char *realizarINSERT(t_INSERT *unINSERT)
 
 	if(strcmp(respuesta,"YA_EXISTE_TABLA") == 0)
 	{
+		free(respuesta);
 		t_Tabla *tablaEncontrada = existeEnMemtable(unINSERT->nombreTabla);
 
 		if(tablaEncontrada!= NULL)
@@ -960,6 +1001,7 @@ char *realizarDESCRIBE(t_DESCRIBE *unDESCRIBE)
 	}
 	else
 	{
+		free(r);
 		r = existeTablaEnFS(unDESCRIBE->nombreTabla);
 
 		if(strcmp(r,"YA_EXISTE_TABLA") == 0)
@@ -1024,6 +1066,7 @@ char *realizarDROP(t_DROP *unDROP)
 		borrarTablaEnMEMTABLE(unDROP->nombreTabla);
 		//printf("\ntamanioLISTA: %d  (after memtable)\n",list_size(memTable)); ///
 
+		free(pathTabla);
 		r = string_from_format("SUCCESSFUL_DROP");
 
 	}
@@ -1310,4 +1353,30 @@ void* observer_config()
 	inotify_rm_watch(file_descriptor,file_observer);
 	close(file_descriptor);
 	return NULL;
+}
+
+void descartarRegistrosDistintoAKEY(t_list *unaListaRegistros,uint16_t unaKEY)
+{
+	//CUENTO CUANTOS REGISTRO NO SON IGUAL A LA KEY Q BUSCO
+	//USO list_remove_by_condition EN UN FOR CUANTAS VECES HAYA DE REGISTROS Q NO QUIERO
+	//Y LIBERO
+
+	int i;
+	int tope = list_size(unaListaRegistros);
+
+	for(i=0; i < tope;i++)
+	{
+		//
+	}
+}
+
+t_Registro *copiarRegistro(t_Registro *unRegistro)
+{
+	t_Registro *unRegistroCopia = malloc(sizeof(t_Registro));
+
+	unRegistroCopia->TIMESTAMP = unRegistro->TIMESTAMP;
+	unRegistroCopia->KEY = unRegistro->KEY;
+	unRegistroCopia->VALUE = string_from_format("%s",unRegistro->VALUE);
+
+	return unRegistroCopia;
 }

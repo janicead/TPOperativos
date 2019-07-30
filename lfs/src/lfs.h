@@ -149,4 +149,6 @@ void LISSANDRAFS(void);
 
 void* observer_config();
 
+t_Registro *copiarRegistro(t_Registro *unRegistro);
+
 #endif /* LFS_H_ */
