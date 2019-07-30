@@ -241,7 +241,6 @@ char* opJOURNAL(int socketReceptor){
 	}
 
 	char* respuesta = deserializarRespuesta(packageRecibido->Datos);
-	puts(respuesta);
 	freePackage(packageRecibido);
 	return respuesta;
 }
