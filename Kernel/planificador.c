@@ -52,7 +52,6 @@ void* ejecutar(){
 			usleep(sleep_time*1000);
 			if(!operacion->success){
 				lcb->abortar = true;
-				puts("ABORTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR");
 				break;
 			}
 			lcb->program_counter++;
@@ -229,6 +228,7 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 			log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
 		}
 	}
+	printf("SELECT %s %d Value -> %s \n",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
 	if(select_recursivo){
 		free(respuesta);
 		return;
@@ -374,6 +374,7 @@ void lql_insert(t_LQL_operacion* op, t_memoria * mem){
 			log_info(loggerKernel, "INSERT %s %d %s realizado correctamente.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
 		}
 	}
+	printf("INSERT %s %d %s realizado correctamente.\n", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
 	if(insert_recursivo){
 		free(resp);
 		return;
