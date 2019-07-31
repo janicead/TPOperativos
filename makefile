@@ -2,7 +2,7 @@ first: so-commons-library clonarScripts
 
 second: readline
  
-third: modulos hacerExport
+third: modulos hacerExport hacerCarpetas
 
 so-commons-library:
 	cd ~; cd workspace; git clone https://github.com/sisoputnfrba/so-commons-library.git; cd so-commons-library; sudo make install
@@ -31,3 +31,14 @@ hacerExport:
 	cd Kernel/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/Debug
 	cd Memoria/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/Debug
 	cd lfs/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/Debug
+
+hacerCarpetas:
+	cd LISSANDRA_FS; cd lfs-base; mkdir Table
+	cd LISSANDRA_FS; cd lfs-compactacion; mkdir Table
+	cd LISSANDRA_FS; cd lfs-prueba-kernel; mkdir Table
+	cd LISSANDRA_FS; cd lfs-prueba-memoria; mkdir Table
+	cd LISSANDRA_FS; cd lfs-stress; mkdir Table
+
+
+
+
