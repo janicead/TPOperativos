@@ -1062,24 +1062,9 @@ void describe_global(char* data, bool mostrarPorConsola){
 	t_list* lista_aux = list_create();
 	for(int i = 0;metadata[i] != NULL;i++){
 		char** metadata_final = string_split(metadata[i],";");
-		//puts(metadata_final[0]);
-		//puts(metadata_final[1]);
 		t_tabla* tabla = malloc(sizeof(t_tabla));
-		tabla->nombre_tabla = malloc(strlen(metadata_final[0])+1);
-		strcpy(tabla->nombre_tabla,metadata_final[0]);
-		if(metadata_final[1]==NULL){
-			printf("Nombre de tabla es '%s'\n", metadata_final[0]);
-			printf("ES NULL BOBA\n");
-			puts("ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
-		} else if(string_is_empty(metadata_final[1])){
-			printf("Nombre de tabla es '%s'\n", metadata_final[0]);
-			printf("El STRING es empty boba \n");
-			puts("ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
-		}else{
-		tabla->consistencia =malloc(strlen(metadata_final[1])+1);
-		strcpy(tabla->consistencia,metadata_final[1]);
-		}
-
+		tabla->nombre_tabla = string_from_format("%s",metadata_final[0]);
+		tabla->consistencia = string_from_format("%s",metadata_final[1]);
 		list_add(lista_aux,tabla);
 		if(mostrarPorConsola){
 			printf("Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sseg.\n",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
@@ -1131,10 +1116,8 @@ void describe(char* data, bool mostrarPorConsola){
 	char** metadata = string_split(data,"#");
 	char** metadata_final = string_split(metadata[0],";");
 	t_tabla* tabla = malloc(sizeof(t_tabla));
-	tabla->nombre_tabla = malloc(strlen(metadata_final[0])+1);
-	strcpy(tabla->nombre_tabla,metadata_final[0]);
-	tabla->consistencia =malloc(strlen(metadata_final[1])+1);
-	strcpy(tabla->consistencia,metadata_final[1]);
+	tabla->nombre_tabla = string_from_format("%s",metadata_final[0]);
+	tabla->consistencia = string_from_format("%s",metadata_final[1]);
 	if(mostrarPorConsola){
 		printf("Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sseg.\n",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
 	}
