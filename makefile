@@ -33,11 +33,11 @@ hacerExport:
 	cd lfs/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/Debug
 
 hacerCarpetas:
-	cd LISSANDRA_FS; cd lfs-base; mkdir Table
-	cd LISSANDRA_FS; cd lfs-compactacion; mkdir Table
-	cd LISSANDRA_FS; cd lfs-prueba-kernel; mkdir Table
-	cd LISSANDRA_FS; cd lfs-prueba-memoria; mkdir Table
-	cd LISSANDRA_FS; cd lfs-stress; mkdir Table
+	cd LISSANDRA_FS; cd lfs-base; mkdir Tables
+	cd LISSANDRA_FS; cd lfs-compactacion; mkdir Tables
+	cd LISSANDRA_FS; cd lfs-prueba-kernel; mkdir Tables
+	cd LISSANDRA_FS; cd lfs-prueba-memoria; mkdir Tables
+	cd LISSANDRA_FS; cd lfs-stress; mkdir Tables
 
 
 
