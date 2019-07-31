@@ -52,6 +52,7 @@ void* ejecutar(){
 			usleep(sleep_time*1000);
 			if(!operacion->success){
 				lcb->abortar = true;
+				puts("ABORTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR");
 				break;
 			}
 			lcb->program_counter++;
