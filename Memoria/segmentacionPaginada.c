@@ -625,12 +625,13 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 
 char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long int timeStamp){
 	pthread_mutex_lock(&semTablaSegmentos);
+	unsigned long int t = obtenerTimeStamp();
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	if(ubicacionSegmento!=-1){ //esta en tabla de SEGMENTOS
 		log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
 		void * elemento = list_get(tablaDeSegmentos, ubicacionSegmento);
 		t_segmento *segmento =(t_segmento*)elemento;
-		int valor =  buscarEnTablaPaginasINSERT(segmento->tablaPaginas, key, timeStamp, value );// aca tenemos que buscar en la tabla de paginas especifica de este segmento y meternos 1 x 1 en sus paginas para ver si en la memoria Principal esta el key
+		int valor =  buscarEnTablaPaginasINSERT(segmento->tablaPaginas, key, t, value );// aca tenemos que buscar en la tabla de paginas especifica de este segmento y meternos 1 x 1 en sus paginas para ver si en la memoria Principal esta el key
 		if(valor!= 0){ //lo encontro en tabla de paginas
 			//tengo que verificar los timestamps entre ambos a ver cual se queda en memoria principal
 			log_info(loggerMemoria,"Esta en la tabla de PAGINAS");
@@ -640,7 +641,7 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 		}
 		else{ //no lo encontro en tabla de paginas
 			log_info(loggerMemoria,"No esta en la tabla de PAGINAS");
-			int indice = guardarEnMemoria(nombreTabla, key, value, timeStamp);
+			int indice = guardarEnMemoria(nombreTabla, key, value, t);
 			if(indice == -1){
 				pthread_mutex_unlock(&semTablaSegmentos);
 				log_info(loggerMemoria,"La memoria esta FULL");
@@ -665,7 +666,7 @@ char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long
 	}
 	else{ // no esta en tabla de SEGMENTOS
 		log_info(loggerMemoria,"No se encontro en la tabla de SEGMENTOS");
-		int indice = guardarEnMemoria(nombreTabla, key, value, timeStamp);
+		int indice = guardarEnMemoria(nombreTabla, key, value, t);
 		if(indice == -1){
 			pthread_mutex_unlock(&semTablaSegmentos);
 			log_info(loggerMemoria,"FULL");
