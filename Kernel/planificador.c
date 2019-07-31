@@ -1,7 +1,6 @@
 #include "planificador.h"
 
 void* ejecutar(){
-	int count = 0;
 	while(1){
 		sem_wait(&execute_sem);
 		pthread_mutex_lock(&config_sem);
@@ -51,7 +50,6 @@ void* ejecutar(){
 					break;
 			}
 			usleep(sleep_time*1000);
-			count++;
 			if(!operacion->success){
 				lcb->abortar = true;
 				break;
@@ -61,8 +59,8 @@ void* ejecutar(){
 			quantum--;
 		}
 		if(lcb->program_counter >= list_size(lcb->operaciones) || lcb->abortar){
+			printf("La cantidad de operaciones es de %d",lcb->program_counter);
 			pasar_lcb_a_exit(lcb);
-			printf("La cantidad de operaciones es de %d",count);
 		}
 		else{
 			pasar_lcb_a_ready(lcb);
