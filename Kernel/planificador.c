@@ -51,7 +51,7 @@ void* ejecutar(){
 					break;
 			}
 			usleep(sleep_time*1000);
-			i++;
+			count++;
 			if(!operacion->success){
 				lcb->abortar = true;
 				break;
