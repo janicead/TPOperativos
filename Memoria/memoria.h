@@ -34,6 +34,7 @@ int socketLFS;
 
 void crearTablaGossip();
 void crearHilos();
-void setear_path_config(char* path);
+void setear_path_config(int nroPrueba, char* nroMemoria);
+char* definirPrueba(int nroPrueba, char* nroMemoria);
 
 #endif /* MEMORIA_H_ */

@@ -3,14 +3,17 @@
 int main(int argc, char* argv[]) {
 
 	if(argc == 1){
-		puts("Error no ingresó ningún archivo de configuración");
+		puts("ERROR: No definio cual prueba es");
 		return EXIT_FAILURE;
 	}
-	if(argc > 2){
+	if (argc ==2){
+		puts("ERROR: No definio cual memoria es");
+	}
+	if(argc > 3){
 		puts("ERROR ingresó más de un parámetro");
 		return EXIT_FAILURE;
 	}
-	setear_path_config(argv[1]);
+	setear_path_config(atoi(argv[1]), argv[2]);
 	configurarLoggerMemoria();
 	configMemoria =leerConfigMemoria();
 	mostrarDatosArchivoConfig();
@@ -54,8 +57,24 @@ void crearHilos(){
 	pthread_join(conexionLFS, NULL);
 }
 
-void setear_path_config(char* path){
-	PATH_MEMORIA_CONFIG = (char*)malloc(1+strlen(path));
-	strcpy(PATH_MEMORIA_CONFIG,path);
+void setear_path_config(int nroPrueba, char* nroMemoria){
+	char* path = definirPrueba(nroPrueba, nroMemoria);
+	PATH_MEMORIA_CONFIG = malloc(strlen(path)+1);
+	strcpy(PATH_MEMORIA_CONFIG, path);
+
+}
+
+char* definirPrueba(int nroPrueba, char* nroMemoria){
+	if (nroPrueba ==1){
+		return string_from_format("/home/utnso/workspace/tp-2019-1c-BEFGN/PruebaBase/memoria%s.conf",nroMemoria);
+	} else if (nroPrueba == 2){
+		return string_from_format("/home/utnso/workspace/tp-2019-1c-BEFGN/PruebaKernel/memoria%s.conf",nroMemoria);
+	} else if (nroPrueba == 3){
+		return string_from_format("/home/utnso/workspace/tp-2019-1c-BEFGN/PruebaLFS/memoria%s.conf",nroMemoria);
+	} else if (nroPrueba == 4) {
+		return string_from_format("/home/utnso/workspace/tp-2019-1c-BEFGN/PruebaMemoria/memoria%s.conf",nroMemoria);
+	} else {
+		return string_from_format("/home/utnso/workspace/tp-2019-1c-BEFGN/PruebaStress/memoria%s.conf",nroMemoria);
+	}
 }
 
