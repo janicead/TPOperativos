@@ -62,7 +62,7 @@ void* ejecutar(){
 		}
 		if(lcb->program_counter >= list_size(lcb->operaciones) || lcb->abortar){
 			pasar_lcb_a_exit(lcb);
-			printf("%d","La cantidad de operaciones es de %d",count);
+			printf("La cantidad de operaciones es de %d",count);
 		}
 		else{
 			pasar_lcb_a_ready(lcb);
