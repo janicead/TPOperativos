@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
 		puts("ERROR ingresó más de un parámetro");
 		return EXIT_FAILURE;
 	}
-	setear_path_config(argv[1]);
+	setear_path_config(atoi(argv[1]));
 	iniciar();
 	crear_hilos_iniciales();
 	exit_gracefully(EXIT_SUCCESS);
@@ -47,7 +47,26 @@ void crear_hilos_iniciales(){
 	return;
 }
 
-void setear_path_config(char* path){
+void setear_path_config(int nroPrueba){
+	char* path = chequearPath(nroPrueba);
 	PATH_KERNEL_CONFIG = (char*)malloc(1+strlen(path));
 	strcpy(PATH_KERNEL_CONFIG,path);
+}
+
+char* chequearPath (int nroPrueba){
+	if(nroPrueba == 1){
+		return "/home/utnso/workspace/tp-2019-1c-BEFGN/PruebaBase/kernel.config";
+	}
+	else if(nroPrueba == 2){
+		return "/home/utnso/workspace/tp-2019-1c-BEFGN/PruebaKernel/kernel.config";
+	}
+	else if(nroPrueba == 3){
+		return "/home/utnso/workspace/tp-2019-1c-BEFGN/PruebaLFS/kernel.config";
+	}
+	else if(nroPrueba == 4){
+		return "/home/utnso/workspace/tp-2019-1c-BEFGN/PruebaMemoria/kernel.config";
+	}
+	else {
+		return "/home/utnso/workspace/tp-2019-1c-BEFGN/PruebaStress/kernel.config";
+	}
 }

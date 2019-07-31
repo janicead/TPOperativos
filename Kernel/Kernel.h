@@ -18,7 +18,8 @@ char* ipMemoria;
 
 void iniciar();
 void crear_hilos_iniciales();
-void setear_path_config(char* path);
+void setear_path_config(int nroPrueba);
+char* chequearPath (int nroPrueba);
 
 
 #endif /* KERNEL_H_ */

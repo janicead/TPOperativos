@@ -1,29 +1,33 @@
-first: desinstalarCommons so-commons-library
+first: so-commons-library clonarScripts
 
 second: readline
  
-third: kernel memoria lfs
+third: modulos hacerExport
 
-desinstalarCommons:
-	cd ~; sudo rm -rf ~/so-commons-library; git clone https://github.com/sisoputnfrba/so-commons-library.git; cd so-commons-library; sudo make uninstall
 so-commons-library:
-	cd ~; cd so-commons-library; sudo make install
+	cd ~; cd workspace; git clone https://github.com/sisoputnfrba/so-commons-library.git; cd so-commons-library; sudo make install
+
+clonarScripts:
+	cd ~; cd workspace; git clone https://github.com/sisoputnfrba/1C2019-Scripts-lql-entrega
 
 readline:
 	sudo apt-get install libreadline6 libreadline6-dev
 	cd bibliotecaFunciones/Debug; sudo make
 
-kernel:
-	cd Kernel/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-Non-lol/bibliotecaFunciones/Debug; sudo make
-
-memoria:
-	cd Memoria/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-Non-lol/bibliotecaFunciones/Debug; sudo make
-
-lfs:
-	cd lfs/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-Non-lol/bibliotecaFunciones/Debug; sudo make
-
+modulos:
+	cd lfs/Debug; sudo make
+	cd Kernel/Debug; sudo make
+	cd Memoria/Debug; sudo make
+	
 clean:
 	cd Kernel/Debug; sudo make clean
 	cd Memoria/Debug; sudo make clean
 	cd lfs/Debug; sudo make clean
 	cd bibliotecaFunciones/Debug; sudo make clean
+	cd ~; cd workspace; sudo rm -rf so-commons-library
+	cd ~; cd workspace; sudo rm -rf 1C2019-Scripts-lql-entrega
+
+hacerExport:
+	cd Kernel/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/Debug
+	cd Memoria/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/Debug
+	cd lfs/Debug; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/workspace/tp-2019-1c-BEFGN/bibliotecaFunciones/Debug
