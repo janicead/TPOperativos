@@ -193,6 +193,8 @@ void persistirRegistrarDUMP(t_Tabla *unaTabla,char *laTablaDUMPEADA)
 			free(unBuffer);
 		}
 	}
+	else
+		free(laTablaDUMPEADA);
 }
 
 
@@ -371,7 +373,7 @@ void realizarCOMPACTAR(t_Tabla *unaTabla, int cantParticiones)
 		}
 
 
-		//freeListaDeRegistros(listaRegistrosDeUnTMPC); /// LA Q TE PARIO!!!
+		freeListaDeRegistros(listaRegistrosDeUnTMPC); /// LA Q TE PARIO!!!
 		//hay q liberar los registros de
 	}
 
@@ -427,7 +429,7 @@ void realizarCOMPACTAR(t_Tabla *unaTabla, int cantParticiones)
 			char *unaBINDUMPEADA = dumpearUnaListaDeRegistros(unaParticionBIN->registros); //unaTabla->registros);
 			//printf("%d.bin de [%s] Dumpeada: \n[%s]\n",indexBIN,unaTabla->nombreTabla,unaBINDUMPEADA); ///
 
-			persistirParticionBIN(unaTabla,unaBINDUMPEADA,indexBIN);
+			persistirParticionBIN(unaTabla,unaBINDUMPEADA,indexBIN); //SE LIBERA unaBINDUMPEADA
 		}
 
 		//LIBERAR LISTA DE PARTICIONES DE UNA TABLA
@@ -436,7 +438,10 @@ void realizarCOMPACTAR(t_Tabla *unaTabla, int cantParticiones)
 		{
 			t_ParticionBIN *unaParticionBIN = list_get(particionesDeTabla,i);
 			freeListaDeRegistros(unaParticionBIN->registros);
+			free(unaParticionBIN);
 		}
+
+		list_destroy(particionesDeTabla);
 
 		time_t finDeCOMPACTADOR = obtenerTimeStamp();//time(NULL); //#######
 
@@ -472,7 +477,8 @@ void analizadorDelRegistro(t_Registro *unRegistroTMPC,t_list *particionesDeTabla
 		//printf("\nNo se encontro Registro en la particion %d se agregara...\n",nroParticionAComparar); ///
 
 		//printf("list_size(laParticion->registros): %d (antes)\n",list_size(laParticion->registros)); ///
-		list_add(laParticion->registros,unRegistroTMPC);
+		t_Registro *unRegistroCopia = copiarRegistro(unRegistroTMPC);
+		list_add(laParticion->registros,unRegistroCopia);
 		//printf("list_size(laParticion->registros): %d (despues)\n",list_size(laParticion->registros)); ///
 	}
 	else
@@ -521,6 +527,8 @@ void persistirParticionBIN(t_Tabla *unaTabla,char *laBINDUMPEADA,int indexBIN)
 
 		free(r);
 	}
+	else
+		free(laBINDUMPEADA);
 }
 
 

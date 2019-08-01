@@ -671,6 +671,7 @@ char *realizarSELECT(t_SELECT *unSELECT)
 		//printf("\n[%s]\n%d\n%d\n",unMetadataTabla->Consistency,unMetadataTabla->Partitions,unMetadataTabla->Compaction_Time); ///
 
 		int indexBIN = numeroDeParticion(unMetadataTabla->Partitions,unSELECT->KEY);
+		freeT_MetadataTabla(unMetadataTabla);
 		//printf("indexBIN: %d\n",indexBIN);
 		char *unNombreTablaArchivo = string_from_format("%s/%d.bin",unSELECT->nombreTabla,indexBIN);
 
