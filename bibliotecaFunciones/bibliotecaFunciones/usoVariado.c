@@ -55,7 +55,10 @@ int longitudArrayDePunteros(char **unArrayDePunteros){
 }
 
 unsigned long int obtenerTimeStamp(){
-	return time(NULL);
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	double valor = ((tv.tv_sec) * 1000 + (tv.tv_usec) / 1000);
+	return (unsigned long int) valor;
 }
 
 
