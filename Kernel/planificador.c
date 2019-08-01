@@ -59,7 +59,6 @@ void* ejecutar(){
 			quantum--;
 		}
 		if(lcb->program_counter >= list_size(lcb->operaciones) || lcb->abortar){
-			printf("La cantidad de operaciones es de %d",lcb->program_counter);
 			pasar_lcb_a_exit(lcb);
 		}
 		else{
@@ -229,7 +228,6 @@ void lql_select(t_LQL_operacion* operacion, t_memoria* mem){
 			log_info(loggerKernel,"SELECT %s %d Value -> %s",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
 		}
 	}
-	printf("SELECT %s %d Value -> %s \n",operacion->argumentos.SELECT.nombre_tabla,operacion->argumentos.SELECT.key,respuesta);
 	if(select_recursivo){
 		free(respuesta);
 		return;
@@ -375,7 +373,6 @@ void lql_insert(t_LQL_operacion* op, t_memoria * mem){
 			log_info(loggerKernel, "INSERT %s %d %s realizado correctamente.", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
 		}
 	}
-	printf("INSERT %s %d %s realizado correctamente.\n", op->argumentos.INSERT.nombre_tabla, op->argumentos.INSERT.key, op->argumentos.INSERT.valor);
 	if(insert_recursivo){
 		free(resp);
 		return;
