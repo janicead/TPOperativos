@@ -441,7 +441,7 @@ void realizarCOMPACTAR(t_Tabla *unaTabla, int cantParticiones)
 		time_t finDeCOMPACTADOR = obtenerTimeStamp();//time(NULL); //#######
 
 		log_info(logger,"Fin de compactacion");
-		log_info(logger,"\nTiempo de bloqueo de tabla [%s]: %f seg.\n------------------------------------------",unaTabla->nombreTabla, difftime(finDeCOMPACTADOR, inicioDeCOMPACTADOR));
+		log_info(logger,"\nTiempo de bloqueo de tabla [%s]: %.2f ms.\n------------------------------------------",unaTabla->nombreTabla, difftime(finDeCOMPACTADOR, inicioDeCOMPACTADOR));
 
 	}
 }
