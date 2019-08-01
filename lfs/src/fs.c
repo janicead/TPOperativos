@@ -811,7 +811,8 @@ void reAsignarBloquesDe(char *nombreAbsolutoArchivoMeta)
 		setBitDeBloque(iBloque,1);
 	}
 
-	free(unaMetadataArchivo);
+	//free(unaMetadataArchivo);
+	freeT_MetadataUnArchivo(unaMetadataArchivo);
 }
 
 t_MetadataUnArchivo *leerMetadataDeArchivo(char *unNombreAbsoluto,int showLoLeido)
