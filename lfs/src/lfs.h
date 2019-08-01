@@ -30,6 +30,7 @@
 #include <bibliotecaFunciones/lfsSerializacion.h>
 #include <bibliotecaFunciones/sockets.h>
 #include <bibliotecaFunciones/lfsVarios.h>
+#include <bibliotecaFunciones/usoVariado.h>
 
 #include "varios.h"
 #include "fs.h"

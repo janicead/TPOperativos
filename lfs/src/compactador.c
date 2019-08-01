@@ -284,7 +284,7 @@ void realizarCOMPACTAR(t_Tabla *unaTabla, int cantParticiones)
 	if(tope != 0)
 	{
 		log_info(logger,"\nRealizando COMPACTACION en tabla [%s]...",unaTabla->nombreTabla);
-		inicioDeCOMPACTADOR = time(NULL); //#######
+		inicioDeCOMPACTADOR = obtenerTimeStamp();//time(NULL); //#######
 		//sleep(5);
 
 		//CARGO LAS PARTICIONES DE UNA TABLA A UNA LISTA
@@ -438,7 +438,7 @@ void realizarCOMPACTAR(t_Tabla *unaTabla, int cantParticiones)
 			freeListaDeRegistros(unaParticionBIN->registros);
 		}
 
-		time_t finDeCOMPACTADOR = time(NULL); //#######
+		time_t finDeCOMPACTADOR = obtenerTimeStamp();//time(NULL); //#######
 
 		log_info(logger,"Fin de compactacion");
 		log_info(logger,"\nTiempo de bloqueo de tabla [%s]: %f seg.\n------------------------------------------",unaTabla->nombreTabla, difftime(finDeCOMPACTADOR, inicioDeCOMPACTADOR));

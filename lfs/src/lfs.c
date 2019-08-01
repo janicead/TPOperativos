@@ -829,7 +829,7 @@ char *realizarINSERT(t_INSERT *unINSERT)
 
 			if(unINSERT->timeStamp == 0)
 				//nuevoRegistro.TIMESTAMP = 0.000001 * (unsigned)time(NULL);
-				nuevoRegistro->TIMESTAMP = (unsigned long int)time(NULL);
+				nuevoRegistro->TIMESTAMP = obtenerTimeStamp();//(unsigned long int)time(NULL);
 			else
 				nuevoRegistro->TIMESTAMP = (unsigned long int)unINSERT->timeStamp;
 			//printf("\nTimestamp generado: %lu",nuevoRegistro->TIMESTAMP); ///
@@ -853,7 +853,7 @@ char *realizarINSERT(t_INSERT *unINSERT)
 
 			if(unINSERT->timeStamp == 0)
 				//nuevoRegistro.TIMESTAMP = 0.000001 * (unsigned)time(NULL);
-				nuevoRegistro->TIMESTAMP = (unsigned long int)time(NULL);
+				nuevoRegistro->TIMESTAMP = obtenerTimeStamp();//(unsigned long int)time(NULL);
 			else
 				nuevoRegistro->TIMESTAMP = (unsigned long int)unINSERT->timeStamp;
 
