@@ -15,6 +15,7 @@
 
 t_log *loggerMemoria;
 t_config *archivoConfigMemoria;
+char* nroMemoriaLogger;
 
 char* PATH_MEMORIA_CONFIG;
 

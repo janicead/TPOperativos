@@ -13,6 +13,7 @@ int main(int argc, char* argv[]) {
 		puts("ERROR ingresó más de un parámetro");
 		return EXIT_FAILURE;
 	}
+	nroMemoriaLogger=0;
 	setear_path_config(atoi(argv[1]), argv[2]);
 	configurarLoggerMemoria();
 	configMemoria =leerConfigMemoria();
@@ -61,6 +62,7 @@ void setear_path_config(int nroPrueba, char* nroMemoria){
 	char* path = definirPrueba(nroPrueba, nroMemoria);
 	PATH_MEMORIA_CONFIG = malloc(strlen(path)+1);
 	strcpy(PATH_MEMORIA_CONFIG, path);
+	nroMemoriaLogger = string_from_format("%s",nroMemoria);
 
 }
 

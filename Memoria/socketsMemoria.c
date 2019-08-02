@@ -36,7 +36,7 @@ void gestionarPaquetes(t_PaqueteDeDatos *packageRecibido, int socketEmisor){
 
 		pthread_mutex_lock(&semMemoriaPrincipal);
 
-		char* respuesta = INSERTMemoria(unINSERT->nombreTabla,key, unINSERT->Value,  (unsigned long int)unINSERT->timeStamp);
+		char* respuesta = INSERTMemoria(unINSERT->nombreTabla,key, unINSERT->Value,  (unsigned long int)unINSERT->timeStamp, 0);
 		enviarRespuesta(socketEmisor,id_respuesta_insert,respuesta);
 
 		freeT_INSERT(unINSERT);
@@ -161,8 +161,6 @@ void iniciarEscucha(){
 	dirServidor.sin_port = htons(configMemoria.puertoDeEscucha); //serverPort
 	dirServidor.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	//printf("IP server: %d\n",dirServidor.sin_addr.s_addr);
-
 	log_info(loggerMemoria, "Asignado un socket al proceso LFS");
 	servidorEscuchaMemoria = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -240,7 +238,7 @@ void serCliente(char* ip , int puerto){
 
 		if(nroMemoria!= -1){
 			char* memoriasDondeEstoyConectado = memoriasTablaDeGossip(tablaDeGossipMemoria);
-			printf("Memorias donde estoy conectado %s\n", memoriasDondeEstoyConectado);
+			log_info(loggerMemoria,"Memorias donde estoy conectado %s\n", memoriasDondeEstoyConectado);
 			enviarMemoriasTablaGossip(cliente,KERNELOMEMORIA,memoriasDondeEstoyConectado);
 			agregarATablaDeGossip(puerto, ip, nroMemoria,true, tablaDeGossipMemoria);
 			mostrarmeMemoriasTablaGossip(tablaDeGossipMemoria);
@@ -340,7 +338,7 @@ void realizarMultiplexacion(int socketEscuchando){
 		    		if(package->ID==0){
 	                    // conexión cerrada
 		    			free(package);
-	    				printf("El socket %d se desconecto\n", i);
+	    				log_error(loggerMemoria,"El socket %d se desconecto\n", i);
 	                    close(i); // bye!
 	                    FD_CLR(i, &master); // eliminar del conjunto maestro
 		    		} else if(package->ID<0){
@@ -351,7 +349,7 @@ void realizarMultiplexacion(int socketEscuchando){
 		    		}
 		    		else{
 
-						printf("\npackage->ID: %d\n",package->ID);
+						//printf("\npackage->ID: %d\n",package->ID);
 						gestionarPaquetes(package, i);
 						freePackage(package);
 		    		}

@@ -120,7 +120,7 @@ bool pasarAUint162(const char *str, uint16_t *res) ;
 void descomposicionDelJOURNAL(char* journalGigante);
 //---------------------------------------REQUESTS--------------------------------------------------------//
 char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado);
-char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long int timeStamp);
+char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long int timeStamp, int porConsola);
 char* DROPMemoria(char* nombreTabla);
 void DROPMemoriaExclusivoLRU(char* nombreTabla);
 void JOURNALMemoria();

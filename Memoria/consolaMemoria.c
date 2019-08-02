@@ -92,7 +92,7 @@ void* crearConsolaMemoria(){
 							unsigned long int timestamp = strtoul(operacion[4], &ptr, 10);
 							char* value = quitarEspacioFalsoMemoria(operacion[3]);
 							pthread_mutex_lock(&semMemoriaPrincipal);
-							INSERTMemoria(operacion[1], *key, value, timestamp);
+							INSERTMemoria(operacion[1], *key, value, timestamp,1);
 							free(value);
 							pthread_mutex_lock(&semConfig);
 							int retardoMemoriaPrincipal1 = configMemoria.retardoAccesoMemoriaPrincipal;
@@ -135,7 +135,7 @@ void* crearConsolaMemoria(){
 							}
 							else{
 							char * buffer = respuestaDESCRIBEaPrintear(valor);
-							printf("EL BUFFER %s \n", buffer);
+							log_info(loggerMemoria,"DESCRIBE TABLA: %s", buffer);
 							free(valor);
 							free(buffer);
 							}
@@ -151,7 +151,7 @@ void* crearConsolaMemoria(){
 							}
 							else{
 							char * buffer = respuestaDESCRIBEaPrintear(valor);
-							printf("EL BUFFER %s \n", buffer);
+							log_info(loggerMemoria,"DESCRIBE GLOBAL: %s", buffer);
 							free(valor);
 							free(buffer);
 							}

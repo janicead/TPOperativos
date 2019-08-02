@@ -114,9 +114,9 @@ void mostrarDatosArchivoConfig(){
 	return;
 }
 void configurarLoggerMemoria(){
-	FILE * memorialog =fopen("../Config/memoria.log","w");
-	loggerMemoria = log_create("../Config/memoria.log","memoria",1,LOG_LEVEL_INFO);
-	fclose(memorialog);
+	char* pathLogger = string_from_format("../Config/memoria%s.log",nroMemoriaLogger);
+	loggerMemoria = log_create(pathLogger,"memoria",0,LOG_LEVEL_INFO);
+	free(pathLogger);
 }
 
 void exit_gracefully(int exitInfo){

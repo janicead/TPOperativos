@@ -32,8 +32,9 @@ int tamanioLista(t_list * lista){
 }
 
 void mostrarDatosMarcos(){
+	log_info(loggerMemoria, "MARCOS EN MEMORIA");
 	for(int i = 0; i<cantMaxMarcos; i ++){
-		printf("Marco %d : %d\n" ,i, marcosOcupados[i]);
+		log_info(loggerMemoria, "Marco %d : %d\n" ,i, marcosOcupados[i]);
 	}
 }
 
@@ -162,7 +163,7 @@ void mostrarElementosTablaPaginas(t_list * lista){
 	for(int i = 0 ; i<tamanioTP; i++){
 		void* elemento = list_get(lista, i);
 		t_pagina* pagina = (t_pagina*) elemento;
-		log_info(loggerMemoria,"NUMERO DE PAG %d, SU KEY ES %d y su INDICE EN MEMORIA ES %d\n, SU FLAG ES %d y SU CANTIDAD SOLICITADO ES %d", pagina->numeroPag, pagina->key, pagina->numeroMarco, pagina->flagModificado, pagina->contadorVecesSolicitado);
+		log_info(loggerMemoria,"NUMERO DE PAG: %d, KEY: %d, INDICE EN MEMORIA: %d, FLAG:%d y SU CANTIDAD SOLICITADO: %d", pagina->numeroPag, pagina->key, pagina->numeroMarco, pagina->flagModificado, pagina->contadorVecesSolicitado);
 	}
 }
 
@@ -323,15 +324,12 @@ void mostrarElementosMemoriaPrincipal(){
 		 valor= cantMarcosIngresados;
 	 }
 	 for(int i = 0 ; i <valor; i++){
-		 printf("el i es %d\n", i);
 		 memcpy(&key, memoriaPrincipal + tamanioUnRegistro * i + copiarDesde,sizeof(uint16_t));
 		 copiarDesde += sizeof(uint16_t);
 		 memcpy(&eltimestamp, memoriaPrincipal+tamanioUnRegistro * i+ copiarDesde, sizeof(unsigned long int));
 		 copiarDesde += sizeof(unsigned long int);
 		 memcpy(elvalue, memoriaPrincipal + tamanioUnRegistro * i+ copiarDesde,tamanioDadoPorLFS);
-		 printf("LA KEY ES %u\n",(unsigned int)key);
-		 printf("EL TIMESTAMP ES %lu\n",eltimestamp);
-		 printf("EL VALUE ES '%s'\n",elvalue);
+		 log_info(loggerMemoria, "KEY: %u\n, TIMESTAMP: %lu\n, VALUE: %s",(unsigned int)key, eltimestamp, elvalue);
 		 puts("--------------------------------------------");
 		 copiarDesde = 0;
 	 }
@@ -395,11 +393,11 @@ t_LRU * LRU (){
 
 void mostrarElementosListaJournal(){
 	int tamanioTP= tamanioLista(listaJournal);
-	printf("CANT ELEMENTOS JOURNAL %d\n", tamanioTP);
+	log_info(loggerMemoria,"CANT ELEMENTOS JOURNAL %d\n", tamanioTP);
 	for(int i = 0 ; i<tamanioTP; i++){
 		void* elemento = list_get(listaJournal, i);
 		t_JOURNAL* journal = (t_JOURNAL*) elemento;
-		printf("NOMBRE TABLA es '%s', su KEY es %u, su TIMESTAMP %lu y su VALUE es %s\n", journal->nombreTabla, (unsigned int)journal->registro->key, journal->registro->timestamp, journal->registro->value);
+		log_info(loggerMemoria,"NOMBRE TABLA:'%s', KEY: %u, TIMESTAMP: %lu y VALUE: %s\n", journal->nombreTabla, (unsigned int)journal->registro->key, journal->registro->timestamp, journal->registro->value);
 	}
 }
 
@@ -577,7 +575,6 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 		pthread_mutex_lock(&semLfs);
 		log_info(loggerMemoria,"No se encontro en la tabla de SEGMENTOS");
 		int keyEnINT = pasarUINT16AInt(key);
-		printf("SOCKET LFS VALE %d\n", socketLFS);
 		if (socketLFS ==0){
 			pthread_mutex_unlock(&semLfs);
 			pthread_mutex_unlock(&semTablaSegmentos);
@@ -623,9 +620,15 @@ char* SELECTMemoria(char * nombreTabla, uint16_t key, int flagModificado){
 }
 //----------------------------------------------------INSERT--------------------------------------------------//
 
-char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long int timeStamp){
+char* INSERTMemoria(char * nombreTabla, uint16_t key, char* value, unsigned long int timeStamp, int porConsola){
 	pthread_mutex_lock(&semTablaSegmentos);
-	unsigned long int t = obtenerTimeStamp();
+	unsigned long int t = 0;
+	if(porConsola ==0){
+		t = obtenerTimeStamp();
+	}
+	else {
+		t = timeStamp;
+	}
 	int ubicacionSegmento = buscarTablaSegmentos(nombreTabla);  // Busco la tabla en mi tabla de Segmentos
 	if(ubicacionSegmento!=-1){ //esta en tabla de SEGMENTOS
 		log_info(loggerMemoria,"Esta en la tabla de SEGMENTOS");
