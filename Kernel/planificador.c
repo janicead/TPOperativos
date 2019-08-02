@@ -1069,7 +1069,7 @@ void describe_global(char* data, bool mostrarPorConsola){
 		if(mostrarPorConsola){
 			printf("Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sseg.\n",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
 		}
-		log_info(loggerKernel,"Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sseg",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
+		log_info(loggerKernel,"Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sms",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
 		freeParametros(metadata_final);
 	}
 	freeParametros(metadata);
@@ -1082,10 +1082,10 @@ void describe_global(char* data, bool mostrarPorConsola){
 				return string_equals_ignore_case(table->nombre_tabla, tabla->nombre_tabla);
 			}
 			if(!list_any_satisfy(lista_aux,(void*)exists_table)){
-				if(mostrarPorConsola){
+				/*if(mostrarPorConsola){
 					printf("La tabla %s fue removida de la metadata del Kernel.\n",tabla->nombre_tabla);
 				}
-				log_info(loggerKernel,"La tabla %s fue removida de la metadata del Kernel",tabla->nombre_tabla);
+				log_info(loggerKernel,"La tabla %s fue removida de la metadata del Kernel",tabla->nombre_tabla);*/
 				list_remove_and_destroy_by_condition(tablas,(void*)existe_tabla,(void*)free_tabla);
 				i--;
 				tablas_size--;
@@ -1121,7 +1121,7 @@ void describe(char* data, bool mostrarPorConsola){
 	if(mostrarPorConsola){
 		printf("Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sseg.\n",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
 	}
-	log_info(loggerKernel,"Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sseg",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
+	log_info(loggerKernel,"Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sms",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
 	freeParametros(metadata_final);
 	freeParametros(metadata);
 	if(!existe_tabla(tabla->nombre_tabla)){
