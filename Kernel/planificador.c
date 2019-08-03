@@ -1067,7 +1067,7 @@ void describe_global(char* data, bool mostrarPorConsola){
 		tabla->consistencia = string_from_format("%s",metadata_final[1]);
 		list_add(lista_aux,tabla);
 		if(mostrarPorConsola){
-			printf("Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sseg.\n",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
+			printf("Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sms.\n",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
 		}
 		log_info(loggerKernel,"Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sms",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
 		freeParametros(metadata_final);
@@ -1119,7 +1119,7 @@ void describe(char* data, bool mostrarPorConsola){
 	tabla->nombre_tabla = string_from_format("%s",metadata_final[0]);
 	tabla->consistencia = string_from_format("%s",metadata_final[1]);
 	if(mostrarPorConsola){
-		printf("Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sseg.\n",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
+		printf("Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sms.\n",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
 	}
 	log_info(loggerKernel,"Se recibió la tabla: %s, Consistencia: %s, Particiones: %s, Tiempo de compactación: %sms",metadata_final[0], metadata_final[1], metadata_final[2], metadata_final[3]);
 	freeParametros(metadata_final);
